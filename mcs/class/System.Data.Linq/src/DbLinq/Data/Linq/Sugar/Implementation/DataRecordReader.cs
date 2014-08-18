@@ -177,7 +177,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 mappingContextArg,
                 Expression.Constant(simpleReturnType, typeof(Type))
             );
-            return Expression.Lambda(Expression.Convert(body, simpleReturnType), 
+
+            return Expression.Lambda(Expression.Convert(body, simpleReturnType.IsValueType && !simpleReturnType.IsNullable() ? typeof(Nullable<>).MakeGenericType(simpleReturnType) : simpleReturnType), 
                 dataRecordArg,
                 mappingContextArg,
                 valueIndexArg
