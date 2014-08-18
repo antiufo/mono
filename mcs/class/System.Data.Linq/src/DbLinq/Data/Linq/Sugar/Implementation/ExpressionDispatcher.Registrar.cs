@@ -386,8 +386,9 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                                                           ParameterExpression dataRecordParameter, ParameterExpression mappingContextParameter,
                                                           BuilderContext builderContext)
         {
-            var bindings = new List<MemberBinding>();
-            
+
+            var bindings = new List<MemberAssignment>();
+
             foreach (ColumnExpression columnExpression in RegisterAllColumns(tableExpression, builderContext))
             {
                 MemberInfo memberInfo = columnExpression.StorageInfo ?? columnExpression.MemberInfo;
@@ -400,6 +401,15 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     bindings.Add(binding);
                 }
             }
+
+
+            var customCreator = builderContext.QueryContext.DataContext.Mapping.CreateObject(tableExpression.Type, bindings);
+            if (customCreator != null)
+            {
+                return customCreator;
+            }
+
+
             var newExpression = Expression.New(tableExpression.Type);
             var initExpression = Expression.MemberInit(newExpression, bindings);
             return initExpression;

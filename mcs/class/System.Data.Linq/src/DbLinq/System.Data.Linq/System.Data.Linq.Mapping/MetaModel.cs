@@ -29,6 +29,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace System.Data.Linq.Mapping
@@ -45,5 +46,10 @@ namespace System.Data.Linq.Mapping
 		public abstract MetaType GetMetaType (Type type);
 		public abstract MetaTable GetTable (Type rowType);
 		public abstract IEnumerable<MetaTable> GetTables ();
-	}
+
+        public virtual Expression CreateObject(Type type, IEnumerable<MemberAssignment> bindings)
+        {
+            return null;
+        }
+    }
 }
