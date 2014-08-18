@@ -592,6 +592,18 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     if (map.TryGetValue(expr, out new_expr))
                         return new_expr;
                     break;
+                case ExpressionType.MemberAccess:
+                    var memberAccess = (MemberExpression)expr;
+                    var constExpr = memberAccess.Expression as ConstantExpression;
+                    if (constExpr == null) throw new Exception("Can't handle MemberExpression." + memberAccess.Expression.NodeType);
+                    var val = ((FieldInfo)memberAccess.Member).GetValue(constExpr.Value);
+                    return Expression.Constant(val);
+                case ExpressionType.Convert:
+                    var convexp = ((UnaryExpression)expr);
+                    return Expression.Convert(Visit(convexp.Operand), convexp.Type);
+                case ExpressionType.Constant:
+                    var constant = ((ConstantExpression)expr);
+                    return constant;
                 default:
                     throw new Exception("Can't handle " + expr.NodeType);
             }
