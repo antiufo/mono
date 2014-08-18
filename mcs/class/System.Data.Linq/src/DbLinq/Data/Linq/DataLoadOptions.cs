@@ -127,9 +127,9 @@ using DbLinq.Util;
             var mt = member.GetMemberType();
             if (mt.IsGenericType)
             {
-                if (mt.GetGenericTypeDefinition() == typeof(System.Data.Linq.EntitySet<>))
+                if (mt.GetGenericTypeDefinition() == typeof(EntitySet<>))
                     mt = mt.GetGenericArguments()[0];
-                else if (mt.GetGenericTypeDefinition() == typeof(System.Data.Linq.EntityRef<>))
+                else if (mt.GetGenericTypeDefinition() == typeof(EntityRef<>))
                     mt = mt.GetGenericArguments()[0];
             }
             return mt;

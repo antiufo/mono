@@ -48,7 +48,7 @@ namespace DbLinq.Sqlite
 #if MONO_STRICT
             : base(conn)
 #else
-            : base(conn, new SqliteVendor())
+            : base(conn)
 #endif
         {
         }

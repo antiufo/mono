@@ -765,7 +765,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 #if !MONO_STRICT
             // this is for compatibility with previously generated .cs files
             // TODO: remove in 2009
-            if (memberType.IsGenericType && typeof(System.Data.Linq.EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
+            if (memberType.IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
             {
                 entityType = memberType.GetGenericArguments()[0];
                 return true;

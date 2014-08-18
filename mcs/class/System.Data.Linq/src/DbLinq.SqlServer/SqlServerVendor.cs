@@ -44,9 +44,10 @@ using ITable      = System.Data.Linq.ITable;
 using System.Data.Linq.SqlClient;
 #else
 using DataContext = DbLinq.Data.Linq.DataContext;
-using DataLinq    = DbLinq.Data.Linq;
-using ITable      = DbLinq.Data.Linq.ITable;
+using DataLinq = DbLinq.Data.Linq;
+using ITable = DbLinq.Data.Linq.ITable;
 using DbLinq.Data.Linq.SqlClient;
+using System.Data.Linq.SqlClient;
 #endif
 
 namespace DbLinq.SqlServer

@@ -175,12 +175,11 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // TODO: Should be cached in a static thread safe cache.
 
             return type.GetProperties()
-                .Where(p => p.PropertyType.IsGenericType 
-                    && (p.PropertyType.GetGenericTypeDefinition() == typeof(System.Data.Linq.EntitySet<>) 
-#if !MONO_STRICT
-                    || p.PropertyType.GetGenericTypeDefinition() == typeof(DbLinq.Data.Linq.EntitySet<>)
-#endif
-                    )
+                .Where(p => p.PropertyType.IsGenericType && 
+                    
+                    p.PropertyType.GetGenericTypeDefinition() == typeof(DbLinq.Data.Linq.EntitySet<>)
+
+                    
                     && p.IsDefined(typeof(AssociationAttribute), true))
                 .Cast<MemberInfo>().ToList();
         }
