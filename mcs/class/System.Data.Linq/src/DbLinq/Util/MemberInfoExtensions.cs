@@ -84,7 +84,7 @@ namespace DbLinq.Util
             if (memberInfo is FieldInfo)
                 return ((FieldInfo)memberInfo).GetValue(o);
             if (memberInfo is PropertyInfo)
-                return ((PropertyInfo)memberInfo).GetGetMethod().Invoke(o, new object[0]);
+                return ((PropertyInfo)memberInfo).GetGetMethod(true).Invoke(o, new object[0]);
             throw new ArgumentException();
         }
 
