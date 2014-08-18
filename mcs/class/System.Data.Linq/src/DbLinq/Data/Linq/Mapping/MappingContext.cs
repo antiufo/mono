@@ -49,7 +49,7 @@ namespace DbLinq.Data.Linq.Mapping
 #else
         public
 #endif
-        delegate void GetAsDelegate<T>(object sender, ref T value, Type tableType, int columnIndex);
+        delegate void GetAsDelegate<T>(object sender, ref T value, Type tableType, int columnIndex, Type type);
 
         /// <summary>
         /// Called when a genereated SQL command is about to be executed
@@ -77,13 +77,13 @@ namespace DbLinq.Data.Linq.Mapping
         public void OnGetAsString(object sender, ref string value, Type tableType, int columnIndex)
         {
             if (GetAsString != null)
-                GetAsString(sender, ref value, tableType, columnIndex);
+                GetAsString(sender, ref value, tableType, columnIndex, typeof(string));
         }
 
-        public void OnGetAsObject(object sender, ref object value, Type tableType, int columnIndex)
+        public void OnGetAsObject(object sender, ref object value, Type tableType, int columnIndex, Type type)
         {
             if (GetAsObject != null)
-                GetAsObject(sender, ref value, tableType, columnIndex);
+                GetAsObject(sender, ref value, tableType, columnIndex, type);
         }
 
         #endregion

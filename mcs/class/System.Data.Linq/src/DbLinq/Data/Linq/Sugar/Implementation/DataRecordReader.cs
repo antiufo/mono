@@ -158,7 +158,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if (simpleReturnType == typeof(object))
             {
                 return (Expression<Func<IDataRecord, MappingContext, int, object>>)((dataRecord, mappingContext, valueIndex)
-                                                                                    => GetAsObject(dataRecord, valueIndex, mappingContext));
+                                                                                    => GetAsObject(dataRecord, valueIndex, mappingContext, simpleReturnType));
             }
             //s_rdr.GetUInt32();
             //s_rdr.GetFloat();
@@ -167,8 +167,22 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             //                propertyReader = null;
             //              throw new ApplicationException(msg);
             // TODO: 
-            return (Expression<Func<IDataRecord, MappingContext, int, object>>)((dataRecord, mappingContext, valueIndex)
-                                                                                => GetAsObject(dataRecord, valueIndex, mappingContext));
+
+            var dataRecordArg = Expression.Parameter(typeof(IDataRecord));
+            var mappingContextArg = Expression.Parameter(typeof(MappingContext));
+            var valueIndexArg = Expression.Parameter(typeof(int));
+            var body = Expression.Call(Expression.Constant(this), typeof(DataRecordReader).GetMethod("GetAsObject", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance),
+                dataRecordArg,
+                valueIndexArg,
+                mappingContextArg,
+                Expression.Constant(simpleReturnType, typeof(Type))
+            );
+            return Expression.Lambda(Expression.Convert(body, simpleReturnType), 
+                dataRecordArg,
+                mappingContextArg,
+                valueIndexArg
+                );
+            
         }
 
         /// <summary>
@@ -186,10 +200,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return value;
         }
 
-        protected virtual object GetAsObject(IDataRecord dataRecord, int columnIndex, MappingContext mappingContext)
+        protected virtual object GetAsObject(IDataRecord dataRecord, int columnIndex, MappingContext mappingContext, Type type)
         {
             var value = dataRecord.GetAsObject(columnIndex);
-            mappingContext.OnGetAsObject(dataRecord, ref value, null, columnIndex);
+            mappingContext.OnGetAsObject(dataRecord, ref value, null, columnIndex, type);
             return value;
         }
     }
