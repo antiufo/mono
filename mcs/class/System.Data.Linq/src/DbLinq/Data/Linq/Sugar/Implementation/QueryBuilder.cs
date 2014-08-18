@@ -235,7 +235,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var reader = builderContext.CurrentSelect.Reader;
             reader = (LambdaExpression)SpecialExpressionTranslator.Translate(reader);
             reader = (LambdaExpression)ExpressionOptimizer.Optimize(reader, builderContext);
-            builderContext.ExpressionQuery.RowObjectCreator = reader.Compile();
+            builderContext.ExpressionQuery.RowObjectCreator = reader.CompileDebuggable();
         }
 
         /// <summary>
@@ -442,7 +442,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             {
                 var lambda = ExpressionDispatcher.BuildTableReader(tableType, parameters,
                                                                    new BuilderContext(queryContext));
-                reader = lambda.Compile();
+                reader = lambda.CompileDebuggable();
                 if (queryContext.DataContext.QueryCacheEnabled)
                 {
                     SetInTableReaderCache(tableType, parameters, reader);

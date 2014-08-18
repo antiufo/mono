@@ -58,7 +58,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         {
             if (lambda.Parameters.Count != 2)
                 throw Error.BadArgument("S0055: Lambda must have 2 arguments");
-            setValueDelegate = lambda.Compile();
+            setValueDelegate = lambda.CompileDebuggable();
             Alias = alias;
             ValueType = valueType;
         }

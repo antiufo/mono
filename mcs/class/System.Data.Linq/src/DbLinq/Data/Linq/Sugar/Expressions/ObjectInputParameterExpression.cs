@@ -58,7 +58,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         {
             if (lambda.Parameters.Count != 1)
                 throw Error.BadArgument("S0055: Lambda must take 1 argument");
-            getValueDelegate = lambda.Compile();
+            getValueDelegate = lambda.CompileDebuggable();
             Alias = alias;
             ValueType = valueType;
         }

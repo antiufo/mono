@@ -59,7 +59,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         {
             Expression = expression;
             var lambda = Expression.Lambda(expression);
-            getValueDelegate = lambda.Compile();
+            getValueDelegate = lambda.CompileDebuggable();
             Alias = alias;
         }
     }

@@ -135,7 +135,7 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator
                 // here, we may have non-evaluable expressions, so we "try"/"catch"
                 // (maybe should we find something better)
                 var lambda = Expression.Lambda(expression);
-                var compiled = lambda.Compile();
+                var compiled = lambda.CompileDebuggable();
                 var value = compiled.DynamicInvoke();
                 return value;
             }

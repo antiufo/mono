@@ -71,7 +71,7 @@ namespace DbLinq.Data.Linq.Mapping
 			
 			ParameterExpression p = Expression.Parameter(declaringType, "e");
 			return (MetaAccessor)Activator.CreateInstance(accessorType, new object[]{ 
-				Expression.Lambda(Expression.MakeMemberAccess(p, member), p).Compile(),
+				Expression.Lambda(Expression.MakeMemberAccess(p, member), p).CompileDebuggable(),
 				MakeSetter(member, memberType, declaringType) }
 			);
 		}
