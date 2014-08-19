@@ -1113,6 +1113,8 @@ namespace DbLinq.Data.Linq
         /// <param name="command"></param>
         internal void WriteLog(IDbCommand command)
         {
+            Console.WriteLine(command.CommandText);
+            return;
             if (Log != null)
             {
                 Log.WriteLine(command.CommandText);
