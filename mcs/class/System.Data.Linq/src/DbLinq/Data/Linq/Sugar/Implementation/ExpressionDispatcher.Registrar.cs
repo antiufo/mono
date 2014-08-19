@@ -41,6 +41,7 @@ using DataContext = System.Data.Linq.DataContext;
 #else
 using DataContext = DbLinq.Data.Linq.DataContext;
 using System.Data.Linq.Mapping;
+using System.Data.Linq;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
@@ -156,21 +157,21 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// This method requires the table to be already registered
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="memberInfo"></param>
+        /// <param name="metaMember"></param>
         /// <param name="name"></param>
         /// <param name="builderContext"></param>
         /// <returns></returns>
         public ColumnExpression RegisterColumn(TableExpression table,
-                                               MetaDataMember memberInfo, string name,
+                                               MetaDataMember metaMember, string name,
                                                BuilderContext builderContext)
         {
-            if (memberInfo == null)
+            if (metaMember == null)
                 return null;
             var queryColumn = GetRegisteredColumn(table, name, builderContext);
             if (queryColumn == null)
             {
                 table = RegisterTable(table, builderContext);
-                queryColumn = CreateColumn(table, memberInfo, builderContext);
+                queryColumn = CreateColumn(table, metaMember, builderContext);
                 builderContext.CurrentSelect.Columns.Add(queryColumn);
             }
             return queryColumn;
@@ -389,7 +390,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                                                           BuilderContext builderContext)
         {
 
-            var bindings = new List<MemberAssignment>();
+            var bindings = new List<FieldAssignment>();
 
             foreach (ColumnExpression columnExpression in RegisterAllColumns(tableExpression, builderContext))
             {
@@ -399,8 +400,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 {
                     var parameterColumn = GetOutputValueReader(columnExpression,
                                                                dataRecordParameter, mappingContextParameter, builderContext);
-                    var binding = Expression.Bind(memberInfo, parameterColumn);
-                    bindings.Add(binding);
+                    
+                    bindings.Add(new FieldAssignment(columnExpression, memberInfo, columnExpression.Member, parameterColumn));
                 }
             }
 
@@ -413,7 +414,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
 
             var newExpression = Expression.New(tableExpression.Type);
-            var initExpression = Expression.MemberInit(newExpression, bindings);
+            var initExpression = Expression.MemberInit(newExpression, bindings.Select(x=>Expression.Bind(x.MemberInfo, x.ParameterColumn)));
             return initExpression;
         }
 

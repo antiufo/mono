@@ -49,15 +49,17 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         public string Name { get; private set; }
         public MemberInfo MemberInfo { get; private set; }
         public MemberInfo StorageInfo { get; private set; }
+        public MetaDataMember Member { get; private set; }
 
         public string Alias { get; set; }
 
         public int RequestIndex { get; set; }
 
         public ColumnExpression(TableExpression table, MetaDataMember metaData)
-            : base(ExpressionType, metaData.Member.GetMemberType()) // memberInfo.GetMemberType())
+            : base(ExpressionType, metaData.Type) // memberInfo.GetMemberType())
         {
             Table = table;
+            Member = metaData;
             Name = metaData.MappedName;
             MemberInfo = metaData.Member;
             StorageInfo = metaData.StorageMember;
