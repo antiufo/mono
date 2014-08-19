@@ -34,6 +34,7 @@ using DbLinq.Util;
 using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
+using System.Data.Linq.Mapping;
 #endif
 
 namespace DbLinq.Data.Linq.Identity.Implementation
@@ -46,7 +47,7 @@ namespace DbLinq.Data.Linq.Identity.Implementation
     internal class IdentityReader : IIdentityReader
     {
         private readonly Type type;
-        private readonly IList<MemberInfo> keyMembers = new List<MemberInfo>();
+        private readonly IList<MetaDataMember> keyMembers = new List<MetaDataMember>();
 
         /// <summary>
         /// Gets an object identity
@@ -76,7 +77,7 @@ namespace DbLinq.Data.Linq.Identity.Implementation
         public IdentityReader(Type t, DataContext dataContext)
         {
             foreach (var member in dataContext.Mapping.GetTable(t).RowType.IdentityMembers)
-                keyMembers.Add(member.Member);
+                keyMembers.Add(member);
             type = t;
         }
     }

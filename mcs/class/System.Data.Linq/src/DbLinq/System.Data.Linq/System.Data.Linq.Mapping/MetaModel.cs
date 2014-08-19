@@ -27,6 +27,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+using DbLinq.Data.Linq;
+using DbLinq.Data.Linq.Sugar.Expressions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -47,9 +49,21 @@ namespace System.Data.Linq.Mapping
 		public abstract MetaTable GetTable (Type rowType);
 		public abstract IEnumerable<MetaTable> GetTables ();
 
-        public virtual Expression CreateObject(Type type, IEnumerable<MemberAssignment> bindings)
+        public virtual Expression CreateObject(Type type, IEnumerable<FieldAssignment> bindings)
         {
             return null;
+        }
+
+        internal MetaDataMember GetMetaDataMember(MemberInfo memberInfo)
+        {
+            if (memberInfo == null) return null;
+            var type = GetMetaType(memberInfo.DeclaringType);
+            return type != null ? type.GetDataMember(memberInfo) : null;
+        }
+
+        public virtual object GetInputParameterValue(object expr)
+        {
+            return expr;
         }
     }
 }

@@ -30,6 +30,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using DbLinq.Util;
 
 namespace System.Data.Linq.Mapping
 {
@@ -62,5 +63,10 @@ namespace System.Data.Linq.Mapping
 		public abstract UpdateCheck UpdateCheck { get; }
 
 		public abstract bool IsDeclaredBy (MetaType type);
+
+        public virtual object GetMemberValue(object obj)
+        {
+            return Member.GetMemberValue(obj);
+        }
 	}
 }
