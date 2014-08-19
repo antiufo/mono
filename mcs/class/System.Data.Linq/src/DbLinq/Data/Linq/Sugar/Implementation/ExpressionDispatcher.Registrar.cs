@@ -40,6 +40,7 @@ using DbLinq.Data.Linq.Sugar.Expressions;
 using DataContext = System.Data.Linq.DataContext;
 #else
 using DataContext = DbLinq.Data.Linq.DataContext;
+using System.Data.Linq.Mapping;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
@@ -160,7 +161,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="builderContext"></param>
         /// <returns></returns>
         public ColumnExpression RegisterColumn(TableExpression table,
-                                               MemberInfo memberInfo, string name,
+                                               MetaDataMember memberInfo, string name,
                                                BuilderContext builderContext)
         {
             if (memberInfo == null)
@@ -182,20 +183,21 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="memberInfo"></param>
         /// <param name="builderContext"></param>
         /// <returns></returns>
-        public ColumnExpression RegisterColumn(TableExpression tableExpression, MemberInfo memberInfo,
+        public ColumnExpression RegisterColumn(TableExpression tableExpression, MetaDataMember dataMember,
                                                BuilderContext builderContext)
         {
-            var dataMember = builderContext.QueryContext.DataContext.Mapping.GetTable(tableExpression.Type).RowType
-                .GetDataMember(memberInfo);
+            //var dataMember = builderContext.QueryContext.DataContext.Mapping.GetTable(tableExpression.Type).RowType
+                //.GetDataMember(memberInfo);
+
             if (dataMember == null)
                 return null;
-            return RegisterColumn(tableExpression, memberInfo, dataMember.MappedName, builderContext);
+            return RegisterColumn(tableExpression, dataMember, dataMember.MappedName, builderContext);
         }
 
-        public ColumnExpression CreateColumn(TableExpression table, MemberInfo memberInfo, BuilderContext builderContext)
+        public ColumnExpression CreateColumn(TableExpression table, MetaDataMember dataMember, BuilderContext builderContext)
         {
-            var dataMember = builderContext.QueryContext.DataContext.Mapping.GetTable(table.Type).RowType
-                .GetDataMember(memberInfo);
+            /*var dataMember = builderContext.QueryContext.DataContext.Mapping.GetTable(table.Type).RowType
+                .GetDataMember(memberInfo);*/
             if (dataMember == null)
                 return null;
             return new ColumnExpression(table, dataMember);
@@ -220,10 +222,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="otherType"></param>
         /// <param name="builderContext"></param>
         /// <returns></returns>
-        public virtual TableExpression RegisterAssociation(TableExpression tableExpression, MemberInfo tableMemberInfo,
+        public virtual TableExpression RegisterAssociation(TableExpression tableExpression, MetaDataMember tableMemberInfo,
                                                            Type otherType, BuilderContext builderContext)
         {
-            IList<MemberInfo> otherKeys;
+            IList<MetaDataMember> otherKeys;
             TableJoinType joinType;
             string joinID;
             var theseKeys = DataMapper.GetAssociation(tableExpression, tableMemberInfo, otherType, out otherKeys,
@@ -342,7 +344,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             foreach (var metaMember in builderContext.QueryContext.DataContext.Mapping.GetTable(tableExpression.Type).RowType.PersistentDataMembers)
             {
-                yield return RegisterColumn(tableExpression, metaMember.Member, builderContext);
+                yield return RegisterColumn(tableExpression, metaMember, builderContext);
             }
         }
 

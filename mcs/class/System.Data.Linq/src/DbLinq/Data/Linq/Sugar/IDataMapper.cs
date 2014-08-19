@@ -114,6 +114,6 @@ namespace DbLinq.Data.Linq.Sugar
         /// <param name="joinID"></param>
         /// <param name="dataContext"></param>
         /// <returns>ThisKey</returns>
-        IList<MemberInfo> GetAssociation(TableExpression thisTableExpression, MemberInfo memberInfo, Type otherType, out IList<MemberInfo> otherKey, out TableJoinType joinType, out string joinID, DataContext dataContext);
+        IList<MetaDataMember> GetAssociation(TableExpression thisTableExpression, MetaDataMember memberInfo, Type otherType, out IList<MetaDataMember> otherKey, out TableJoinType joinType, out string joinID, DataContext dataContext);
     }
 }

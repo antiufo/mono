@@ -105,12 +105,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="joinID"></param>
         /// <param name="dataContext"></param>
         /// <returns>ThisKey</returns>
-        public virtual IList<MemberInfo> GetAssociation(TableExpression thisTableExpression, MemberInfo memberInfo, Type otherType, out IList<MemberInfo> otherKey, out TableJoinType joinType, out string joinID, DataContext dataContext)
+        public virtual IList<MetaDataMember> GetAssociation(TableExpression thisTableExpression, MetaDataMember dataMember, Type otherType, out IList<MetaDataMember> otherKey, out TableJoinType joinType, out string joinID, DataContext dataContext)
         {
             var thisTableDescription = dataContext.Mapping.GetTable(thisTableExpression.Type);
             var thisAssociation =
                 (from association in thisTableDescription.RowType.Associations
-                 where association.ThisMember.Member == memberInfo
+                 where association.ThisMember == dataMember
                  select association).SingleOrDefault();
             if (thisAssociation != null)
             {
@@ -150,7 +150,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="dataContext"></param>
         /// <param name="hasNullableKeys">returned as true if some keys can be null (we then have an outer join)</param>
         /// <returns></returns>
-        protected virtual IList<MemberInfo> GetAssociationKeys(MetaTable description, ReadOnlyCollection<MetaDataMember> keys,
+        protected virtual IList<MetaDataMember> GetAssociationKeys(MetaTable description, ReadOnlyCollection<MetaDataMember> keys,
                                                                DataContext dataContext, out bool hasNullableKeys)
         {
             var sourceKeys = keys;
@@ -158,10 +158,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 sourceKeys = description.RowType.IdentityMembers;
 
             hasNullableKeys = false;
-            var members = new List<MemberInfo>();
+            var members = new List<MetaDataMember>();
             foreach (var sourceKey in sourceKeys)
             {
-                members.Add(sourceKey.Member);
+                members.Add(sourceKey);
                 if (sourceKey.CanBeNull)
                     hasNullableKeys = true;
             }

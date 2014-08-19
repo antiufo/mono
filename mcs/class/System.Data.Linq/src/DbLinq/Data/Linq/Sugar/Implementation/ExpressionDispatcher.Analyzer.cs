@@ -834,26 +834,35 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 Type entityType;
                 if (IsEntitySet(memberInfo.GetMemberType(), out entityType))
                     return new EntitySetExpression(tableExpression, memberInfo, memberInfo.GetMemberType(), builderContext, this);
-
-                // first of all, then, try to find the association
-                var queryAssociationExpression = RegisterAssociation(tableExpression, memberInfo, entityType,
-                                                                     builderContext);
-                if (queryAssociationExpression != null)
-                {
-                    return queryAssociationExpression;
-                }
                 // then, try the column
-                ColumnExpression queryColumnExpression = RegisterColumn(tableExpression, memberInfo, builderContext);
-                if (queryColumnExpression != null)
+                var metaType = builderContext.QueryContext.DataContext.Mapping.GetMetaType(memberInfo.DeclaringType);
+                if (metaType != null)
                 {
-                    Type storageType = queryColumnExpression.StorageInfo != null ? queryColumnExpression.StorageInfo.GetMemberType() : null;
-                    if (storageType != null && queryColumnExpression.Type != storageType)
+                    var dataMember = metaType.GetDataMember(memberInfo);
+                    if (dataMember != null)
                     {
-                        return Expression.Convert(queryColumnExpression, queryColumnExpression.Type, typeof(Convert).GetMethod("To" + queryColumnExpression.Type.Name, new Type[] { queryColumnExpression.Type }));
-                    }
-                    else
-                    {
-                        return queryColumnExpression;
+                        // first of all, then, try to find the association
+                        var queryAssociationExpression = RegisterAssociation(tableExpression, dataMember, entityType,
+                                                                     builderContext);
+                        if (queryAssociationExpression != null)
+                        {
+                            return queryAssociationExpression;
+                        }
+
+                        // then, try the column
+                        ColumnExpression queryColumnExpression = RegisterColumn(tableExpression, dataMember, builderContext);
+                        if (queryColumnExpression != null)
+                        {
+                            Type storageType = queryColumnExpression.StorageInfo != null ? queryColumnExpression.StorageInfo.GetMemberType() : null;
+                            if (storageType != null && queryColumnExpression.Type != storageType)
+                            {
+                                return Expression.Convert(queryColumnExpression, queryColumnExpression.Type, typeof(Convert).GetMethod("To" + queryColumnExpression.Type.Name, new Type[] { queryColumnExpression.Type }));
+                            }
+                            else
+                            {
+                                return queryColumnExpression;
+                            }
+                        }
                     }
                 }
                 // then, cry
