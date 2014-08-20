@@ -40,7 +40,7 @@ using System.Reflection.Emit;
 #if MONO_STRICT
 using AttributeMappingSource  = System.Data.Linq.Mapping.AttributeMappingSource;
 #else
-using AttributeMappingSource  = DbLinq.Data.Linq.Mapping.AttributeMappingSource;
+using AttributeMappingSource = DbLinq.Data.Linq.Mapping.AttributeMappingSource;
 #endif
 
 using DbLinq;
@@ -54,6 +54,7 @@ using DbLinq.Data.Linq.Sugar;
 using DbLinq.Factory;
 using DbLinq.Util;
 using DbLinq.Vendor;
+using System.Diagnostics;
 
 #if MONO_STRICT
 namespace System.Data.Linq
@@ -109,6 +110,17 @@ namespace DbLinq.Data.Linq
                 }
                 return this.currentTransactionEntities;
             }
+        }
+
+        public IQueryProvider CreateQueryProvider<T>(IEnumerable<Expression> chain, Expression expression)
+        {
+            if (expression == null && chain == null) return new QueryProvider<T>(this);
+            var exprchain = new ExpressionChain();
+            foreach (var item in chain)
+            {
+                exprchain = new ExpressionChain(exprchain, item);
+            }
+            return new QueryProvider<T>(typeof(T), this, exprchain, expression);
         }
 
         private IEntityTracker allTrackedEntities;
@@ -704,8 +716,9 @@ namespace DbLinq.Data.Linq
 						BinaryExpression keyPredicate;
 						if (!(thisForeignKeyProperty.PropertyType.IsNullable()))
 						{
-							keyPredicate = Expression.Equal(Expression.MakeMemberAccess(p, otherPKEnumerator.Current.Member),
-																		Expression.Constant(thisForeignKeyValue));
+                            var otherkey = otherPKEnumerator.Current;
+                            var expr = key == memberData ? (Expression)p : Expression.MakeMemberAccess(p, otherkey.Member);
+                            keyPredicate = Expression.Equal(expr, Expression.Constant(thisForeignKeyValue));
 						}
 						else
 						{
@@ -741,15 +754,29 @@ namespace DbLinq.Data.Linq
 
 				Type storageType = storage.GetMemberType();
 
-				object entityRefValue = null;
-				if (query != null)
-					entityRefValue = Activator.CreateInstance(storageType, query);
-				else
-					entityRefValue = Activator.CreateInstance(storageType);
+                object entityRefValue;
+                
+                if (query != null)
+                    entityRefValue = Activator.CreateInstance(storageType, query);
+                else
+                    entityRefValue = Activator.CreateInstance(storageType);
 
-				storage.SetMemberValue(entity, entityRefValue);
+                storage.SetMemberValue(entity, entityRefValue);
+                
 			}
 		}
+
+        
+        public virtual Type ShouldUseCustomReader(Type columnType)
+        {
+            return null;
+        }
+
+        public virtual LambdaExpression GetPropertyReader(Type columnType, LambdaExpression expr)
+        {
+            return expr;
+        }
+
 
         /// <summary>
         /// This method is executed when the entity is being registered. Each EntitySet property has a internal query that can be set using the EntitySet.SetSource method.
@@ -779,6 +806,7 @@ namespace DbLinq.Data.Linq
 
 					var otherKeys = memberData.Association.OtherKey;
 					var thisKeys = memberData.Association.ThisKey;
+
                     if (otherKeys.Count != thisKeys.Count)
                         throw new InvalidOperationException("This keys don't match OtherKey");
                     BinaryExpression predicate = null;
@@ -792,8 +820,9 @@ namespace DbLinq.Data.Linq
                         BinaryExpression keyPredicate;
                         if (!(otherTableMember.PropertyType.IsNullable()))
                         {
+                            var key = thisKeyEnumerator.Current;
                             keyPredicate = Expression.Equal(Expression.MakeMemberAccess(p, otherTableMember),
-                                                                        Expression.Constant(thisKeyEnumerator.Current.Member.GetMemberValue(entity)));
+                                                                        Expression.Constant(key == memberData ? entity : key.Member.GetMemberValue(entity)));
                         }
                         else
                         {
@@ -819,11 +848,11 @@ namespace DbLinq.Data.Linq
 						memberData.Member.SetMemberValue(entity, entitySetValue);
                     }
 
-                    var hasLoadedOrAssignedValues = entitySetValue.GetType().GetProperty("HasLoadedOrAssignedValues");
+                    var hasLoadedOrAssignedValues = entitySetValue.GetType().GetProperty("HasLoadedOrAssignedValues", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     if ((bool)hasLoadedOrAssignedValues.GetValue(entitySetValue, null))
                         continue;
 
-                    var setSourceMethod = entitySetValue.GetType().GetMethod("SetSource");
+                    var setSourceMethod = entitySetValue.GetType().GetMethod("SetSource", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     setSourceMethod.Invoke(entitySetValue, new[] { query });
                     //employee.EmployeeTerritories.SetSource(Table[EmployeesTerritories].Where(other=>other.employeeID="WARTH"))
                 }
@@ -946,7 +975,27 @@ namespace DbLinq.Data.Linq
             CurrentTransactionEntities.RegisterDeleted(entity);
         }
 
+
+
         #endregion
+
+        public virtual Type IsEntitySet(Type memberType)
+        {
+            // one check, a generic EntityRef<> or inherited
+            if (memberType.IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
+            {
+                return memberType.GetGenericArguments()[0];
+            }
+#if !MONO_STRICT
+            // this is for compatibility with previously generated .cs files
+            // TODO: remove in 2009
+            if (memberType.IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
+            {
+                return memberType.GetGenericArguments()[0];
+            }
+#endif
+            return null;
+        }
 
         /// <summary>
         /// Changed object determine 

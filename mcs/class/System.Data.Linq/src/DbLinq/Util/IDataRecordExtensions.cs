@@ -84,6 +84,8 @@ namespace DbLinq.Util
         {
             if (dataRecord.IsDBNull(index))
                 return null;
+            // Workaround for .NET ticks stored with SQLite type 'DATETIME'
+            if (typeof(U) == typeof(long)) return GetAsNumeric<U>(dataRecord.GetInt64(index));
             return GetAsNumeric<U>(dataRecord.GetValue(index));
         }
 

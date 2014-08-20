@@ -110,7 +110,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var thisTableDescription = dataContext.Mapping.GetTable(thisTableExpression.Type);
             var thisAssociation =
                 (from association in thisTableDescription.RowType.Associations
-                 where association.ThisMember == dataMember
+                 where association.ThisMember == dataMember || association.ThisKey.Contains(dataMember)
                  select association).SingleOrDefault();
             if (thisAssociation != null)
             {

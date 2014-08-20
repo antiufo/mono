@@ -65,7 +65,7 @@ namespace DbLinq.Util
             {
                 MethodInfo propertyMethod;
                 PropertyInfo propertyInfo = (PropertyInfo)memberInfo;
-                if ((propertyMethod = propertyInfo.GetGetMethod()) != null || (propertyMethod = propertyInfo.GetSetMethod()) != null)
+                if ((propertyMethod = propertyInfo.GetGetMethod(true)) != null || (propertyMethod = propertyInfo.GetSetMethod(true)) != null)
                     return GetIsStaticMember(propertyMethod);
 
             }

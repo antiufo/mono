@@ -628,9 +628,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     tableExpression = Analyze(tableExpression, projectionQueryBuilderContext);
                 EntitySetExpression setExpression = tableExpression as EntitySetExpression;
                 if (setExpression != null)
+                {
                     tableExpression = setExpression.TableExpression;
-
-                // from here we build a custom clause:
+                }
+                //from here we build a custom clause:
                 // <anyClause> ==> "(select count(*) from <table> where <anyClause>)>0"
                 // TODO (later...): see if some vendors support native Any operator and avoid this substitution
                 if (parameters.Count > 1)
@@ -747,32 +748,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return unaliasedExpression;
         }
 
-        /// <summary>
-        /// Returns if the given member can be considered as an EntitySet<>
-        /// </summary>
-        /// <param name="memberType"></param>
-        /// <param name="entityType"></param>
-        /// <returns></returns>
-        protected virtual bool IsEntitySet(Type memberType, out Type entityType)
-        {
-            entityType = memberType;
-            // one check, a generic EntityRef<> or inherited
-            if (memberType.IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
-            {
-                entityType = memberType.GetGenericArguments()[0];
-                return true;
-            }
-#if !MONO_STRICT
-            // this is for compatibility with previously generated .cs files
-            // TODO: remove in 2009
-            if (memberType.IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
-            {
-                entityType = memberType.GetGenericArguments()[0];
-                return true;
-            }
-#endif
-            return false;
-        }
+
 
         /// <summary>
         /// Analyzes a member access.
@@ -831,9 +807,11 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
                 // before finding an association, we check for an EntitySet<>
                 // this will be used in RegisterAssociation
-                Type entityType;
-                if (IsEntitySet(memberInfo.GetMemberType(), out entityType))
+                var memberType = memberInfo.GetMemberType();
+                var entityType =builderContext.QueryContext.DataContext.IsEntitySet(memberType);
+                if (entityType != null)
                     return new EntitySetExpression(tableExpression, memberInfo, memberInfo.GetMemberType(), builderContext, this);
+                entityType = memberType;
                 // then, try the column
                 var metaType = builderContext.QueryContext.DataContext.Mapping.GetMetaType(memberInfo.DeclaringType);
                 if (metaType != null)

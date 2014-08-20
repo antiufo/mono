@@ -52,8 +52,10 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
 
         TableExpression tableExpression;
 
-        public TableExpression TableExpression {
-            get {
+        public TableExpression TableExpression
+        {
+            get
+            {
                 if (tableExpression != null)
                     return tableExpression;
                 var entityType = EntitySetType.GetGenericArguments()[0];
@@ -63,16 +65,26 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                     if (metaType != null)
                     {
                         var dataMember = metaType.GetDataMember(memberInfo);
+                        if (dataMember == null)
+                        {
+                            var assoc = metaType.Associations.Single(x => x.ThisMember.Member == memberInfo);
+                            dataMember = assoc.ThisKey.Single();
+                        }
                         if (dataMember != null)
                         {
                             tableExpression = dispatcher.RegisterAssociation(sourceTable, dataMember, entityType, builderContext);
                             return tableExpression;
                         }
+                        else
+                        {
+
+                        }
                     }
                 }
                 return null;
             }
-            set {
+            set
+            {
                 tableExpression = value;
             }
         }

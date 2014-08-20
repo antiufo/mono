@@ -162,12 +162,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
             //s_rdr.GetUInt32();
             //s_rdr.GetFloat();
-            string msg = "RowEnum TODO L381: add support for type " + simpleReturnType;
-            Console.WriteLine(msg);
-            //                propertyReader = null;
-            //              throw new ApplicationException(msg);
-            // TODO: 
-
+            
             var dataRecordArg = Expression.Parameter(typeof(IDataRecord));
             var mappingContextArg = Expression.Parameter(typeof(MappingContext));
             var valueIndexArg = Expression.Parameter(typeof(int));

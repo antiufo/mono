@@ -150,6 +150,7 @@
     <Compile Include="Data\Linq\DataLoadOptions.cs" />
     <Compile Include="Data\Linq\DBLinqExtendedAttributte.cs" />
     <Compile Include="Data\Linq\EntitySet.cs" />
+    <Compile Include="Data\Linq\FieldAssignment.cs" />
     <Compile Include="Data\Linq\Identity\IdentityKey.cs" />
     <Compile Include="Data\Linq\Identity\IIdentityProvider.cs" />
     <Compile Include="Data\Linq\Identity\IIdentityReader.cs" />

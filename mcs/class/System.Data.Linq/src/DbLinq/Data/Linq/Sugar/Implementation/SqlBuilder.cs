@@ -209,7 +209,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                                                           inputParameterExpression.Alias + i.ToString())));
                         ++i;
                     }
-                    return new SqlStatement(sqlProvider.GetLiteral(inputParameters.ToArray()));
+                    return new SqlStatement(sqlProvider.GetLiteral(queryContext.DataContext.Mapping.GetInputParameterValue(inputParameters.ToArray())));
                 }
                 return
                     new SqlStatement(new SqlParameterPart(sqlProvider.GetParameterName(inputParameterExpression.Alias),
@@ -218,7 +218,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if (expression is SelectExpression)
                 return Build((SelectExpression)expression, queryContext);
             if (expression is ConstantExpression)
-                return sqlProvider.GetLiteral(((ConstantExpression)expression).Value);
+            {
+                var v = ((ConstantExpression)expression).Value;
+                return sqlProvider.GetLiteral(queryContext.DataContext.Mapping.GetInputParameterValue(v));
+            }
             if (expression is GroupExpression)
                 return BuildExpression(((GroupExpression)expression).GroupedExpression, queryContext);
 
