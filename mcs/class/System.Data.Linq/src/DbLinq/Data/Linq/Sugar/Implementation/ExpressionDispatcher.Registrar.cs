@@ -261,7 +261,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     thisKey = Expression.Convert(thisKey, thisKey.Type.GetNullableType());
                 // the other key is set as left operand, this must be this way
                 // since some vendors (SQL Server) don't support the opposite
-                var referenceExpression = Expression.Equal(otherKey, thisKey);
+                var o = otherKey.Type == thisKey.Type ? otherKey : Expression.Convert(Expression.Convert(otherKey, typeof(object)), thisKey.Type);
+                var referenceExpression = Expression.Equal(o, thisKey);
 
                 // if we already have a join expression, then we have a double condition here, so "AND" it
                 if (joinExpression != null)
@@ -446,7 +447,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 //var column = DataMapper.GetColumnName(tableType, memberInfo, builderContext.QueryContext.DataContext);
                 //var columnName = DataMapper.GetColumnName(tableType, memberInfo, builderContext.QueryContext.DataContext);
                 var invoke = GetOutputValueReader(memberInfo.GetMemberType(), parameterIndex, //GetTableIndex(parameters, columnName),
-                                                  dataRecordParameter, mappingContextParameter);
+                                                  dataRecordParameter, mappingContextParameter, builderContext.QueryContext.DataContext);
                 var parameterColumn = GetOutputValueReader(invoke, dataRecordParameter, mappingContextParameter,
                                                            builderContext);
                 var binding = Expression.Bind(memberInfo, parameterColumn);
@@ -534,7 +535,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                                                           BuilderContext builderContext)
         {
             int valueIndex = RegisterOutputParameter(expression, builderContext);
-            return GetOutputValueReader(expression.Type, valueIndex, dataRecordParameter, mappingContextParameter);
+            return GetOutputValueReader(expression.Type, valueIndex, dataRecordParameter, mappingContextParameter, builderContext.QueryContext.DataContext);
         }
 
         /// <summary>
@@ -551,7 +552,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             int valueIndex = RegisterOutputParameter(expression, builderContext);
             Type storageType = expression.StorageInfo != null ? expression.StorageInfo.GetMemberType() : null;
-            return GetOutputValueReader(storageType ?? expression.Type, valueIndex, dataRecordParameter, mappingContextParameter);
+            return GetOutputValueReader(storageType ?? expression.Type, valueIndex, dataRecordParameter, mappingContextParameter, builderContext.QueryContext.DataContext);
         }
 
 
@@ -564,9 +565,11 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="mappingContextParameter"></param>
         /// <returns></returns>
         protected virtual Expression GetOutputValueReader(Type columnType, int valueIndex, ParameterExpression dataRecordParameter,
-                                                          ParameterExpression mappingContextParameter)
+                                                          ParameterExpression mappingContextParameter, DataContext context)
         {
-            var propertyReaderLambda = DataRecordReader.GetPropertyReader(columnType);
+            var customTypeBaseType = context.ShouldUseCustomReader(columnType);
+            var propertyReaderLambda = DataRecordReader.GetPropertyReader(customTypeBaseType ?? columnType);
+            if (customTypeBaseType != null) propertyReaderLambda = context.GetPropertyReader(columnType, propertyReaderLambda);
             Expression invoke = new ParameterBinder().BindParams(propertyReaderLambda,
                 dataRecordParameter, mappingContextParameter, Expression.Constant(valueIndex));
             if (!columnType.IsNullable())
