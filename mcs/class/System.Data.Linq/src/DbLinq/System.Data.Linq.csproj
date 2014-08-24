@@ -203,6 +203,7 @@
     <Compile Include="Data\Linq\Sugar\ExpressionMutator\ExpressionMutatorExtensions.cs" />
     <Compile Include="Data\Linq\Sugar\ExpressionMutator\ExpressionMutatorFactory.cs" />
     <Compile Include="Data\Linq\Sugar\ExpressionMutator\Implementation\BinaryExpressionMutator.cs" />
+    <Compile Include="Data\Linq\Sugar\ExpressionMutator\Implementation\DefaultExpressionMutator.cs" />
     <Compile Include="Data\Linq\Sugar\ExpressionMutator\Implementation\BlockExpressionMutator.cs" />
     <Compile Include="Data\Linq\Sugar\ExpressionMutator\Implementation\ConditionalExpressionMutator.cs" />
     <Compile Include="Data\Linq\Sugar\ExpressionMutator\Implementation\ConstantExpressionMutator.cs" />
