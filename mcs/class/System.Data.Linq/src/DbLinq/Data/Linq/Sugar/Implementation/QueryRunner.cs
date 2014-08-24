@@ -53,43 +53,17 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             var rowObjectCreator = selectQuery.GetRowObjectCreator<T>();
 
-            IList<T> results = new List<T>();
 
             // handle the special case where the query is empty, meaning we don't need the DB
             if (string.IsNullOrEmpty(selectQuery.Sql.ToString()))
             {
-                results.Add(rowObjectCreator(null, null));
+                 return new[] { rowObjectCreator(null, null) };
             }
             else
             {
-                using (var dbCommand = selectQuery.GetCommand())
-                {
-                    // write query to log
-                    selectQuery.DataContext.WriteLog(dbCommand.Command);
+                return selectQuery.DataContext.GetQueryEnumerable(rowObjectCreator, selectQuery.GetCommand);
 
-                    using (var reader = dbCommand.Command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            // someone told me one day this could happen (in SQLite)
-                            if (reader.FieldCount == 0)
-                                continue;
-
-                            var row = rowObjectCreator(reader, selectQuery.DataContext._MappingContext);
-                            // the conditions to register and watch an entity are:
-                            // - not null (can this happen?)
-                            // - registered in the model
-                            if (row != null && selectQuery.DataContext.ObjectTrackingEnabled && 
-                                    selectQuery.DataContext.Mapping.GetTable(row.GetType()) != null)
-                            {
-                                row = (T)selectQuery.DataContext.Register(row);
-                            }
-                            results.Add(row);
-                        }
-                    }
-                }
             }
-            return results;
         }
 
         /// <summary>

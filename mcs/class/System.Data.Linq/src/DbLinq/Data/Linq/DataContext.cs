@@ -72,8 +72,38 @@ namespace DbLinq.Data.Linq
         //              WTF?
         public DbConnection Connection { get { return DatabaseContext.Connection as DbConnection; } }
 
+        protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<IDataRecord, MappingContext, T> rowObjectCreator, Func<ITransactionalCommand> getDbCommand)
+        {
+            using (var dbCommand = getDbCommand())
+            {
+                WriteLog(dbCommand.Command);
+
+                using (var reader = dbCommand.Command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        // someone told me one day this could happen (in SQLite)
+                        if (reader.FieldCount == 0)
+                            continue;
+
+                        var row = rowObjectCreator(reader, _MappingContext);
+                        // the conditions to register and watch an entity are:
+                        // - not null (can this happen?)
+                        // - registered in the model
+                        if (row != null && this.ObjectTrackingEnabled &&
+                                Mapping.GetTable(row.GetType()) != null)
+                        {
+                            row = (T)Register(row);
+                        }
+                        yield return row;
+                    }
+                }
+            }
+        }
+
+
         // all properties below are set public to optionally be injected
-        internal IVendor Vendor { get; set; }
+        internal protected IVendor Vendor { get; set; }
         internal IQueryBuilder QueryBuilder { get; set; }
         internal IQueryRunner QueryRunner { get; set; }
         internal IMemberModificationHandler MemberModificationHandler { get; set; }
@@ -145,7 +175,7 @@ namespace DbLinq.Data.Linq
         /// The default behavior creates one MappingContext.
         /// </summary>
         [DBLinqExtended]
-        internal virtual MappingContext _MappingContext { get; set; }
+        internal protected virtual MappingContext _MappingContext { get; set; }
 
         [DBLinqExtended]
         internal IVendorProvider _VendorProvider { get; set; }
@@ -153,6 +183,7 @@ namespace DbLinq.Data.Linq
         public DataContext(IDbConnection connection, MappingSource mapping)
         {
             Profiler.At("START DataContext(IDbConnection, MappingSource)");
+            
             Init(new DatabaseContext(connection), mapping, null);
             Profiler.At("END DataContext(IDbConnection, MappingSource)");
         }
@@ -214,6 +245,8 @@ namespace DbLinq.Data.Linq
 
             Profiler.At("END DataContext(string)");
         }
+
+
 
         private IVendor GetVendor(ref string connectionString)
         {
@@ -859,7 +892,7 @@ namespace DbLinq.Data.Linq
             }
         }
 
-		private static MethodInfo _WhereMethod = typeof(Queryable).GetMethods().First(m => m.Name == "Where");
+		internal static MethodInfo _WhereMethod = typeof(Queryable).GetMethods().First(m => m.Name == "Where");
         internal object GetOtherTableQuery(Expression predicate, ParameterExpression parameter, Type otherTableType, IQueryable otherTable)
         {
             //predicate: other.EmployeeID== "WARTH"
