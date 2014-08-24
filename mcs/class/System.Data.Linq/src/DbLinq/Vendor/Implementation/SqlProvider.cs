@@ -985,7 +985,7 @@ namespace DbLinq.Vendor.Implementation
         /// <returns></returns>
         protected virtual SqlStatement GetLiteralConditional(SqlStatement a, SqlStatement b, SqlStatement c)
         {
-            throw new NotImplementedException();
+            return SqlStatement.Format("CASE WHEN {0} THEN {1} ELSE {2} END", a, b, c);
         }
 
         /// <summary>
