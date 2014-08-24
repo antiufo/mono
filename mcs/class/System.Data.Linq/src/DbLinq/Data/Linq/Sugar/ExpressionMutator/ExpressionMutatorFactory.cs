@@ -66,6 +66,8 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator
                 return new UnaryExpressionMutator((UnaryExpression)expression);
             if(expression is BlockExpression)
                 return new BlockExpressionMutator((BlockExpression)expression);
+            if (expression is DefaultExpression)
+                return new DefaultExpressionMutator((DefaultExpression)expression);
 
             throw Error.BadArgument("S0064: Unknown Expression Type '{0}'", expression.GetType());
         }
