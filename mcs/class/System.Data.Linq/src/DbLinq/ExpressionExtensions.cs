@@ -17,10 +17,11 @@ namespace System
 
         public static Delegate CompileDebuggable(this LambdaExpression lambda)
         {
-            var modifiedLambda = (LambdaExpression)new ReplaceInMemoryObjectsVisitor().Visit(lambda);
+            return lambda.Compile();
+            var modifiedLambda = (LambdaExpression)new ReplaceInMemoryObjectsVisitor(lambda).Visit(lambda);
 
             lambdas.Add(modifiedLambda);
-            var asm = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Emitted"), AssemblyBuilderAccess.Save);
+            var asm = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Emitted"), AssemblyBuilderAccess.Save, @"c:\temp");
             var mod = asm.DefineDynamicModule("Emitted", @"Emitted.dll");
             var type = mod.DefineType("EmittedCode", TypeAttributes.Public);
 
@@ -29,27 +30,40 @@ namespace System
             {
 
 
-                var met = type.DefineMethod("Lambda_" + i, MethodAttributes.Public | MethodAttributes.Static, lambda.ReturnType, lambda.Parameters.Select(x => x.Type).ToArray());
-                modifiedLambda.CompileToMethod(met);
+                var met = type.DefineMethod("Lambda_" + i, MethodAttributes.Public | MethodAttributes.Static, item.ReturnType, item.Parameters.Select(x => x.Type).ToArray());
+                try
+                {
+                    item.CompileToMethod(met);
+                }
+                catch (Exception)
+                {
+                }
+                
                 i++;
             }
             type.CreateType();
-            asm.Save(@"Emitted");
+            asm.Save(@"Emitted.dll");
+            
             return lambda.Compile();
         }
     }
 
     public class ReplaceInMemoryObjectsVisitor : ExpressionVisitor
     {
+        private LambdaExpression authorizedLambda;
+        public ReplaceInMemoryObjectsVisitor(LambdaExpression authorizedLambda) {
+            this.authorizedLambda = authorizedLambda;
+        }
         protected override Expression VisitConstant(ConstantExpression node)
         {
             var value = node.Value;
-            if (value != null && !value.GetType().IsPrimitive && !(value is string))
+            
+            if (value != null && !value.GetType().IsPrimitive && !(value is string) && !value.GetType().IsEnum)
             {
-                Console.WriteLine(value.GetType());
                 return Expression.Constant(null, node.Type);
             }
             return base.VisitConstant(node);
         }
+
     }
 }
