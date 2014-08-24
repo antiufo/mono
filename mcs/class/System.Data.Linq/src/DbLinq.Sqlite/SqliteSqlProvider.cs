@@ -66,5 +66,21 @@ namespace DbLinq.Sqlite
                 return "1";
             return "0";
         }
+
+        protected override char SafeNameEndQuote
+        {
+            get
+            {
+                return '`';
+            }
+        }
+
+        protected override char SafeNameStartQuote
+        {
+            get
+            {
+                return '`';
+            }
+        }
     }
 }
