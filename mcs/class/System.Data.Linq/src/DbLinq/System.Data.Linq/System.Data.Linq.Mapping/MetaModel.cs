@@ -33,21 +33,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Collections;
+using DbLinq.Data.Linq.Database;
+using DbLinq.Data.Linq.Mapping;
+using DbLinq.Factory;
+using DbLinq.Data.Linq.Sugar;
+using DbLinq.Data.Linq.Sugar.Implementation;
 
 namespace System.Data.Linq.Mapping
 {
-	public abstract class MetaModel
-	{
-		public abstract Type ContextType { get; }
-		public abstract string DatabaseName { get; }
-		public abstract MappingSource MappingSource { get; }
-		public abstract Type ProviderType { get; }
+    public abstract class MetaModel
+    {
+        public abstract Type ContextType { get; }
+        public abstract string DatabaseName { get; }
+        public abstract MappingSource MappingSource { get; }
+        public abstract Type ProviderType { get; }
 
-		public abstract MetaFunction GetFunction (MethodInfo method);
-		public abstract IEnumerable<MetaFunction> GetFunctions ();
-		public abstract MetaType GetMetaType (Type type);
-		public abstract MetaTable GetTable (Type rowType);
-		public abstract IEnumerable<MetaTable> GetTables ();
+        public abstract MetaFunction GetFunction(MethodInfo method);
+        public abstract IEnumerable<MetaFunction> GetFunctions();
+        public abstract MetaType GetMetaType(Type type);
+        public abstract MetaTable GetTable(Type rowType);
+        public abstract IEnumerable<MetaTable> GetTables();
 
         public virtual Expression CreateObject(Type type, IEnumerable<FieldAssignment> bindings)
         {
@@ -61,9 +67,17 @@ namespace System.Data.Linq.Mapping
             return type != null ? type.GetDataMember(memberInfo) : null;
         }
 
+
+
         public virtual object GetInputParameterValue(object expr)
         {
             return expr;
+        }
+
+        public static Expression GetOutputValueReader(Type columnType, int valueIndex, ParameterExpression dataRecordParameter,
+                                                  ParameterExpression mappingContextParameter, DataContext context)
+        {
+            return ((ExpressionDispatcher)ObjectFactory.Get<IExpressionDispatcher>()).GetOutputValueReader(columnType, valueIndex, dataRecordParameter, mappingContextParameter, context);
         }
     }
 }

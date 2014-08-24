@@ -487,7 +487,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             var entityType = expression.EntitySetType.GetGenericArguments()[0];
             List<ElementInit> members = new List<ElementInit>();
-            var add = expression.EntitySetType.GetMethod("Add", 
+            var entitySetType = typeof(EntitySet<>).MakeGenericType(entityType);
+            var add = entitySetType.GetMethod("Add", 
                     BindingFlags.NonPublic | BindingFlags.Instance,
                     null,
                     new Type[] { typeof(KeyValuePair<object, MemberInfo>) },
@@ -513,7 +514,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
             return Expression.ListInit(
                     Expression.New(
-                        expression.EntitySetType.GetConstructor(
+                        entitySetType.GetConstructor(
                             BindingFlags.NonPublic | BindingFlags.Instance,
                             null,
                             new[] { typeof(DataContext) },
@@ -564,7 +565,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="dataRecordParameter"></param>
         /// <param name="mappingContextParameter"></param>
         /// <returns></returns>
-        protected virtual Expression GetOutputValueReader(Type columnType, int valueIndex, ParameterExpression dataRecordParameter,
+        public virtual Expression GetOutputValueReader(Type columnType, int valueIndex, ParameterExpression dataRecordParameter,
                                                           ParameterExpression mappingContextParameter, DataContext context)
         {
             var customTypeBaseType = context.ShouldUseCustomReader(columnType);
