@@ -451,7 +451,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return reader;
         }
 
-        private static readonly Regex parameterIdentifierEx = new Regex(@"\{(?<var>[\d.]+)\}", RegexOptions.Singleline | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
+        private static readonly Regex parameterIdentifierEx = new Regex(@"\{(?<var>[\d.]+)\}|@p(?<var>\d+)", RegexOptions.Singleline | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
+
 
         /// <summary>
         /// Converts a direct SQL query to a safe query with named parameters
