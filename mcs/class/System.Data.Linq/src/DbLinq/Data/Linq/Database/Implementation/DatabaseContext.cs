@@ -117,6 +117,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
         public IDbCommand CreateCommand()
         {
             IDbCommand command = Connection.CreateCommand();
+            command.CommandTimeout = 0;
             if (command.Transaction == null)
                 command.Transaction = CurrentTransaction;
             return command;
