@@ -103,7 +103,7 @@ namespace DbLinq.Data.Linq
 
 
         // all properties below are set public to optionally be injected
-        internal protected IVendor Vendor { get; set; }
+        public IVendor Vendor { get; set; }
         internal IQueryBuilder QueryBuilder { get; set; }
         internal IQueryRunner QueryRunner { get; set; }
         internal IMemberModificationHandler MemberModificationHandler { get; set; }
