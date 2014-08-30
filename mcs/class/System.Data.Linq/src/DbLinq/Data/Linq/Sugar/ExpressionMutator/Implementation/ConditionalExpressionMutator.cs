@@ -37,6 +37,7 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator.Implementation
 
         public Expression Mutate(IList<Expression> operands)
         {
+            if (operands[2].Type == typeof(void)) return Expression.IfThen(operands[0], operands[1]);
             return Expression.Condition(operands[0], operands[1], operands[2]);
         }
 
