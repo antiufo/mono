@@ -159,6 +159,9 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator.Implementation
                         return Expression.Coalesce(operands[0], operands[1], BinaryExpression.Conversion);
                     return Expression.Coalesce(operands[0], operands[1]);
 
+                case ExpressionType.Assign:
+                    return Expression.Assign(operands[0], operands[1]);
+
                 case ExpressionType.ArrayIndex:
                     return Expression.ArrayIndex(operands[0], operands.Skip(1));
             }
