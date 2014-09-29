@@ -91,9 +91,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DbLinq\System.Data.Linq.csproj">
+    <ProjectReference Include="..\DbLinq\Shaman.DbLinq.csproj">
       <Project>{97305421-3071-4175-aa3c-9a432cc28121}</Project>
-      <Name>System.Data.Linq</Name>
+      <Name>Shaman.DbLinq</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
