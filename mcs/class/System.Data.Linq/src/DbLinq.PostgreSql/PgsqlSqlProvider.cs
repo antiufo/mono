@@ -137,6 +137,8 @@ namespace DbLinq.PostgreSql
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 type = type.GetGenericArguments().First();
 
+            if (type == typeof(object)) return a;
+
             string sqlTypeName;
             if (typeMapping.ContainsKey(type))
                 sqlTypeName = typeMapping[type];
