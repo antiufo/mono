@@ -1587,6 +1587,7 @@ namespace DbLinq.Vendor.Implementation
         /// <returns></returns>
         protected virtual string GetSafeNamePart(string namePart)
         {
+            if (namePart == "*") return namePart;
             return IsMadeSafe(namePart) ? namePart : MakeNameSafe(namePart);
         }
 
