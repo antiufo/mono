@@ -36,6 +36,7 @@ using DbLinq.Util;
 using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
+using System.Data.Linq;
 #endif
 
 namespace DbLinq.Data.Linq.Implementation
@@ -69,7 +70,7 @@ namespace DbLinq.Data.Linq.Implementation
     /// QueryProvider, generic version
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class QueryProvider<T> : QueryProvider, IQueryProvider, IQueryable<T>, IOrderedQueryable<T>
+    internal class QueryProvider<T> : QueryProvider, IQueryProvider, IQueryable<T>, IOrderedQueryable<T>, IQueryProviderEx
     {
         /// <summary>
         /// Holder current datancontext
@@ -86,6 +87,10 @@ namespace DbLinq.Data.Linq.Implementation
             TableType = typeof(T);
             ExpressionChain = new ExpressionChain();
         }
+
+        internal object tag;
+
+        public object Tag { get { return tag; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryProvider&lt;T&gt;"/> class.
