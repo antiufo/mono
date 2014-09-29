@@ -121,3 +121,5 @@ mono.spec
 mono-core.spec
 tmpinst-dir.stamp
 
+mcs/class/System.Data.Linq/build/
+mcs/class/System.Data.Linq/build.dbg/
