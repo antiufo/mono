@@ -142,15 +142,15 @@ namespace DbLinq.Data.Linq
             }
         }
 
-        public IQueryProvider CreateQueryProvider<T>(IEnumerable<Expression> chain, Expression expression)
+        public IQueryProvider CreateQueryProvider<T>(IEnumerable<Expression> chain, Expression expression, object tag = null)
         {
-            if (expression == null && chain == null) return new QueryProvider<T>(this);
+            if (expression == null && chain == null) return new QueryProvider<T>(this) { tag = tag };
             var exprchain = new ExpressionChain();
             foreach (var item in chain)
             {
                 exprchain = new ExpressionChain(exprchain, item);
             }
-            return new QueryProvider<T>(typeof(T), this, exprchain, expression);
+            return new QueryProvider<T>(typeof(T), this, exprchain, expression) { tag = tag };
         }
 
         private IEntityTracker allTrackedEntities;
@@ -307,7 +307,8 @@ namespace DbLinq.Data.Linq
             }
 
             typeName = vendor + "Vendor";
-
+            assembly = typeof(DataContext).Assembly;
+            /*
             try
             {
 #if MONO_STRICT
@@ -323,7 +324,7 @@ namespace DbLinq.Data.Linq
                             "Unable to load the `{0}' DbLinq vendor within assembly '{1}.dll'.",
                             assemblyName, vendor),
                         "connectionString", e);
-            }
+            }*/
         }
 
         private void Init(IDatabaseContext databaseContext, MappingSource mappingSource, IVendor vendor)
