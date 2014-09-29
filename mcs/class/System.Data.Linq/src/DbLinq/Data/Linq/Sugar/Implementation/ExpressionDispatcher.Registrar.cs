@@ -226,6 +226,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         public virtual TableExpression RegisterAssociation(TableExpression tableExpression, MetaDataMember tableMemberInfo,
                                                            Type otherType, BuilderContext builderContext)
         {
+            if (otherType == typeof(string)) return null;
             IList<MetaDataMember> otherKeys;
             TableJoinType joinType;
             string joinID;
@@ -234,7 +235,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // if the memberInfo has no corresponding association, we get a null, that we propagate
             if (theseKeys == null)
                 return null;
-
+            
             // the current table has the foreign key, the other table the referenced (usually primary) key
             if (theseKeys.Count != otherKeys.Count)
                 throw Error.BadArgument("S0128: Association arguments (FK and ref'd PK) don't match");
