@@ -1649,5 +1649,37 @@ namespace DbLinq.Vendor.Implementation
         {
             get { return true; }
         }
+
+
+
+        protected virtual string GetFromExpression(Expression expression)
+        {
+            throw new NotSupportedException("FROM expression " + expression.NodeType + " is not supported by the current SQL provider.");
+        }
+
+        public string GetTable(TableExpression tableExpression)
+        {
+            if (tableExpression.FromExpression != null) return GetFromExpression(tableExpression.FromExpression);
+            return GetTable(tableExpression.Name);
+        }
+
+
+        public string GetTableAsAlias(TableExpression tableExpression, string alias)
+        {
+            if (tableExpression.FromExpression != null) return GetFromExpression(tableExpression.FromExpression) + " " + GetTableAlias(alias);
+            return GetTableAsAlias(tableExpression.Name, alias);
+        }
+
+
+
+        protected virtual SqlStatement GetLiteralMatchesFullText(SqlStatement virtualSearchTableAlias, SqlStatement wordsField)
+        {
+            return SqlStatement.Format("(search${0}$ @@ {1})", virtualSearchTableAlias, wordsField);
+        }
+        protected virtual SqlStatement GetLiteralFullTextRank(SqlStatement virtualSearchTableAlias, SqlStatement wordsField)
+        {
+            return SqlStatement.Format("ts_rank_cd({1}, search${0}$)", virtualSearchTableAlias, wordsField);
+        }
+
     }
 }
