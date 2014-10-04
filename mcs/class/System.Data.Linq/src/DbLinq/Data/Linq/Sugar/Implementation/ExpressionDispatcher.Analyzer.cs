@@ -433,6 +433,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     return AnalyzeToString(method, parameters, builderContext);
                 case "IsWithinRectangle":
                     return AnalyzeIsWithinGeographicRectangle(method, parameters, builderContext);
+                case "IsWithinMetersFromPoint":
+                    return AnalyzeIsWithinMetersFromPoint(method, parameters, builderContext);
             }
 
             var args = new List<Expression>();
@@ -524,8 +526,22 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var popCallStack = PushCallStack(method, builderContext);
             var xc = Analyze(parameters[0], builderContext);
             var locexpr = xc as ColumnExpression;
-            var bbox =  GetConstant(parameters[1]);
-            return popCallStack(builderContext.QueryContext.DataContext.GetIsWithinGeographicRectangleCondition(locexpr, bbox, d=> {
+            var bbox = GetConstant(parameters[1]);
+            return popCallStack(builderContext.QueryContext.DataContext.GetIsWithinGeographicRectangleCondition(locexpr, bbox, d =>
+            {
+                return RegisterColumn(locexpr.Table, d, builderContext);
+            }));
+        }
+
+        protected virtual Expression AnalyzeIsWithinMetersFromPoint(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
+        {
+            var popCallStack = PushCallStack(method, builderContext);
+            var xc = Analyze(parameters[0], builderContext);
+            var locexpr = xc as ColumnExpression;
+            var meters = (double)GetConstant(parameters[1]);
+            var point = GetConstant(parameters[2]);
+            return popCallStack(builderContext.QueryContext.DataContext.GetIsWithinMetersFromPoint(locexpr, meters, point, d =>
+            {
                 return RegisterColumn(locexpr.Table, d, builderContext);
             }));
         }

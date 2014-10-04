@@ -636,6 +636,12 @@ namespace DbLinq.Data.Linq
         {
             throw new NotSupportedException();
         }
+        internal protected virtual Expression GetIsWithinMetersFromPoint(ColumnExpression location, double meters, object point, Func<MetaDataMember, Expression> getcol)
+        {
+            throw new NotSupportedException();
+        }
+
+        
 
         private void MoveToAllTrackedEntities(object entity, bool insert)
         {
