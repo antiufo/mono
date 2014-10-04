@@ -82,7 +82,10 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                 case SpecialExpressionType.ToLower:
                     return typeof(string);
                 case SpecialExpressionType.In:
+                case SpecialExpressionType.MatchesFullText:
                     return typeof(bool);
+                case SpecialExpressionType.FullTextRank:
+                    return typeof(int);
                 case SpecialExpressionType.Substring:
                     return defaultType;
                 case SpecialExpressionType.Trim:
@@ -267,6 +270,10 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                 case SpecialExpressionType.Sign:
                 case SpecialExpressionType.Sqrt:
                     return EvaluateMathCallInvoke(SpecialNodeType, operands);
+                case SpecialExpressionType.MatchesFullText:
+                    throw new NotSupportedException("Evaluation of MatchesFullText is only supported in database-executed queries.");
+                case SpecialExpressionType.FullTextRank:
+                    throw new NotSupportedException("Evaluation of FullTextRank is only supported in database-executed queries.");
                 default:
                     throw Error.BadArgument("S0116: Unknown SpecialExpressionType ({0})", SpecialNodeType);
             }

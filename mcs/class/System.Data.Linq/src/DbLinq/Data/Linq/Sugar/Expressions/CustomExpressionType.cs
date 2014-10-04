@@ -45,6 +45,10 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         OrderBy = 1030,
         GroupBy,
         Group = 1040,
-        StartIndexOffset
+        StartIndexOffset,
+
+
+
+        FullTextSearchExpression = 1100,
     }
 }

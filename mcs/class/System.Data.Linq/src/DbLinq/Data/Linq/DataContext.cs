@@ -55,6 +55,7 @@ using DbLinq.Factory;
 using DbLinq.Util;
 using DbLinq.Vendor;
 using System.Diagnostics;
+using DbLinq.Data.Linq.Sugar.Expressions;
 
 #if MONO_STRICT
 namespace System.Data.Linq
@@ -71,6 +72,21 @@ namespace DbLinq.Data.Linq
         // PC question: at ctor, we get a IDbConnection and the Connection property exposes a DbConnection
         //              WTF?
         public DbConnection Connection { get { return DatabaseContext.Connection as DbConnection; } }
+
+
+        public IQueryable<VirtualSearchTable> GetFullTextSearchTable(string language, string searchTerms, int searchQueryId)
+        {
+
+            var fte = new Sugar.Expressions.FullTextSearchExpression(language, searchTerms, searchQueryId);
+            var tex = new Sugar.Expressions.TableExpression(typeof(VirtualSearchTable), fte, "search$" + searchQueryId);
+            return new QueryProvider<VirtualSearchTable>(typeof(VirtualSearchTable), this, new ExpressionChain(), tex );
+
+        }
+
+        public virtual Expression GetTextConditionUsingLike(string searchTerms, Type type, Func<ConstantExpression, MetaDataMember, Expression> getLike)
+        {
+            throw new NotSupportedException();
+        }
 
         protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<IDataRecord, MappingContext, T> rowObjectCreator, Func<ITransactionalCommand> getDbCommand)
         {
@@ -362,6 +378,12 @@ namespace DbLinq.Data.Linq
                 mappingSource = new AttributeMappingSource();
             Mapping = mappingSource.GetModel(GetType());
         }
+
+        internal virtual protected Expression GetFullTextJoinWhere(ColumnExpression wordsExpression, TableExpression searchType, TableExpression table, Func<TableExpression, MetaDataMember, ColumnExpression> getcol)
+        {
+            throw new NotSupportedException();
+        }
+
 
         /// <summary>
         /// Checks if the table is allready mapped or maps it if not.
@@ -1260,6 +1282,12 @@ namespace DbLinq.Data.Linq
         public ChangeConflictCollection ChangeConflicts
         {
             get { throw new NotImplementedException(); }
+        }
+
+
+        protected internal virtual MetaDataMember GetWordsField(Type type)
+        {
+            return null;
         }
 
         [DbLinqToDo]

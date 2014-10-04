@@ -161,6 +161,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var currentPrecedence = ExpressionQualifier.GetPrecedence(expression);
             // first convert operands
             var operands = expression.GetOperands();
+
+
             var literalOperands = new List<SqlStatement>();
             foreach (var operand in operands)
             {
@@ -171,9 +173,11 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 literalOperands.Add(literalOperand);
             }
 
-            // then converts expression
             if (expression is SpecialExpression)
                 return sqlProvider.GetLiteral(((SpecialExpression)expression).SpecialNodeType, literalOperands);
+
+
+            // then converts expression
             if (expression is EntitySetExpression)
                 expression = ((EntitySetExpression)expression).TableExpression;
             if (expression is TableExpression)
@@ -308,7 +312,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                         // All subqueries has an alias in FROM
                         SubSelectExpression subquery = tableExpression as SubSelectExpression;
                         if (subquery == null)
-                            tableAlias = sqlProvider.GetTableAsAlias(tableExpression.Name, tableExpression.Alias);
+                            tableAlias = sqlProvider.GetTableAsAlias(tableExpression, tableExpression.Alias);
                         else
                         {
                             var subqueryStatements = new SqlStatement(Build(subquery.Select, queryContext));
@@ -323,7 +327,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     }
                     else
                     {
-                        fromClauses.Add(sqlProvider.GetTable(tableExpression.Name));
+                        fromClauses.Add(sqlProvider.GetTable(tableExpression));
                     }
                 }
             }
@@ -347,7 +351,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 {
                     // get constitutive Parts
                     var joinExpression = BuildExpression(tableExpression.JoinExpression, queryContext);
-                    var tableAlias = sqlProvider.GetTableAsAlias(tableExpression.Name, tableExpression.Alias);
+                    var tableAlias = sqlProvider.GetTableAsAlias(tableExpression, tableExpression.Alias);
                     SqlStatement joinClause;
                     switch (tableExpression.JoinType)
                     {

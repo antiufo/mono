@@ -231,11 +231,13 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case "Min":
                     return popCallStack(AnalyzeProjectionQuery(SpecialExpressionType.Min, parameters, builderContext));
                 case "OrderBy":
+                    return popCallStack(AnalyzeOrderBy(parameters, false, builderContext, true));
                 case "ThenBy":
-                    return popCallStack(AnalyzeOrderBy(parameters, false, builderContext));
+                    return popCallStack(AnalyzeOrderBy(parameters, false, builderContext, false));
                 case "OrderByDescending":
+                    return popCallStack(AnalyzeOrderBy(parameters, true, builderContext, true));
                 case "ThenByDescending":
-                    return popCallStack(AnalyzeOrderBy(parameters, true, builderContext));
+                    return popCallStack(AnalyzeOrderBy(parameters, true, builderContext, false));
                 case "Select":
                     return popCallStack(AnalyzeSelect(parameters, builderContext));
                 case "SelectMany":
@@ -262,8 +264,85 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         private Expression AnalyzeSearch(IList<Expression> parameters, BuilderContext builderContext)
         {
-            throw new NotImplementedException();
+
+            var searchTerms = (string)((ConstantExpression)parameters[1]).Value;
+            var table = (TableExpression)parameters[0];
+
+
+            if (builderContext.QueryContext.DataContext.Vendor.VendorName != "PostgreSQL")
+            {
+                var cond = builderContext.QueryContext.DataContext.GetTextConditionUsingLike(searchTerms, table.Type, (a, member) =>
+                {
+                    
+                    var col = RegisterColumn(table, member, builderContext);
+                    return new SpecialExpression(SpecialExpressionType.Like, col, 
+                     Expression.Constant("%"+searchTerms+"%")
+                        );
+
+                });
+                RegisterWhere(cond, builderContext);
+                return table;
+
+            }
+
+
+
+
+            var language = "english";
+            var searchQueryId = ++builderContext.QueryContext.FullTextSearchId;
+            //var rewritten = CreateSearchExpression(parameters[0], "english", );
+            //return rewritten;
+            var fte = new FullTextSearchExpression(language, searchTerms, searchQueryId);
+            var tex = new TableExpression(typeof(VirtualSearchTable), fte, "search$" + searchQueryId);
+            var ctx = builderContext.QueryContext.DataContext;
+
+
+            
+            var wordsField = ctx.GetWordsField(table.Type);
+
+
+            var searchTable = wordsField.DeclaringType.Type == table.Type ? table : CreateTable(wordsField.DeclaringType.Type, builderContext);
+            var wordsExpression = new ColumnExpression(searchTable, wordsField);
+
+            RegisterTable(tex, builderContext);
+            RegisterTable(searchTable, builderContext);
+            RegisterWhere(new SpecialExpression(SpecialExpressionType.MatchesFullText, Expression.Constant(searchQueryId), wordsExpression), builderContext);
+
+            if (searchTable.Type != table.Type)
+            {
+                Func<TableExpression, System.Data.Linq.Mapping.MetaDataMember, ColumnExpression> getcol = (a, b) => RegisterColumn(a, b, builderContext);
+                RegisterWhere(ctx.GetFullTextJoinWhere(wordsExpression, searchTable, table, getcol), builderContext);
+            }
+
+            if (builderContext.CurrentSelect.OrderBy.Count == 0)
+                builderContext.CurrentSelect.OrderBy.Add(new OrderByExpression(false, new SpecialExpression(SpecialExpressionType.FullTextRank, Expression.Constant(searchQueryId), wordsExpression)));
+
+
+
+
+            //builderContext.CurrentSelect.OrderBy
+            //return new QueryProvider<VirtualSearchTable>(typeof(VirtualSearchTable), null, new ExpressionChain(), tex);
+
+
+            //  RegisterWhere(
+            //AnalyzeOrderBy(
+            return table;
         }
+
+
+        internal static Expression CreateSearchExpression(Expression b, string language, string searchTerms)
+        {
+            const int searchQueryId = 4;
+            throw new NotImplementedException();
+            //var plaintots = ObjectManager.ShamanDataContext.GetFullTextSearchTable(language, searchTerms, searchQueryId);
+
+            /*return 
+                .Where(x => Utils.MatchesFullText(searchQueryId, x.Words))
+                .OrderBy(x => Utils.FullTextRank(searchQueryId, x.Words))
+                .Join(plaintots, x => true, x => true, (a, b) => a)*/
+            //.Join(subreddits, a => a.Key, a => a.Db_EntityKey, (a, b) => b)
+        }
+
 
         Func<Expression, Expression> PushCallStack(MethodInfo method, BuilderContext builderContext)
         {
@@ -354,6 +433,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     return AnalyzeToString(method, parameters, builderContext);
                 case "IsWithinRectangle":
                     return AnalyzeIsWithinRectangle(method, parameters, builderContext);
+                case "MatchesFullText":
+                    return AnalyzeMatchesFullText(method, parameters, builderContext);
+                case "FullTextRank":
+                    return AnalyzeFullTextRank(method, parameters, builderContext);
             }
 
             var args = new List<Expression>();
@@ -371,6 +454,22 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 args.Add(newArg);
             }
             return Expression.Call(expression.Object, expression.Method, args);
+        }
+
+        private Expression AnalyzeMatchesFullText(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
+        {
+            var popCallStack = PushCallStack(method, builderContext);
+
+            parameters[1] = Analyze(parameters[1], builderContext);
+
+            return popCallStack(new SpecialExpression(SpecialExpressionType.MatchesFullText, parameters));
+        }
+
+        private Expression AnalyzeFullTextRank(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
+        {
+            var popCallStack = PushCallStack(method, builderContext);
+            parameters[1] = Analyze(parameters[1], builderContext);
+            return popCallStack(new SpecialExpression(SpecialExpressionType.FullTextRank, parameters));
         }
 
         private Expression AnalyzeStringInsert(IList<Expression> parameters, BuilderContext builderContext)
@@ -828,6 +927,17 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if (setExpression != null)
             {
                 objectExpression = setExpression.TableExpression;
+            }
+
+            if (typeof(IQueryable).IsAssignableFrom(memberExpression.Type) && objectExpression is ConstantExpression)
+            {
+                var constval = ((ConstantExpression)objectExpression);
+                var func = (Func<IQueryable>)(Expression.Lambda(Expression.Convert(memberExpression, typeof(IQueryable)))).CompileDebuggable();
+                var val = func();
+                //var prop = memberExpression.Member as PropertyInfo;
+
+                //var val = (IQueryable)(prop != null ? prop.GetValue(constval) : ((FieldInfo)memberExpression.Member).GetValue(constval));
+                var z = val.Expression;
             }
 
             if (objectExpression is MetaTableExpression)
@@ -1325,6 +1435,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 var rightTable = Analyze(parameters[1], builderContext) as TableExpression;
                 if (rightTable == null)
                     throw Error.BadArgument("S0536: Expected a TableExpression for Join");
+                if (rightTable.FromExpression != null) RegisterTable(rightTable, builderContext);
                 var leftJoin = Analyze(parameters[2], leftExpression, builderContext);
                 var rightJoin = Analyze(parameters[3], rightTable, builderContext);
                 // from here, we have two options to join:
@@ -1563,7 +1674,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
                 if (typeof(IQueryable).IsAssignableFrom(parameters[0].Type))
                 {
-                    
+
                     var elType = parameters[0].Type.GetInterfaces().First(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IQueryable<>)).GetGenericArguments()[0];
                     var param = Expression.Parameter(elType, "x");
                     var lambda = Expression.Lambda(Expression.Equal(param, parameters[1]), param);
@@ -1606,8 +1717,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="descending"></param>
         /// <param name="builderContext"></param>
         /// <returns></returns>
-        protected virtual Expression AnalyzeOrderBy(IList<Expression> parameters, bool descending, BuilderContext builderContext)
+        protected virtual Expression AnalyzeOrderBy(IList<Expression> parameters, bool descending, BuilderContext builderContext, bool clear)
         {
+            if (clear)
+            {
+                builderContext.CurrentSelect.OrderBy.Clear();
+            }
             var table = Analyze(parameters[0], builderContext);
             // the column is related to table
             var column = Analyze(parameters[1], table, builderContext);
@@ -1655,8 +1770,16 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // otherwise strange things could happen in the future (I suppose)
 
             // Build a new Context for the query
+
             ExpressionChain expressions = queryProvider.ExpressionChain;
-            Expression tableExpression = CreateTableExpression(queryProvider.ExpressionChain.Expressions[0], builderContext);
+            if (queryProvider.ExpressionChain.Expressions.Count == 0) return CreateTable(queryProvider.TableType, builderContext);
+            var exp = queryProvider.ExpressionChain.Expressions[0];
+            var tex = exp as TableExpression;
+            if (tex != null)
+            {
+                return this.Analyze(expressions, tex, builderContext);
+            }
+            Expression tableExpression = CreateTableExpression(exp, builderContext);
 
             return this.Analyze(expressions, tableExpression, builderContext);
         }

@@ -37,6 +37,8 @@ namespace DbLinq.Data.Linq.Sugar
 #endif
     class QueryContext
     {
+        internal int FullTextSearchId;
+
         public DataContext DataContext { get; private set; }
 
         /// <summary>

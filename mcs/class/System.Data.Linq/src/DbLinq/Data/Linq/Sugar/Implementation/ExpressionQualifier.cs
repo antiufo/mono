@@ -53,6 +53,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     return ExpressionPrecedence.Additive;
                 case SpecialExpressionType.Like:
                     return ExpressionPrecedence.Equality;
+                case SpecialExpressionType.MatchesFullText:
+                        return ExpressionPrecedence.Equality;
                 // the following are methods
                 case SpecialExpressionType.Min:
                 case SpecialExpressionType.Max:
@@ -90,7 +92,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Round:
                 case SpecialExpressionType.Sign:
                 case SpecialExpressionType.Sqrt:
-                    return ExpressionPrecedence.Primary;
+                case SpecialExpressionType.FullTextRank:
+                        return ExpressionPrecedence.Primary;
                 case SpecialExpressionType.In:
                     return ExpressionPrecedence.Equality; // not sure for this one
                 default:
@@ -244,6 +247,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Sqrt:
                     return ExpressionTier.Any;
 
+                case SpecialExpressionType.MatchesFullText:
+                case SpecialExpressionType.FullTextRank:
                 case SpecialExpressionType.Like:
                 case SpecialExpressionType.Min:
                 case SpecialExpressionType.Max:

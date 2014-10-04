@@ -117,6 +117,16 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         {
         }
 
+        public Expression FromExpression { get; set; }
+
+        public TableExpression(Type type, Expression fromExpression, string alias)
+            : this(type, (string)null)
+        {
+            this.FromExpression = fromExpression;
+            this.Alias = alias;
+        }
+        
+
         protected TableExpression(ExpressionType expressionType, TableExpression tableExpression)
             : base(expressionType, tableExpression.Type)
         {
