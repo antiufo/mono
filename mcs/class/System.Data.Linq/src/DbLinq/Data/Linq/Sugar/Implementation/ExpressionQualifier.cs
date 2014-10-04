@@ -52,9 +52,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Concat:
                     return ExpressionPrecedence.Additive;
                 case SpecialExpressionType.Like:
-                    return ExpressionPrecedence.Equality;
+                case SpecialExpressionType.Between:
+                case SpecialExpressionType.NotBetween:
                 case SpecialExpressionType.MatchesFullText:
-                        return ExpressionPrecedence.Equality;
+                    return ExpressionPrecedence.Equality;
                 // the following are methods
                 case SpecialExpressionType.Min:
                 case SpecialExpressionType.Max:
@@ -247,6 +248,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Sqrt:
                     return ExpressionTier.Any;
 
+                case SpecialExpressionType.Between:
+                case SpecialExpressionType.NotBetween:
                 case SpecialExpressionType.MatchesFullText:
                 case SpecialExpressionType.FullTextRank:
                 case SpecialExpressionType.Like:

@@ -410,6 +410,14 @@ namespace DbLinq.Vendor.Implementation
                 return GetLiteralMathSign(p[0]);
             case SpecialExpressionType.Sqrt:
                 return GetLiteralMathSqrt(p[0]);
+            case SpecialExpressionType.FullTextRank:
+               return GetLiteralFullTextRank(p[0], p[1]);
+            case SpecialExpressionType.MatchesFullText:
+                return GetLiteralMatchesFullText(p[0], p[1]);
+            case SpecialExpressionType.Between:
+                return GetLiteralBetween(p[0], p[1], p[2]);
+            case SpecialExpressionType.NotBetween:
+                return GetLiteralNotBetween(p[0], p[1], p[2]);
 
             }
             throw new ArgumentException(operationType.ToString());
@@ -1679,6 +1687,16 @@ namespace DbLinq.Vendor.Implementation
         protected virtual SqlStatement GetLiteralFullTextRank(SqlStatement virtualSearchTableAlias, SqlStatement wordsField)
         {
             return SqlStatement.Format("ts_rank_cd({1}, search${0}$)", virtualSearchTableAlias, wordsField);
+        }
+
+        protected virtual SqlStatement GetLiteralBetween(SqlStatement value, SqlStatement min, SqlStatement max)
+        {
+            return SqlStatement.Format("({0} BETWEEN ({1}) AND ({2}))", value, min, max);
+        }
+
+        protected virtual SqlStatement GetLiteralNotBetween(SqlStatement value, SqlStatement min, SqlStatement max)
+        {
+            return SqlStatement.Format("({0} NOT BETWEEN ({1}) AND ({2}))", value, min, max);
         }
 
     }

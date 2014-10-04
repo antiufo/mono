@@ -84,6 +84,8 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
 
 
         MatchesFullText = 300,
-        FullTextRank
+        FullTextRank,
+        Between,
+        NotBetween
     }
 }

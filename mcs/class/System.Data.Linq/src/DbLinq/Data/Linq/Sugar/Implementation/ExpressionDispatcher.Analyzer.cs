@@ -432,7 +432,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case "ToString": // Can we sanity check this type?
                     return AnalyzeToString(method, parameters, builderContext);
                 case "IsWithinRectangle":
-                    return AnalyzeIsWithinRectangle(method, parameters, builderContext);
+                    return AnalyzeIsWithinGeographicRectangle(method, parameters, builderContext);
             }
 
             var args = new List<Expression>();
@@ -519,35 +519,33 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
 
 
-        protected virtual Expression AnalyzeIsWithinRectangle(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
+        protected virtual Expression AnalyzeIsWithinGeographicRectangle(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
         {
-
-            Expression parsed = null;
-            Expression location = Analyze(parameters[0], builderContext);
-            var bbox = parameters[1];
-            if (bbox.NodeType != ExpressionType.Constant) throw new NotSupportedException("Bounding box must be a constant.");
-            throw new NotImplementedException();
-            /*
-            if (inputParameterToParse != null)
-            {
-                ExpressionTier tier = ExpressionQualifier.GetTier(parameters[0]);
-                if (tier == ExpressionTier.Clr)
-                {
-                    parsed = RegisterParameter(System.Linq.Expressions.Expression.Call(method, inputParameterToParse.Expression), inputParameterToParse.Alias, builderContext);
-                    UnregisterParameter(inputParameterToParse, builderContext);
-                }
-            }
-            if (parsed == null)
-            {
-                parsed = Expression.Convert(toParse, method.ReturnType, method);
-                ExpressionTier tier = ExpressionQualifier.GetTier(toParse);
-            }*/
-            return parsed;
-
+            var popCallStack = PushCallStack(method, builderContext);
+            var xc = Analyze(parameters[0], builderContext);
+            var locexpr = xc as ColumnExpression;
+            var bbox =  GetConstant(parameters[1]);
+            return popCallStack(builderContext.QueryContext.DataContext.GetIsWithinGeographicRectangleCondition(locexpr, bbox, d=> {
+                return RegisterColumn(locexpr.Table, d, builderContext);
+            }));
         }
 
+        private object GetConstant(Expression expression)
+        {
+            if (expression.NodeType == ExpressionType.Constant) return ((ConstantExpression)expression).Value;
+            if (expression.NodeType == ExpressionType.MemberAccess)
+            {
+                var mem = (MemberExpression)expression;
 
+                var obj = GetConstant(mem.Expression);
+                var field = mem.Member as FieldInfo;
+                if (field != null) return field.GetValue(obj);
+                var prop = ((PropertyInfo)mem.Member);
+                return prop.GetValue(obj);
 
+            }
+            throw new ArgumentException("The expression must be a constant.");
+         }
 
         protected virtual Expression AnalyzeToString(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
         {
