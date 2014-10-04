@@ -316,5 +316,8 @@ namespace DbLinq.Vendor
         /// <param name="joins"></param>
         /// <returns></returns>
         SqlStatement GetJoinClauses(SqlStatement[] joins);
+
+        string GetTable(TableExpression tableExpression);
+        string GetTableAsAlias(TableExpression tableExpression, string alias);
     }
 }
