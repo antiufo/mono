@@ -632,6 +632,11 @@ namespace DbLinq.Data.Linq
             }
         }
 
+        internal protected virtual Expression GetIsWithinGeographicRectangleCondition(ColumnExpression location, object bbox, Func<MetaDataMember, Expression> getcol)
+        {
+            throw new NotSupportedException();
+        }
+
         private void MoveToAllTrackedEntities(object entity, bool insert)
         {
             if (!ObjectTrackingEnabled)
