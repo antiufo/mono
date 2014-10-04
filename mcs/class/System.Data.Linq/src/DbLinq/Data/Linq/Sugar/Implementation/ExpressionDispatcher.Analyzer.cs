@@ -433,10 +433,6 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     return AnalyzeToString(method, parameters, builderContext);
                 case "IsWithinRectangle":
                     return AnalyzeIsWithinRectangle(method, parameters, builderContext);
-                case "MatchesFullText":
-                    return AnalyzeMatchesFullText(method, parameters, builderContext);
-                case "FullTextRank":
-                    return AnalyzeFullTextRank(method, parameters, builderContext);
             }
 
             var args = new List<Expression>();
@@ -456,21 +452,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return Expression.Call(expression.Object, expression.Method, args);
         }
 
-        private Expression AnalyzeMatchesFullText(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
-        {
-            var popCallStack = PushCallStack(method, builderContext);
 
-            parameters[1] = Analyze(parameters[1], builderContext);
 
-            return popCallStack(new SpecialExpression(SpecialExpressionType.MatchesFullText, parameters));
-        }
-
-        private Expression AnalyzeFullTextRank(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
-        {
-            var popCallStack = PushCallStack(method, builderContext);
-            parameters[1] = Analyze(parameters[1], builderContext);
-            return popCallStack(new SpecialExpression(SpecialExpressionType.FullTextRank, parameters));
-        }
 
         private Expression AnalyzeStringInsert(IList<Expression> parameters, BuilderContext builderContext)
         {

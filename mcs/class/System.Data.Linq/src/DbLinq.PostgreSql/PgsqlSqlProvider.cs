@@ -30,6 +30,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Vendor.Implementation;
+using DbLinq.Data.Linq.Sugar.Expressions;
 
 namespace DbLinq.PostgreSql
 {
