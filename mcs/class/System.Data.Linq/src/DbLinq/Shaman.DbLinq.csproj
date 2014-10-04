@@ -229,6 +229,7 @@
     <Compile Include="Data\Linq\Sugar\Expressions\ColumnExpression.cs" />
     <Compile Include="Data\Linq\Sugar\Expressions\EntitySetExpression.cs" />
     <Compile Include="Data\Linq\Sugar\Expressions\ExpressionTranslator.cs" />
+    <Compile Include="Data\Linq\Sugar\Expressions\FullTextSearchExpression.cs" />
     <Compile Include="Data\Linq\Sugar\Expressions\ObjectInputParameterExpression.cs" />
     <Compile Include="Data\Linq\Sugar\Expressions\ObjectOutputParameterExpression.cs" />
     <Compile Include="Data\Linq\Sugar\Expressions\CustomExpressionType.cs" />
@@ -283,6 +284,7 @@
     <Compile Include="Data\Linq\Sugar\QueryContext.cs" />
     <Compile Include="Data\Linq\Sugar\UpsertQuery.cs" />
     <Compile Include="Data\Linq\Table.cs" />
+    <Compile Include="Data\Linq\VirtualSearchTable.cs" />
     <Compile Include="DbLinqToDoAttribute.cs" />
     <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="Factory\DbLinqAttribute.cs" />
