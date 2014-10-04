@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Vendor.Implementation;
 
@@ -69,7 +70,20 @@ namespace DbLinq.PostgreSql
         {
             return string.Format("LOWER({0})", a);
         }
-        
+
+
+        protected override string GetFromExpression(Expression expression)
+        {
+
+            var search = expression as FullTextSearchExpression;
+            if (search != null)
+            {
+                return "plainto_tsquery(" + GetLiteral(search.Language) + ", " + GetLiteral(search.SearchTerms) + ")";
+            }
+            return base.GetFromExpression(expression);
+        }
+
+
         protected override SqlStatement GetLiteralDateDiff(SqlStatement dateA, SqlStatement dateB)
         {
             return string.Format("(EXTRACT(EPOCH FROM ({0})::timestamp)-EXTRACT(EPOCH FROM ({1})::timestamp))*1000", dateA, dateB);
