@@ -276,7 +276,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     
                     var col = RegisterColumn(table, member, builderContext);
                     return new SpecialExpression(SpecialExpressionType.Like, col, 
-                     Expression.Constant("%"+searchTerms+"%")
+                     Expression.Constant("%" + (string)a.Value + "%")
                         );
 
                 });
