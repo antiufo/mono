@@ -1249,24 +1249,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
             var operands = expression.GetOperands().ToList();
             var firstop = operands[0];
-            if (operands.Count == 2 && operands[0].Type == operands[1].Type && !firstop.Type.IsPrimitive && builderContext.QueryContext.DataContext.Mapping.GetMetaType(firstop.Type) != null)
+            for (int operandIndex = 0; operandIndex < operands.Count; operandIndex++)
             {
-                var meta = builderContext.QueryContext.DataContext.Mapping.GetMetaType(firstop.Type);
-                var key = meta.DataMembers.First(x => x.IsPrimaryKey);
-
-                operands[0] = Expression.MakeMemberAccess(operands[0], key.Member);
-                operands[1] = Expression.MakeMemberAccess(operands[1], key.Member);
-                operands[0] = Analyze(operands[0], builderContext);
-                operands[1] = Analyze(operands[1], builderContext);
+                var operand = operands[operandIndex];
+                operands[operandIndex] = Analyze(operand, builderContext);
             }
-            else
-            {
-                for (int operandIndex = 0; operandIndex < operands.Count; operandIndex++)
-                {
-                    var operand = operands[operandIndex];
-                    operands[operandIndex] = Analyze(operand, builderContext);
-                }
-            }
+            
 
             return expression.ChangeOperands(operands);
         }
