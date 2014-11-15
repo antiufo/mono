@@ -1757,6 +1757,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // Build a new Context for the query
 
             ExpressionChain expressions = queryProvider.ExpressionChain;
+            Expression tableExpression = CreateTableExpression(queryProvider.ExpressionChain.Expressions[0], builderContext);
             if (queryProvider.ExpressionChain.Expressions.Count == 0) return CreateTable(queryProvider.TableType, builderContext);
             var exp = queryProvider.ExpressionChain.Expressions[0];
             var tex = exp as TableExpression;
@@ -1764,8 +1765,6 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             {
                 return this.Analyze(expressions, tex, builderContext);
             }
-            Expression tableExpression = CreateTableExpression(exp, builderContext);
-
             return this.Analyze(expressions, tableExpression, builderContext);
         }
 
