@@ -29,6 +29,7 @@ using System.Linq.Expressions;
 
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Data.Linq.Sugar.Expressions;
+using System.Data.Linq.Mapping;
 
 namespace DbLinq.Vendor
 {
@@ -58,6 +59,9 @@ namespace DbLinq.Vendor
         /// <param name="p"></param>
         /// <returns></returns>
         SqlStatement GetLiteral(ExpressionType operationType, IList<SqlStatement> p);
+
+
+        SqlStatement GetReturning(SqlStatement insertion, MetaDataMember column);
 
         /// <summary>
         /// Converts a special expression type to literal

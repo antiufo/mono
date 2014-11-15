@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Data.Linq.Mapping;
 using System.Linq.Expressions;
 using System.Reflection;
-
+using System.Linq;
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Util;
@@ -107,6 +107,14 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 sqlProvider.GetTable(upsertParameters.Table.TableName),
                 upsertParameters.InputColumns,
                 upsertParameters.InputValues);
+
+            var singleKey = upsertParameters.AutoPKColumns.Count == 1 ? upsertParameters.AutoPKColumns[0] : null;
+
+            var returningColumn = singleKey != null && upsertParameters.OutputParameters.Count == 1 ?
+                upsertParameters.Table.RowType.DataMembers.Single(x => x.IsPrimaryKey) : null;
+
+            var returning = returningColumn != null ? queryContext.DataContext.Vendor.SqlProvider.GetReturning(insertSql, returningColumn) : null;
+
             var insertIdSql = sqlProvider.GetInsertIds(
                 sqlProvider.GetTable(upsertParameters.Table.TableName),
                 upsertParameters.AutoPKColumns,
@@ -115,7 +123,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 upsertParameters.OutputColumns,
                 upsertParameters.OutputValues,
                 upsertParameters.OutputExpressions);
-            return new UpsertQuery(queryContext.DataContext, insertSql, insertIdSql, upsertParameters.InputParameters, upsertParameters.OutputParameters, upsertParameters.PKParameters);
+            return new UpsertQuery(queryContext.DataContext, returning ?? insertSql, returning != null ? null : insertIdSql, upsertParameters.InputParameters, upsertParameters.OutputParameters, upsertParameters.PKParameters) { ReturningColumn = returningColumn };
         }
 
         protected enum ParameterType

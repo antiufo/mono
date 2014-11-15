@@ -35,6 +35,7 @@ using DbLinq.Data.Linq.Sql;
 using DbLinq.Data.Linq.Sugar.Expressions;
 
 using DbLinq.Util;
+using System.Data.Linq.Mapping;
 
 namespace DbLinq.Vendor.Implementation
 {
@@ -144,6 +145,11 @@ namespace DbLinq.Vendor.Implementation
                 valueSet = true;
             }
             return updateBuilder.ToSqlStatement();
+        }
+
+        public virtual SqlStatement GetReturning(SqlStatement insertion, MetaDataMember column)
+        {
+            return null;
         }
 
         /// <summary>

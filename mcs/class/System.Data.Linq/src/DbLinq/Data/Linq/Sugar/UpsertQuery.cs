@@ -33,6 +33,7 @@ using DbLinq.Data.Linq.Sugar.Expressions;
 using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
+using System.Data.Linq.Mapping;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar
@@ -53,6 +54,8 @@ namespace DbLinq.Data.Linq.Sugar
         /// This statement returns the generated PKs
         /// </summary>
         public SqlStatement IdQuerySql { get; private set; }
+
+        public MetaDataMember ReturningColumn { get; internal set; }
 
         public UpsertQuery(DataContext dataContext, SqlStatement sql, SqlStatement idQuerySql, IList<ObjectInputParameterExpression> inputParameters,
             IList<ObjectOutputParameterExpression> outputParameters, IList<ObjectInputParameterExpression> primaryKeyParameters)

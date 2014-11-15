@@ -31,6 +31,7 @@ using System.Linq.Expressions;
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Vendor.Implementation;
 using DbLinq.Data.Linq.Sugar.Expressions;
+using System.Data.Linq.Mapping;
 
 namespace DbLinq.PostgreSql
 {
@@ -70,6 +71,10 @@ namespace DbLinq.PostgreSql
         protected override SqlStatement GetLiteralStringToLower(SqlStatement a)
         {
             return string.Format("LOWER({0})", a);
+        }
+        public override SqlStatement GetReturning(SqlStatement insertion, MetaDataMember column)
+        {
+            return insertion + " RETURNING " + GetSafeNamePart(column.MappedName);
         }
 
 

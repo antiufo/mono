@@ -190,14 +190,22 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var dataContext = insertQuery.DataContext;
             using (var dbCommand = insertQuery.GetCommand())
             {
-
+                object key = null;
                 // log first command
                 dataContext.WriteLog(dbCommand.Command);
 
                 // we may have two commands
-                int rowsCount = dbCommand.Command.ExecuteNonQuery();
+                if (insertQuery.ReturningColumn != null)
+                {
+                    key = dbCommand.Command.ExecuteScalar();
+                    SetOutputParameterValue(target, insertQuery.OutputParameters[0], key);
+                }
+                else
+                {
+                    int rowsCount = dbCommand.Command.ExecuteNonQuery();
+                }
                 // the second reads output parameters
-                if (!string.IsNullOrEmpty(insertQuery.IdQuerySql.ToString()))
+                if (insertQuery.IdQuerySql != null && !string.IsNullOrEmpty(insertQuery.IdQuerySql.ToString()))
                 {
                     var outputCommandTransaction = new ParameterizedQuery(dataContext, insertQuery.IdQuerySql, insertQuery.PrimaryKeyParameters);
                     outputCommandTransaction.Target = target;
@@ -212,7 +220,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
                     using (var dataReader = outputCommand.Command.ExecuteReader())
                     {
-                        if (! dataReader.Read())
+                        if (!dataReader.Read())
                             throw new InvalidOperationException("Could not retrieve data for inserted row on " + target.GetType());
 
                         int outputParameterIndex = 0;
