@@ -78,7 +78,7 @@ namespace DbLinq.Data.Linq.Database
         /// Creates a command.
         /// </summary>
         /// <returns></returns>
-        IDbCommand CreateCommand();
+        IDbCommand CreateCommand(IDbConnection preferredConnection);
         /// <summary>
         /// Creates a DataAdapter.
         /// </summary>

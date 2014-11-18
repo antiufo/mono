@@ -74,8 +74,8 @@ namespace DbLinq.Data.Linq.Sugar
         public string ExecuteMethodName { get; private set; }
 
         public SelectQuery(DataContext dataContext, SqlStatement sql, IList<InputParameterExpression> parameters,
-                     Delegate rowObjectCreator, string executeMethodName)
-            : base(dataContext, sql)
+                     Delegate rowObjectCreator, string executeMethodName, QueryContext queryContext)
+            : base(dataContext, sql, queryContext)
         {
             InputParameters = parameters;
             RowObjectCreator = rowObjectCreator;

@@ -28,6 +28,7 @@
 using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
+using System.Data.Common;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar
@@ -51,5 +52,7 @@ namespace DbLinq.Data.Linq.Sugar
         {
             DataContext = dataContext;
         }
+
+        public DbTransaction Transaction;
     }
 }

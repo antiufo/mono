@@ -491,6 +491,7 @@ namespace DbLinq.Data.Linq
         void SubmitChangesImpl(ConflictMode failureMode)
         {
             var queryContext = new QueryContext(this);
+            queryContext.Transaction = Transaction;
 
             // There's no sense in updating an entity when it's going to 
             // be deleted in the current transaction, so do deletes first.

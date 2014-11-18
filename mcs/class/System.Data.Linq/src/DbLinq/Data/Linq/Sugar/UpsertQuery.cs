@@ -58,8 +58,8 @@ namespace DbLinq.Data.Linq.Sugar
         public MetaDataMember ReturningColumn { get; internal set; }
 
         public UpsertQuery(DataContext dataContext, SqlStatement sql, SqlStatement idQuerySql, IList<ObjectInputParameterExpression> inputParameters,
-            IList<ObjectOutputParameterExpression> outputParameters, IList<ObjectInputParameterExpression> primaryKeyParameters)
-            : base(dataContext, sql,inputParameters)
+            IList<ObjectOutputParameterExpression> outputParameters, IList<ObjectInputParameterExpression> primaryKeyParameters, QueryContext queryContext)
+            : base(dataContext, sql, inputParameters, queryContext)
         {
             OutputParameters = outputParameters;
             PrimaryKeyParameters = primaryKeyParameters;

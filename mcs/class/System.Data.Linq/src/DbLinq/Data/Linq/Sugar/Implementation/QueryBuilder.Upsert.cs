@@ -123,7 +123,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 upsertParameters.OutputColumns,
                 upsertParameters.OutputValues,
                 upsertParameters.OutputExpressions);
-            return new UpsertQuery(queryContext.DataContext, returning ?? insertSql, returning != null ? null : insertIdSql, upsertParameters.InputParameters, upsertParameters.OutputParameters, upsertParameters.PKParameters) { ReturningColumn = returningColumn };
+            return new UpsertQuery(queryContext.DataContext, returning ?? insertSql, returning != null ? null : insertIdSql, upsertParameters.InputParameters, upsertParameters.OutputParameters, upsertParameters.PKParameters, queryContext) { ReturningColumn = returningColumn };
         }
 
         protected enum ParameterType
@@ -314,7 +314,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 upsertParameters.OutputColumns,
                 upsertParameters.OutputValues,
                 upsertParameters.OutputExpressions);
-            return new UpsertQuery(queryContext.DataContext, updateSql, insertIdSql, upsertParameters.InputParameters, upsertParameters.OutputParameters, upsertParameters.PKParameters);
+            return new UpsertQuery(queryContext.DataContext, updateSql, insertIdSql, upsertParameters.InputParameters, upsertParameters.OutputParameters, upsertParameters.PKParameters, queryContext);
         }
 
         /// <summary>
@@ -344,7 +344,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 deleteParameters.Add(inputParameter);
             }
             var deleteSql = sqlProvider.GetDelete(sqlProvider.GetTable(table.TableName), pkColumns, pkValues);
-            return new DeleteQuery(queryContext.DataContext, deleteSql, deleteParameters);
+            return new DeleteQuery(queryContext.DataContext, deleteSql, deleteParameters, queryContext);
         }
     }
 }

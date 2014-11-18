@@ -207,7 +207,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 // the second reads output parameters
                 if (insertQuery.IdQuerySql != null && !string.IsNullOrEmpty(insertQuery.IdQuerySql.ToString()))
                 {
-                    var outputCommandTransaction = new ParameterizedQuery(dataContext, insertQuery.IdQuerySql, insertQuery.PrimaryKeyParameters);
+                    var outputCommandTransaction = new ParameterizedQuery(dataContext, insertQuery.IdQuerySql, insertQuery.PrimaryKeyParameters, insertQuery.QueryContext);
                     outputCommandTransaction.Target = target;
 
                     var outputCommand = outputCommandTransaction.GetCommandTransactional(false);

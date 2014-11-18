@@ -32,6 +32,7 @@ using System.Data.Linq;
 #endif
 
 using DbLinq.Data.Linq.Sql;
+using System.Data.Common;
 
 namespace DbLinq.Data.Linq.Database.Implementation
 {
@@ -88,14 +89,14 @@ namespace DbLinq.Data.Linq.Database.Implementation
                 _transaction.Commit();
         }
 
-        public TransactionalCommand(string commandText, bool createTransaction, DataContext dataContext)
+        public TransactionalCommand(string commandText, bool createTransaction, DataContext dataContext, DbConnection preferredConnection)
         {
             // TODO: check if all this stuff is necessary
             // the OpenConnection() checks that the connection is already open
             // TODO: see if we can move this here (in theory the final DataContext shouldn't use)
             _connection = dataContext.DatabaseContext.OpenConnection();
                 
-            _command = dataContext.DatabaseContext.CreateCommand();
+            _command = dataContext.DatabaseContext.CreateCommand(preferredConnection);
             haveHigherTransaction = dataContext.Transaction != null;
             // the transaction is optional
             if (createTransaction && !haveHigherTransaction)

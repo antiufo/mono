@@ -335,7 +335,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         protected virtual SelectQuery BuildSqlQuery(ExpressionQuery expressionQuery, QueryContext queryContext)
         {
             var sql = SqlBuilder.BuildSelect(expressionQuery, queryContext);
-            var sqlQuery = new SelectQuery(queryContext.DataContext, sql, expressionQuery.Parameters, expressionQuery.RowObjectCreator, expressionQuery.Select.ExecuteMethodName);
+            var sqlQuery = new SelectQuery(queryContext.DataContext, sql, expressionQuery.Parameters, expressionQuery.RowObjectCreator, expressionQuery.Select.ExecuteMethodName, queryContext);
             return sqlQuery;
         }
 
@@ -406,7 +406,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             {
                 Profiler.At("START: GetSelectQuery(), building Expression parameters of cached query");
                 var parameters = BuildExpressionParameters(expressions, queryContext);
-                query = new SelectQuery(queryContext.DataContext, query.Sql, parameters, query.RowObjectCreator, query.ExecuteMethodName);
+                query = new SelectQuery(queryContext.DataContext, query.Sql, parameters, query.RowObjectCreator, query.ExecuteMethodName, queryContext);
                 Profiler.At("END: GetSelectQuery(), building Expression parameters of cached query");
             }
             return query;
@@ -476,7 +476,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 parameters[parameterIndex] = literalParameterName;
                 return literalParameterName;
             });
-            return new DirectQuery(queryContext.DataContext, parameterizedSql, parameters);
+            return new DirectQuery(queryContext.DataContext, parameterizedSql, parameters, queryContext);
         }
     }
 }

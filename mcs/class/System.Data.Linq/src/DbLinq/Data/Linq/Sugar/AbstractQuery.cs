@@ -35,6 +35,8 @@ using DbLinq.Data.Linq.Sql;
 using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
+using System.Data;
+using System.Data.Common;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar
@@ -48,7 +50,7 @@ namespace DbLinq.Data.Linq.Sugar
 
         protected ITransactionalCommand GetCommand(bool createTransaction)
         {
-            return new DbLinq.Data.Linq.Database.Implementation.TransactionalCommand(Sql.ToString(), createTransaction, DataContext);
+            return new DbLinq.Data.Linq.Database.Implementation.TransactionalCommand(Sql.ToString(), createTransaction, DataContext, QueryContext.Transaction != null ? QueryContext.Transaction.Connection : null);
         }
 
         /// <summary>
@@ -61,10 +63,14 @@ namespace DbLinq.Data.Linq.Sugar
         /// </summary>
         public SqlStatement Sql { get; private set; }
 
-        protected AbstractQuery(DataContext dataContext, SqlStatement sql)
+        protected AbstractQuery(DataContext dataContext, SqlStatement sql, QueryContext queryContext)
         {
             DataContext = dataContext;
             Sql = sql;
+            QueryContext = queryContext;
         }
+
+
+        public QueryContext QueryContext { get; private set; }
     }
 }

@@ -35,14 +35,16 @@ using DbLinq.Data.Linq.Sugar.Expressions;
 using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
+using System.Data;
+using System.Data.Common;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar
 {
     internal class ParameterizedQuery : AbstractQuery
     {
-        public ParameterizedQuery(DataContext dataContext, SqlStatement sql, IList<ObjectInputParameterExpression> inputParameters)
-            : base(dataContext, sql)
+        public ParameterizedQuery(DataContext dataContext, SqlStatement sql, IList<ObjectInputParameterExpression> inputParameters, QueryContext queryContext)
+            : base(dataContext, sql, queryContext)
         {
             this.InputParameters = inputParameters;
         }

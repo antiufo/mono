@@ -33,14 +33,15 @@ using DbLinq.Data.Linq.Sugar.Expressions;
 using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
+using System.Data.Common;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar
 {
     internal class DeleteQuery : ParameterizedQuery
     {
-        public DeleteQuery(DataContext dataContext, SqlStatement sql, IList<ObjectInputParameterExpression> inputParameters)
-            : base(dataContext, sql, inputParameters)
+        public DeleteQuery(DataContext dataContext, SqlStatement sql, IList<ObjectInputParameterExpression> inputParameters, QueryContext queryContext)
+            : base(dataContext, sql, inputParameters, queryContext)
         {
         }
     }

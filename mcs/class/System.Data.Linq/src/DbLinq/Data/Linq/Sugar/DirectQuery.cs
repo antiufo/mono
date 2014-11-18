@@ -36,6 +36,7 @@ using DbLinq.Util;
 using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
+using System.Data.Common;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar
@@ -45,8 +46,8 @@ namespace DbLinq.Data.Linq.Sugar
         public IList<object> parameterValues { get; set; }
         public IList<string> Parameters { get; private set; }
 
-        public DirectQuery(DataContext dataContext, SqlStatement sql, IList<string> parameters)
-            : base(dataContext, sql)
+        public DirectQuery(DataContext dataContext, SqlStatement sql, IList<string> parameters, QueryContext queryContext)
+            : base(dataContext, sql, queryContext)
         {
             Parameters = parameters;
         }

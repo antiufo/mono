@@ -114,9 +114,9 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// Creates a command.
         /// </summary>
         /// <returns></returns>
-        public IDbCommand CreateCommand()
+        public IDbCommand CreateCommand(IDbConnection preferredConnection)
         {
-            IDbCommand command = Connection.CreateCommand();
+            IDbCommand command = (preferredConnection ?? Connection).CreateCommand();
             command.CommandTimeout = 0;
             if (command.Transaction == null)
                 command.Transaction = CurrentTransaction;
