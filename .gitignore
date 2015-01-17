@@ -123,3 +123,5 @@ tmpinst-dir.stamp
 
 mcs/class/System.Data.Linq/build/
 mcs/class/System.Data.Linq/build.dbg/
+mcs/class/System.Data.Linq/src/Shaman.DbLinq.sln.ide/
+
