@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22310.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shaman.DbLinq", "DbLinq\Shaman.DbLinq.csproj", "{97305421-3071-4175-AA3C-9A432CC28121}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "postgresinserttest", "postgresinserttest\postgresinserttest.csproj", "{BBA0A05B-B97D-4F41-876F-7C74145422AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug - Mono Strict|Any CPU = Debug - Mono Strict|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97305421-3071-4175-AA3C-9A432CC28121}.Debug - Mono Strict|Any CPU.ActiveCfg = Debug - Mono Strict|Any CPU
+		{97305421-3071-4175-AA3C-9A432CC28121}.Debug - Mono Strict|Any CPU.Build.0 = Debug - Mono Strict|Any CPU
+		{97305421-3071-4175-AA3C-9A432CC28121}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97305421-3071-4175-AA3C-9A432CC28121}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97305421-3071-4175-AA3C-9A432CC28121}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97305421-3071-4175-AA3C-9A432CC28121}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBA0A05B-B97D-4F41-876F-7C74145422AD}.Debug - Mono Strict|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBA0A05B-B97D-4F41-876F-7C74145422AD}.Debug - Mono Strict|Any CPU.Build.0 = Debug|Any CPU
+		{BBA0A05B-B97D-4F41-876F-7C74145422AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBA0A05B-B97D-4F41-876F-7C74145422AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBA0A05B-B97D-4F41-876F-7C74145422AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBA0A05B-B97D-4F41-876F-7C74145422AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
