@@ -30,6 +30,8 @@ using System.Data;
 using System.Reflection;
 using System.Xml;
 using DbLinq.Util;
+using DbLinq.Data.Linq.Sugar;
+using DbLinq.Data.Linq.Sugar.Implementation;
 
 namespace DbLinq.Factory.Implementation
 {
@@ -178,6 +180,8 @@ namespace DbLinq.Factory.Implementation
             //2) surround all Activator calls with try/catch block.
             if (t.IsInterface)
             {
+                if (t == typeof(IExpressionDispatcher))
+                    return new ExpressionDispatcher();
                 IList<Type> types;
                 if (!Implementations.TryGetValue(t, out types))
                     throw new ArgumentException(string.Format("Type '{0}' has no implementation", t));

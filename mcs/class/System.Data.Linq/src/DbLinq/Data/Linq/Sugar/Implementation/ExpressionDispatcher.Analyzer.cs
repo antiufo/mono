@@ -96,7 +96,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return Analyze(expression, new[] { parameter }, builderContext);
         }
 
-        protected virtual Expression Analyze(Expression expression, BuilderContext builderContext)
+        protected internal virtual Expression Analyze(Expression expression, BuilderContext builderContext)
         {
             return Analyze(expression, new Expression[0], builderContext);
         }
@@ -422,6 +422,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         private Expression AnalyzeUnknownCall(MethodCallExpression expression, IList<Expression> parameters, BuilderContext builderContext)
         {
+            var custom = builderContext.QueryContext.DataContext.AnalyzeCustomMethod(this, expression, parameters, builderContext);
+            if (custom != null) return custom;
             var method = expression.Method;
             switch (method.Name)
             {
@@ -436,6 +438,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case "IsWithinMetersFromPoint":
                     return AnalyzeIsWithinMetersFromPoint(method, parameters, builderContext);
             }
+
+
 
             var args = new List<Expression>();
             foreach (var arg in expression.Arguments)
@@ -453,7 +457,6 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
             return Expression.Call(expression.Object, expression.Method, args);
         }
-
 
 
 

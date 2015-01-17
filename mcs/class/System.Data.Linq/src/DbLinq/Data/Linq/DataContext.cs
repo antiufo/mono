@@ -56,6 +56,7 @@ using DbLinq.Util;
 using DbLinq.Vendor;
 using System.Diagnostics;
 using DbLinq.Data.Linq.Sugar.Expressions;
+using DbLinq.Data.Linq.Sugar.Implementation;
 
 #if MONO_STRICT
 namespace System.Data.Linq
@@ -366,6 +367,12 @@ namespace DbLinq.Data.Linq
 
             MemberModificationHandler = ObjectFactory.Create<IMemberModificationHandler>(); // not a singleton: object is stateful
             QueryBuilder = ObjectFactory.Get<IQueryBuilder>();
+            var customDispatcher = CustomExpressionDispatcher;
+            if (customDispatcher != null)
+            {
+                var qb = QueryBuilder as QueryBuilder;
+                qb.ExpressionDispatcher = customDispatcher;
+            }
             QueryRunner = ObjectFactory.Get<IQueryRunner>();
 
             //EntityMap = ObjectFactory.Create<IEntityMap>();
@@ -534,6 +541,11 @@ namespace DbLinq.Data.Linq
                         throw new ArgumentOutOfRangeException();
                 }
             }
+        }
+
+        internal virtual Expression AnalyzeCustomMethod(ExpressionDispatcher expressionDispatcher, MethodCallExpression expression, IList<Expression> parameters, BuilderContext builderContext)
+        {
+            return null;
         }
 
         private IEnumerable<object> GetReferencedObjects(object value)
@@ -1399,6 +1411,14 @@ namespace DbLinq.Data.Linq
         protected internal void ExecuteDynamicUpdate(object entity)
         {
             throw new NotImplementedException();
+        }
+
+        internal virtual IExpressionDispatcher CustomExpressionDispatcher
+        {
+            get
+            {
+                return null;
+            }
         }
     }
 }

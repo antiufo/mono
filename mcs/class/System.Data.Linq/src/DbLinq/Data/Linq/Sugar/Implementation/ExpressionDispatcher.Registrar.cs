@@ -184,7 +184,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="memberInfo"></param>
         /// <param name="builderContext"></param>
         /// <returns></returns>
-        public ColumnExpression RegisterColumn(TableExpression tableExpression, MetaDataMember dataMember,
+        public virtual ColumnExpression RegisterColumn(TableExpression tableExpression, MetaDataMember dataMember,
                                                BuilderContext builderContext)
         {
             //var dataMember = builderContext.QueryContext.DataContext.Mapping.GetTable(tableExpression.Type).RowType

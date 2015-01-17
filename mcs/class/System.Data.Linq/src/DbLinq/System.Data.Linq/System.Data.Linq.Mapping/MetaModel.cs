@@ -77,7 +77,9 @@ namespace System.Data.Linq.Mapping
         public static Expression GetOutputValueReader(Type columnType, int valueIndex, ParameterExpression dataRecordParameter,
                                                   ParameterExpression mappingContextParameter, DataContext context)
         {
-            return ((ExpressionDispatcher)ObjectFactory.Get<IExpressionDispatcher>()).GetOutputValueReader(columnType, valueIndex, dataRecordParameter, mappingContextParameter, context);
+            var disp = context.CustomExpressionDispatcher ?? ObjectFactory.Get<IExpressionDispatcher>();
+
+            return ((ExpressionDispatcher)disp).GetOutputValueReader(columnType, valueIndex, dataRecordParameter, mappingContextParameter, context);
         }
     }
 }
