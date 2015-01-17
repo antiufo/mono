@@ -153,6 +153,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if ((short)expression.NodeType > 999)
                 return expression;
             // now, we just simply return a constant with new value
+            var special = expression as SpecialExpression;
+            if (special != null && special.SpecialNodeType == SpecialExpressionType.ShamanUserLikeTable) return expression;
             try
             {
                 var optimizedExpression = Expression.Constant(expression.Evaluate());

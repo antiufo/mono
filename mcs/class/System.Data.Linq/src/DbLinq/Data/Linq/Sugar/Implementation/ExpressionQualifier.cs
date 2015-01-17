@@ -94,7 +94,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Sign:
                 case SpecialExpressionType.Sqrt:
                 case SpecialExpressionType.FullTextRank:
-                        return ExpressionPrecedence.Primary;
+                case SpecialExpressionType.ShamanUserLikeTable:
+                    return ExpressionPrecedence.Primary;
                 case SpecialExpressionType.In:
                     return ExpressionPrecedence.Equality; // not sure for this one
                 default:

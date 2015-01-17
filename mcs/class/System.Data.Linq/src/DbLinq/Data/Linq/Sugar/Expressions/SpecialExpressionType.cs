@@ -86,6 +86,8 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         MatchesFullText = 300,
         FullTextRank,
         Between,
-        NotBetween
+        NotBetween,
+
+        ShamanUserLikeTable
     }
 }

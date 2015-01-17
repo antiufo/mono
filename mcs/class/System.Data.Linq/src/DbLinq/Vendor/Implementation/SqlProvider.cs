@@ -424,7 +424,8 @@ namespace DbLinq.Vendor.Implementation
                 return GetLiteralBetween(p[0], p[1], p[2]);
             case SpecialExpressionType.NotBetween:
                 return GetLiteralNotBetween(p[0], p[1], p[2]);
-
+            case SpecialExpressionType.ShamanUserLikeTable:
+                return SqlStatement.Format("(SELECT \"Key\" FROM \"Shaman_UserLike\" WHERE \"Type\" = {0} AND \"User\" = {1} AND "+p[2].First().Sql.Trim('\'') + ")", p[0], p[1]);
             }
             throw new ArgumentException(operationType.ToString());
         }

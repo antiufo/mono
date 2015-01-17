@@ -125,7 +125,8 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                 case SpecialExpressionType.Sign:
                 case SpecialExpressionType.Sqrt:
                     return defaultType;
-
+                case SpecialExpressionType.ShamanUserLikeTable:
+                    return typeof(string[]);
                 default:
                     throw Error.BadArgument("S0058: Unknown SpecialExpressionType value {0}", specialExpressionType);
             }
