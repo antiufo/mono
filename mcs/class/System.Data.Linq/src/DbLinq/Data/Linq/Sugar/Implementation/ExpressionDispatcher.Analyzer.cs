@@ -344,7 +344,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         }
 
 
-        Func<Expression, Expression> PushCallStack(MethodInfo method, BuilderContext builderContext)
+        internal Func<Expression, Expression> PushCallStack(MethodInfo method, BuilderContext builderContext)
         {
 
             builderContext.CallStack.Push(method);
@@ -420,9 +420,14 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
         }
 
+        internal virtual Expression AnalyzeCustomMethod(MethodCallExpression expression, IList<Expression> parameters, BuilderContext builderContext)
+        {
+            return null;
+        }
+
         private Expression AnalyzeUnknownCall(MethodCallExpression expression, IList<Expression> parameters, BuilderContext builderContext)
         {
-            var custom = builderContext.QueryContext.DataContext.AnalyzeCustomMethod(this, expression, parameters, builderContext);
+            var custom = AnalyzeCustomMethod(expression, parameters, builderContext);
             if (custom != null) return custom;
             var method = expression.Method;
             switch (method.Name)
@@ -433,10 +438,6 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     break;
                 case "ToString": // Can we sanity check this type?
                     return AnalyzeToString(method, parameters, builderContext);
-                case "IsWithinRectangle":
-                    return AnalyzeIsWithinGeographicRectangle(method, parameters, builderContext);
-                case "IsWithinMetersFromPoint":
-                    return AnalyzeIsWithinMetersFromPoint(method, parameters, builderContext);
             }
 
 
@@ -524,32 +525,9 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
 
 
-        protected virtual Expression AnalyzeIsWithinGeographicRectangle(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
-        {
-            var popCallStack = PushCallStack(method, builderContext);
-            var xc = Analyze(parameters[0], builderContext);
-            var locexpr = xc as ColumnExpression;
-            var bbox = GetConstant(parameters[1]);
-            return popCallStack(builderContext.QueryContext.DataContext.GetIsWithinGeographicRectangleCondition(locexpr, bbox, d =>
-            {
-                return RegisterColumn(locexpr.Table, d, builderContext);
-            }));
-        }
 
-        protected virtual Expression AnalyzeIsWithinMetersFromPoint(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)
-        {
-            var popCallStack = PushCallStack(method, builderContext);
-            var xc = Analyze(parameters[0], builderContext);
-            var locexpr = xc as ColumnExpression;
-            var meters = (double)GetConstant(parameters[1]);
-            var point = GetConstant(parameters[2]);
-            return popCallStack(builderContext.QueryContext.DataContext.GetIsWithinMetersFromPoint(locexpr, meters, point, d =>
-            {
-                return RegisterColumn(locexpr.Table, d, builderContext);
-            }));
-        }
 
-        private object GetConstant(Expression expression)
+        internal object GetConstant(Expression expression)
         {
             if (expression.NodeType == ExpressionType.Constant) return ((ConstantExpression)expression).Value;
             if (expression.NodeType == ExpressionType.MemberAccess)
