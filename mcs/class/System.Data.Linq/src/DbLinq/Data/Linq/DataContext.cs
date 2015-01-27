@@ -543,10 +543,7 @@ namespace DbLinq.Data.Linq
             }
         }
 
-        internal virtual Expression AnalyzeCustomMethod(ExpressionDispatcher expressionDispatcher, MethodCallExpression expression, IList<Expression> parameters, BuilderContext builderContext)
-        {
-            return null;
-        }
+
 
         private IEnumerable<object> GetReferencedObjects(object value)
         {
@@ -644,16 +641,7 @@ namespace DbLinq.Data.Linq
                 }
             }
         }
-
-        internal protected virtual Expression GetIsWithinGeographicRectangleCondition(ColumnExpression location, object bbox, Func<MetaDataMember, Expression> getcol)
-        {
-            throw new NotSupportedException();
-        }
-        internal protected virtual Expression GetIsWithinMetersFromPoint(ColumnExpression location, double meters, object point, Func<MetaDataMember, Expression> getcol)
-        {
-            throw new NotSupportedException();
-        }
-
+        
         
 
         private void MoveToAllTrackedEntities(object entity, bool insert)
