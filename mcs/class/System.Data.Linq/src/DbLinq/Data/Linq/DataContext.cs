@@ -366,7 +366,7 @@ namespace DbLinq.Data.Linq
             DatabaseContext = databaseContext;
 
             MemberModificationHandler = ObjectFactory.Create<IMemberModificationHandler>(); // not a singleton: object is stateful
-            QueryBuilder = ObjectFactory.Get<IQueryBuilder>();
+            QueryBuilder = ObjectFactory.Create<IQueryBuilder>();
             var customDispatcher = CustomExpressionDispatcher;
             if (customDispatcher != null)
             {
