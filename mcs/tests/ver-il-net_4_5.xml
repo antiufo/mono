@@ -19370,6 +19370,34 @@
       </method>
     </type>
   </test>
+  <test name="gtest-621.cs">
+    <type name="X">
+      <method name="Int32 Main()" attrs="145">
+        <size>267</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
+  <test name="gtest-622.cs">
+    <type name="CY">
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+    <type name="A">
+      <method name="Void M[TO]()" attrs="486">
+        <size>2</size>
+      </method>
+      <method name="Void Main()" attrs="150">
+        <size>14</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
   <test name="gtest-anontype-01.cs">
     <type name="Test">
       <method name="Int32 Main()" attrs="150">
@@ -20158,10 +20186,10 @@
         <size>13</size>
       </method>
       <method name="Int32 Main()" attrs="150">
-        <size>192</size>
+        <size>213</size>
       </method>
       <method name="Void .cctor()" attrs="6289">
-        <size>7</size>
+        <size>22</size>
       </method>
     </type>
     <type name="C">
@@ -20194,6 +20222,11 @@
       </method>
       <method name="Void set_P2(Int32)" attrs="2182">
         <size>8</size>
+      </method>
+    </type>
+    <type name="S">
+      <method name="Int32[] get_PA()" attrs="2198">
+        <size>13</size>
       </method>
     </type>
   </test>
@@ -41689,6 +41722,9 @@
       </method>
       <method name="System.String Test_2()" attrs="150">
         <size>7</size>
+      </method>
+      <method name="Void Test_3()" attrs="145">
+        <size>20</size>
       </method>
     </type>
   </test>
@@ -65325,6 +65361,48 @@
       </method>
     </type>
   </test>
+  <test name="test-dictinit-01.cs">
+    <type name="Program">
+      <method name="Int32 Main()" attrs="145">
+        <size>181</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+    <type name="C">
+      <method name="Int32 get_Item(System.String)" attrs="2182">
+        <size>21</size>
+      </method>
+      <method name="Void set_Item(System.String, Int32)" attrs="2182">
+        <size>15</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>18</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-dictinit-02.cs">
+    <type name="Program">
+      <method name="Int32 Main()" attrs="145">
+        <size>182</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+    <type name="C">
+      <method name="C get_Item(System.String)" attrs="2182">
+        <size>50</size>
+      </method>
+      <method name="Void set_Item(System.String, C)" attrs="2182">
+        <size>15</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>18</size>
+      </method>
+    </type>
+  </test>
   <test name="test-ex-filter-01.cs">
     <type name="X">
       <method name="Int32 Main()" attrs="150">
@@ -67194,6 +67272,85 @@
       </method>
     </type>
   </test>
+  <test name="test-nameof-01.cs">
+    <type name="X">
+      <method name="Int32 Main()" attrs="150">
+        <size>20</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-nameof-02.cs">
+    <type name="A`1[T]">
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+    <type name="A`1+B[T]">
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+    <type name="X">
+      <method name="Int64 get_Prop()" attrs="2177">
+        <size>14</size>
+      </method>
+      <method name="Void set_Prop(Int64)" attrs="2177">
+        <size>8</size>
+      </method>
+      <method name="Void add_ev(System.Action)" attrs="2177">
+        <size>42</size>
+      </method>
+      <method name="Void remove_ev(System.Action)" attrs="2177">
+        <size>42</size>
+      </method>
+      <method name="Int32 Main()" attrs="150">
+        <size>83</size>
+      </method>
+      <method name="Void GenMethod[T,U,V]()" attrs="145">
+        <size>2</size>
+      </method>
+      <method name="Int32 SimpleName[T](T)" attrs="129">
+        <size>17</size>
+      </method>
+      <method name="Int32 MemberAccess()" attrs="129">
+        <size>10</size>
+      </method>
+      <method name="Int32 QualifiedName()" attrs="129">
+        <size>10</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-nameof-03.cs">
+    <type name="T2">
+      <method name="Int32 nameof(System.String)" attrs="150">
+        <size>10</size>
+      </method>
+    </type>
+    <type name="X">
+      <method name="Int32 Main()" attrs="150">
+        <size>37</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-nameof-04.cs">
+    <type name="Ambiguous">
+      <method name="Int32 Main()" attrs="150">
+        <size>68</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
   <test name="test-null-operator-01.cs">
     <type name="S">
       <method name="Int32 get_Prop()" attrs="2182">
@@ -67222,16 +67379,16 @@
         <size>22</size>
       </method>
       <method name="Int32 TestArray()" attrs="145">
-        <size>349</size>
+        <size>477</size>
       </method>
       <method name="Int32 TestReferenceType()" attrs="145">
-        <size>231</size>
+        <size>229</size>
       </method>
       <method name="Int32 TestGeneric[T](T)" attrs="145">
-        <size>58</size>
+        <size>118</size>
       </method>
       <method name="Int32 TestNullable()" attrs="145">
-        <size>384</size>
+        <size>386</size>
       </method>
       <method name="Int32 Main()" attrs="145">
         <size>120</size>
@@ -67255,12 +67412,6 @@
       <method name="Void set_PropNullable(System.Nullable`1[System.Byte])" attrs="2182">
         <size>8</size>
       </method>
-      <method name="System.String get_PropReference()" attrs="2182">
-        <size>14</size>
-      </method>
-      <method name="Void set_PropReference(System.String)" attrs="2182">
-        <size>8</size>
-      </method>
       <method name="Void add_ev1(System.Action)" attrs="2182">
         <size>42</size>
       </method>
@@ -67273,26 +67424,31 @@
     </type>
     <type name="C">
       <method name="Int32 Main()" attrs="145">
-        <size>86</size>
+        <size>64</size>
       </method>
       <method name="Void .ctor()" attrs="6278">
         <size>7</size>
       </method>
       <method name="Int32 TestProperty()" attrs="145">
-        <size>168</size>
+        <size>359</size>
       </method>
       <method name="Int32 TestField()" attrs="145">
-        <size>168</size>
+        <size>351</size>
       </method>
-      <method name="Int32 TestEvent()" attrs="145">
-        <size>50</size>
+    </type>
+    <type name="CI">
+      <method name="System.Object get_PropReference()" attrs="2182">
+        <size>14</size>
+      </method>
+      <method name="Void set_PropReference(System.Object)" attrs="2182">
+        <size>8</size>
       </method>
     </type>
   </test>
   <test name="test-null-operator-03.cs">
     <type name="C">
       <method name="Int32 Test1()" attrs="129">
-        <size>62</size>
+        <size>82</size>
       </method>
       <method name="Int32 Main()" attrs="145">
         <size>62</size>
@@ -67308,7 +67464,7 @@
         <size>2</size>
       </method>
       <method name="Void Main()" attrs="150">
-        <size>27</size>
+        <size>26</size>
       </method>
       <method name="Void .ctor()" attrs="6278">
         <size>7</size>
@@ -67335,16 +67491,98 @@
     </type>
     <type name="C">
       <method name="Int32 TestArrayAccess()" attrs="145">
-        <size>114</size>
+        <size>206</size>
       </method>
       <method name="Int32 TestIndexerAccess()" attrs="145">
-        <size>93</size>
+        <size>188</size>
       </method>
       <method name="Int32 Main()" attrs="145">
         <size>64</size>
       </method>
       <method name="Void .ctor()" attrs="6278">
         <size>7</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-null-operator-06.cs">
+    <type name="C">
+      <method name="Int32 Main()" attrs="145">
+        <size>459</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-null-operator-07.cs">
+    <type name="C">
+      <method name="Int32 Main()" attrs="145">
+        <size>93</size>
+      </method>
+      <method name="System.String EM(System.Object)" attrs="145">
+        <size>26</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-null-operator-08.cs">
+    <type name="Program">
+      <method name="Void M[T](T)" attrs="145">
+        <size>88</size>
+      </method>
+      <method name="Void M2[T](T[])" attrs="145">
+        <size>64</size>
+      </method>
+      <method name="Void M2_2[T](T[])" attrs="145">
+        <size>114</size>
+      </method>
+      <method name="Void M3[T](System.Nullable`1[T])" attrs="145">
+        <size>106</size>
+      </method>
+      <method name="Void Main()" attrs="145">
+        <size>165</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+    <type name="S">
+      <method name="Void Foo(Boolean)" attrs="486">
+        <size>38</size>
+      </method>
+    </type>
+    <type name="Program">
+      <method name="Void TestAddress_1[T](T)" attrs="145">
+        <size>56</size>
+      </method>
+      <method name="Void TestAddress_2[T](T[])" attrs="145">
+        <size>82</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-null-operator-09.cs">
+    <type name="D">
+      <method name="Int32 Invoke(Int32)" attrs="454">
+        <size>0</size>
+      </method>
+      <method name="System.IAsyncResult BeginInvoke(Int32, System.AsyncCallback, System.Object)" attrs="454">
+        <size>0</size>
+      </method>
+      <method name="Int32 EndInvoke(System.IAsyncResult)" attrs="454">
+        <size>0</size>
+      </method>
+      <method name="Void .ctor(Object, IntPtr)" attrs="6278">
+        <size>0</size>
+      </method>
+    </type>
+    <type name="X">
+      <method name="Int32 Main()" attrs="150">
+        <size>88</size>
+      </method>
+      <method name="Int32 &lt;d&gt;m__0(System.Object, Int32)" attrs="145">
+        <size>10</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>42</size>
       </method>
     </type>
   </test>

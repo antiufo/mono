@@ -1187,7 +1187,8 @@ namespace Mono.CSharp {
 
 					// Using container location because the interface can be implemented
 					// by base class
-					container.Compiler.Report.Error (425, container.Location,
+					var tp = (tparams [i].MemberDefinition as MemberCore) ?? container;
+					container.Compiler.Report.Error (425, tp.Location,
 						"The constraints for type parameter `{0}' of method `{1}' must match the constraints for type parameter `{2}' of interface method `{3}'. Consider using an explicit interface implementation instead",
 						tparams[i].GetSignatureForError (), method.GetSignatureForError (),
 						base_tparams[i].GetSignatureForError (), baseMethod.GetSignatureForError ());
@@ -2251,6 +2252,9 @@ namespace Mono.CSharp {
 
 		protected override bool CheckBase ()
 		{
+			if ((caching_flags & Flags.MethodOverloadsExist) != 0)
+				CheckForDuplications ();
+
 			// Don't check base, destructors have special syntax
 			return true;
 		}
