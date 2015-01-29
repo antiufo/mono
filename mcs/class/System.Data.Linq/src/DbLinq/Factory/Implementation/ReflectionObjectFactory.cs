@@ -93,14 +93,15 @@ namespace DbLinq.Factory.Implementation
         protected IDictionary<Type, IList<Type>> ParseAppDomain()
         {
             var interfaceImplementations = new Dictionary<Type, IList<Type>>();
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Parse(typeof(DataMapper).Assembly, interfaceImplementations);
+            /*var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var assembliesToAvoid = GetAssembliesToAvoid();
             foreach (var assembly in assemblies)
             {
                 if (assembliesToAvoid.Contains(assembly))
                     continue;
                 Parse(assembly, interfaceImplementations);
-            }
+            }*/
             return interfaceImplementations;
         }
 
