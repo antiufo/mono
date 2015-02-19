@@ -691,8 +691,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         protected virtual Expression AnalyzeProjectionQuery(SpecialExpressionType specialExpressionType, IList<Expression> parameters,
                                                             BuilderContext builderContext)
         {
-
-            if (builderContext.IsExternalInExpressionChain)
+            var isGroupBySelection = !builderContext.IsExternalInExpressionChain && parameters[0].NodeType == ExpressionType.Parameter;
+            if (builderContext.IsExternalInExpressionChain || isGroupBySelection)
             {
                 var operand0 = Analyze(parameters[0], builderContext);
                 Expression projectionOperand;
@@ -702,14 +702,19 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     || builderContext.CurrentSelect.Group.Count > 0
                    )
                 {
-                    //BuildSelect(builderContext.CurrentSelect, builderContext);
-                    operand0 = new SubSelectExpression(builderContext.CurrentSelect, operand0.Type, "source");
-                    builderContext.NewParentSelect();
+                    if (!isGroupBySelection)
+                    {
+                        //BuildSelect(builderContext.CurrentSelect, builderContext);
+                        operand0 = new SubSelectExpression(builderContext.CurrentSelect, operand0.Type, "source");
+                    
+                        builderContext.NewParentSelect();
 
-                    // In the new scope we should not have MaximumDatabaseLoad
-                    builderContext.QueryContext.MaximumDatabaseLoad = false;
+                        // In the new scope we should not have MaximumDatabaseLoad
+                        builderContext.QueryContext.MaximumDatabaseLoad = false;
 
-                    builderContext.CurrentSelect.Tables.Add(operand0 as TableExpression);
+                    
+                        builderContext.CurrentSelect.Tables.Add(operand0 as TableExpression);
+                    }
                 }
 
                 // basically, we have three options for projection methods:
