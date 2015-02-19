@@ -157,6 +157,20 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <returns></returns>
         protected virtual SqlStatement BuildExpression(Expression expression, QueryContext queryContext)
         {
+            var memAccess = expression as MemberExpression;
+            if (memAccess != null)
+            {
+                var obj = memAccess.Expression as NewExpression;
+                if (obj != null && obj.Members != null)
+                {
+                    var idx = obj.Members.IndexOf(memAccess.Member);
+                    if (idx != -1)
+                    {
+                        return BuildExpression(obj.Arguments[idx], queryContext);
+                    }
+                }
+            }
+
             var sqlProvider = queryContext.DataContext.Vendor.SqlProvider;
             var currentPrecedence = ExpressionQualifier.GetPrecedence(expression);
             // first convert operands
