@@ -58,7 +58,7 @@ namespace DbLinq.Vendor
         /// <param name="operationType"></param>
         /// <param name="p"></param>
         /// <returns></returns>
-        SqlStatement GetLiteral(ExpressionType operationType, IList<SqlStatement> p);
+        SqlStatement GetLiteral(ExpressionType operationType, IList<SqlStatement> p, Expression expression);
 
 
         SqlStatement GetReturning(SqlStatement insertion, MetaDataMember column);

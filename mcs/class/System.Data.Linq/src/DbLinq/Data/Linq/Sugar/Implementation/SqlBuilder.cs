@@ -249,7 +249,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 if (indexExpression.StartsAtOne)
                 {
                     literalOperands.Add(BuildExpression(Expression.Constant(1), queryContext));
-                    return sqlProvider.GetLiteral(ExpressionType.Add, literalOperands);
+                    return sqlProvider.GetLiteral(ExpressionType.Add, literalOperands, null);
                 }
                 else
                     return literalOperands.First();

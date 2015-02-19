@@ -224,12 +224,13 @@ namespace DbLinq.Vendor.Implementation
         /// <param name="operationType"></param>
         /// <param name="p"></param>
         /// <returns></returns>
-        public virtual SqlStatement GetLiteral(ExpressionType operationType, IList<SqlStatement> p)
+        public virtual SqlStatement GetLiteral(ExpressionType operationType, IList<SqlStatement> p, Expression expression)
         {
             switch (operationType)
             {
             case ExpressionType.Add:
-                return GetLiteralAdd(p[0], p[1]);
+                if (expression != null && expression.Type == typeof(string)) return GetLiteralStringConcat(p[0], p[1]);
+                else return GetLiteralAdd(p[0], p[1]);
             case ExpressionType.AddChecked:
                 return GetLiteralAddChecked(p[0], p[1]);
             case ExpressionType.And:
