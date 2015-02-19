@@ -55,15 +55,29 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
             GroupedExpression = groupedExpression;
             KeyExpression = keyExpression;
             Clauses = new List<Expression>();
+
+            var newexpr = keyExpression as NewExpression;
+            if (newexpr != null)
+            {
+                foreach (var arg in newexpr.Arguments)
+                {
+                    Clauses.Add(arg);
+                }
+            }
+            else
+            {
+                Clauses.Add(keyExpression);
+            }
             // extract columns (for SQL build)
-            keyExpression.Recurse(
-                delegate(Expression e)
-                    {
-                        if (e is ColumnExpression)
-                            Clauses.Add(e);
-                        return e;
-                    }
-                );
+            
+            //keyExpression.Recurse(
+            //    delegate(Expression e)
+            //        {
+            //            if (e is ColumnExpression)
+            //                Clauses.Add(e);
+            //            return e;
+            //        }
+            //    );
         }
 
         public override Expression Mutate(IList<Expression> newOperands)
