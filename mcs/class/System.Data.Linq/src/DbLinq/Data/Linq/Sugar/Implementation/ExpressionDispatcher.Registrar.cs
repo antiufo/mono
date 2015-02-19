@@ -534,10 +534,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <returns></returns>
         protected virtual Expression GetOutputValueReader(Expression expression,
                                                           ParameterExpression dataRecordParameter, ParameterExpression mappingContextParameter,
-                                                          BuilderContext builderContext)
+                                                          BuilderContext builderContext, bool avoidUnnullabilityConversion = false)
         {
             int valueIndex = RegisterOutputParameter(expression, builderContext);
-            return GetOutputValueReader(expression.Type, valueIndex, dataRecordParameter, mappingContextParameter, builderContext.QueryContext.DataContext);
+            return GetOutputValueReader(expression.Type, valueIndex, dataRecordParameter, mappingContextParameter, builderContext.QueryContext.DataContext, avoidUnnullabilityConversion);
         }
 
         /// <summary>
@@ -567,14 +567,14 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="mappingContextParameter"></param>
         /// <returns></returns>
         public virtual Expression GetOutputValueReader(Type columnType, int valueIndex, ParameterExpression dataRecordParameter,
-                                                          ParameterExpression mappingContextParameter, DataContext context)
+                                                          ParameterExpression mappingContextParameter, DataContext context, bool avoidUnnullabilityConversion = false)
         {
             var customTypeBaseType = context.ShouldUseCustomReader(columnType);
             var propertyReaderLambda = DataRecordReader.GetPropertyReader(customTypeBaseType ?? columnType);
             if (customTypeBaseType != null) propertyReaderLambda = context.GetPropertyReader(columnType, propertyReaderLambda);
             Expression invoke = new ParameterBinder().BindParams(propertyReaderLambda,
                 dataRecordParameter, mappingContextParameter, Expression.Constant(valueIndex));
-            if (!columnType.IsNullable())
+            if (!columnType.IsNullable() && !avoidUnnullabilityConversion)
                 invoke = Expression.Convert(invoke, columnType);
             return invoke;
         }

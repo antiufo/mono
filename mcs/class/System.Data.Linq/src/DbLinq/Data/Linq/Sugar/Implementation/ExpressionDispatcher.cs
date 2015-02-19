@@ -145,11 +145,11 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// </summary>
         /// <param name="selectExpression"></param>
         /// <param name="builderContext"></param>
-        protected virtual LambdaExpression CutOutOperands(Expression selectExpression, BuilderContext builderContext)
+        protected virtual LambdaExpression CutOutOperands(Expression selectExpression, BuilderContext builderContext, bool avoidUnnullabilityConversion = false)
         {
             var dataRecordParameter = Expression.Parameter(typeof(IDataRecord), "dataRecord");
             var mappingContextParameter = Expression.Parameter(typeof(MappingContext), "mappingContext");
-            var expression = CutOutOperands(selectExpression, dataRecordParameter, mappingContextParameter, builderContext);
+            var expression = CutOutOperands(selectExpression, dataRecordParameter, mappingContextParameter, builderContext, avoidUnnullabilityConversion);
             return Expression.Lambda(expression, dataRecordParameter, mappingContextParameter);
         }
 
@@ -164,7 +164,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <returns></returns>
         protected virtual Expression CutOutOperands(Expression expression,
                                                     ParameterExpression dataRecordParameter, ParameterExpression mappingContextParameter,
-                                                    BuilderContext builderContext)
+                                                    BuilderContext builderContext, bool avoidUnnullabilityConversion)
         {
             // two options: we cut and return
             if (GetCutOutOperand(expression, builderContext))
@@ -185,15 +185,30 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     // TODO record EntitySet information, so we can initalize it with owner
                 }
                 // then, the result is registered
-                return GetOutputValueReader(expression, dataRecordParameter, mappingContextParameter, builderContext);
+                return GetOutputValueReader(expression, dataRecordParameter, mappingContextParameter, builderContext, avoidUnnullabilityConversion);
             }
             // or we dig down
+
+            if (expression.NodeType == ExpressionType.Convert)
+            {
+                var convert = (UnaryExpression)expression;
+                if (convert.Type.IsGenericType && convert.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    var op = expression.GetOperands().First();
+                    if (op != null)
+                    {
+                        var avoid = CutOutOperands(op, dataRecordParameter, mappingContextParameter, builderContext, true);
+                        if (avoid.Type == convert.Type) return avoid;
+                    }
+                }
+            }
+
             var operands = new List<Expression>();
             foreach (var operand in expression.GetOperands())
             {
                 operands.Add(operand == null 
                     ? null
-                    : CutOutOperands(operand, dataRecordParameter, mappingContextParameter, builderContext));
+                    : CutOutOperands(operand, dataRecordParameter, mappingContextParameter, builderContext, false));
             }
             return expression.ChangeOperands(operands);
         }
