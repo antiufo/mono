@@ -78,6 +78,11 @@ namespace DbLinq.PostgreSql
         }
 
 
+        public override SqlStatement GetOrderByColumn(SqlStatement expression, bool descending)
+        {
+            return base.GetOrderByColumn(expression, descending) + " NULLS LAST";
+        }
+
         protected override string GetFromExpression(Expression expression)
         {
 
