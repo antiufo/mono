@@ -51,6 +51,7 @@ namespace DbLinq.Data.Linq.Sugar
         public QueryContext(DataContext dataContext)
         {
             DataContext = dataContext;
+            MaximumDatabaseLoad = true;
         }
 
         public DbTransaction Transaction;
