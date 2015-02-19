@@ -175,6 +175,9 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var originalParameters = operands.Skip(parameters.Count + operarandsToSkip);
             var newParameters = parameters.Union(originalParameters).ToList();
 
+            var custom = AnalyzeCustomMethod(expression, newParameters, builderContext);
+            if (custom != null) return custom;
+
             return AnalyzeQueryableCall(expression.Method, newParameters, builderContext) ??
                 AnalyzeStringCall(expression.Method, newParameters, builderContext) ??
                 AnalyzeMathCall(expression.Method, newParameters, builderContext) ??
@@ -427,8 +430,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         private Expression AnalyzeUnknownCall(MethodCallExpression expression, IList<Expression> parameters, BuilderContext builderContext)
         {
-            var custom = AnalyzeCustomMethod(expression, parameters, builderContext);
-            if (custom != null) return custom;
+          
             var method = expression.Method;
             switch (method.Name)
             {
