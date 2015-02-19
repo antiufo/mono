@@ -430,15 +430,24 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return sqlProvider.GetHavingClause(havingClauses.ToArray());
         }
 
-        protected virtual SqlStatement GetGroupByClause(ColumnExpression columnExpression, QueryContext queryContext)
+        protected virtual SqlStatement GetGroupByClause(Expression expression, QueryContext queryContext)
         {
             var sqlProvider = queryContext.DataContext.Vendor.SqlProvider;
-            if (columnExpression.Table.Alias != null)
+            var columnExpression = expression as ColumnExpression;
+            if (columnExpression != null)
             {
-                return sqlProvider.GetColumn(sqlProvider.GetTableAlias(columnExpression.Table.Alias),
-                                             columnExpression.Name);
+                if (columnExpression.Table.Alias != null)
+                {
+                    return sqlProvider.GetColumn(sqlProvider.GetTableAlias(columnExpression.Table.Alias),
+                                                 columnExpression.Name);
+                }
+                return sqlProvider.GetColumn(columnExpression.Name);
             }
-            return sqlProvider.GetColumn(columnExpression.Name);
+            return BuildExpression(expression, queryContext);
+            /*if (selectExpression is SelectExpression)
+                selectClauses.Add(sqlProvider.GetParenthesis(expressionString));
+            else
+                selectClauses.Add(expressionString);*/
         }
 
         protected virtual SqlStatement BuildGroupBy(IList<GroupExpression> groupByExpressions, QueryContext queryContext)
@@ -449,10 +458,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             {
                 foreach (var operand in groupByExpression.Clauses)
                 {
-                    var columnOperand = operand as ColumnExpression;
-                    if (columnOperand == null)
-                        throw Error.BadArgument("S0201: Groupby argument must be a ColumnExpression");
-                    groupByClauses.Add(GetGroupByClause(columnOperand, queryContext));
+                    groupByClauses.Add(GetGroupByClause(operand, queryContext));
                 }
             }
             return sqlProvider.GetGroupByClause(groupByClauses.ToArray());
