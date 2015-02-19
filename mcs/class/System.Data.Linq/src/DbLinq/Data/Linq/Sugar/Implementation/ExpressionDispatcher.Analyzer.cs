@@ -1251,7 +1251,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     return unaliasedTableExpression;
             }
             var operands = expression.GetOperands().ToList();
-            var firstop = operands[0];
+
             for (int operandIndex = 0; operandIndex < operands.Count; operandIndex++)
             {
                 var operand = operands[operandIndex];
