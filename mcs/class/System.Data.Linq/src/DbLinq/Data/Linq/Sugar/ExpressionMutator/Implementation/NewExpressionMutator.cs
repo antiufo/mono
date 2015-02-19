@@ -37,6 +37,14 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator.Implementation
 
         public Expression Mutate(IList<Expression> operands)
         {
+            var parameters = NewExpression.Constructor.GetParameters();
+            for (int i = 0; i < operands.Count; i++)
+            {
+                if (operands[i].Type != parameters[i].ParameterType)
+                {
+                    operands[i] = Expression.Convert(operands[i], parameters[i].ParameterType);
+                }
+            }
             if (NewExpression.Members != null)
                 return Expression.New(NewExpression.Constructor, operands, NewExpression.Members);
             return Expression.New(NewExpression.Constructor, operands);
