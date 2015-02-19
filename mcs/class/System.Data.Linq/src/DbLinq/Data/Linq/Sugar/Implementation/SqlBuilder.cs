@@ -262,7 +262,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     return sqlProvider.GetLiteralConvert(firstOperand, unaryExpression.Type);
                 return firstOperand;
             }
-            return sqlProvider.GetLiteral(expression.NodeType, literalOperands);
+            return sqlProvider.GetLiteral(expression.NodeType, literalOperands, expression);
         }
 
         private Expressions.ExpressionTranslator GetTranslator(DbLinq.Vendor.ISqlProvider provider)
