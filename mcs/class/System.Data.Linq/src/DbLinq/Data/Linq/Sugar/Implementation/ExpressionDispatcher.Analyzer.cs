@@ -1022,6 +1022,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if (objectExpression.Type == typeof(TimeSpan))
                 return AnalyzeTimeSpanMemberAccess(objectExpression, memberInfo);
 
+            if (memberInfo.DeclaringType == typeof(Uri))
+                return AnalyzeUriMemberAccess(objectExpression, memberInfo, isStaticMemberAccess);
+
+
 
             if (objectExpression is InputParameterExpression)
             {
@@ -1109,6 +1113,17 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
             return currentExpression;
         }
+
+        protected Expression AnalyzeUriMemberAccess(Expression objectExpression, MemberInfo memberInfo, bool isStaticMemberAccess)
+        {
+
+            if (memberInfo.Name == "AbsoluteUri")
+            {
+                return Expression.Convert(Expression.Convert( objectExpression, typeof(object)), typeof(string));
+            }
+            throw new NotSupportedException(string.Format("Uri Member access {0} not supported", memberInfo.Name));
+        }
+
 
         protected Expression AnalyzeDateTimeMemberAccess(Expression objectExpression, MemberInfo memberInfo, bool isStaticMemberAccess)
         {
