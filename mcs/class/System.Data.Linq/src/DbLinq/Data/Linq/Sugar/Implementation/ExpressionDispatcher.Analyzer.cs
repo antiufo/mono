@@ -111,6 +111,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     return AnalyzeLambda(expression, parameters, builderContext);
                 case ExpressionType.Parameter:
                     return AnalyzeParameter(expression, builderContext);
+                case ExpressionType.Conditional:
+                    return AnalyzeConditional(expression, parameters, builderContext);
                 case ExpressionType.Quote:
                     return AnalyzeQuote(expression, parameters, builderContext);
                 case ExpressionType.MemberAccess:
@@ -824,7 +826,16 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return tablePiece;
         }
 
+        protected virtual Expression AnalyzeConditional(Expression expression, IList<Expression> parameters, BuilderContext builderContext)
+        {
+            var c = (ConditionalExpression)expression;
+            var condition = Analyze(c.Test, builderContext);
+            var ifTrue = Analyze(c.IfTrue, builderContext);
+            var ifFalse = Analyze(c.IfFalse, builderContext);
 
+
+            return Expression.Condition(condition, ifTrue, ifFalse);
+        }
 
         /// <summary>
         /// Handling a lambda consists in:
