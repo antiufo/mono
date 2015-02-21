@@ -701,7 +701,21 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         protected virtual Expression AnalyzeProjectionQuery(SpecialExpressionType specialExpressionType, IList<Expression> parameters,
                                                             BuilderContext builderContext)
         {
-            var isGroupBySelection = !builderContext.IsExternalInExpressionChain && parameters[0].NodeType == ExpressionType.Parameter;
+            bool isGroupBySelection = false;
+            if (!builderContext.IsExternalInExpressionChain)
+            {
+                var m = parameters[0];
+                if (m.NodeType == ExpressionType.Convert) m = ((UnaryExpression)m).Operand;
+                if (m.NodeType == ExpressionType.Call)
+                {
+                    var mm = (MethodCallExpression)m;
+                    if (mm.Method.Name == "AsQueryable") m = mm.Arguments[0];
+                }
+                if (m.NodeType == ExpressionType.Parameter)
+                {
+                    isGroupBySelection = true;
+                }
+            }
             if (builderContext.IsExternalInExpressionChain || isGroupBySelection)
             {
                 var operand0 = Analyze(parameters[0], builderContext);
@@ -744,8 +758,23 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 }
                 else
                 {
-                    projectionOperand = operand0;
-                    CheckWhere(projectionOperand, parameters, 1, builderContext);
+                    if (
+                        specialExpressionType == SpecialExpressionType.Average ||
+                        specialExpressionType == SpecialExpressionType.Sum ||
+                        specialExpressionType == SpecialExpressionType.Min ||
+                        specialExpressionType == SpecialExpressionType.Max
+                        )
+                    {
+                        if (operand0 is TableExpression)
+                            RegisterTable((TableExpression)operand0, builderContext);
+                        var v = Analyze(parameters[1], operand0, builderContext);
+                        return new SpecialExpression(specialExpressionType, v);
+                    }
+                    else
+                    {
+                        projectionOperand = operand0;
+                        CheckWhere(projectionOperand, parameters, 1, builderContext);
+                    }
                 }
 
                 if (projectionOperand is TableExpression)
@@ -769,9 +798,32 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 {
                     tableExpression = setExpression.TableExpression;
                 }
+
+                if (
+                    specialExpressionType == SpecialExpressionType.Average ||
+                    specialExpressionType == SpecialExpressionType.Sum ||
+                    specialExpressionType == SpecialExpressionType.Min ||
+                    specialExpressionType == SpecialExpressionType.Max
+                   )
+                {
+                    //if (parameters.Count > 1)
+                    //{
+                    setExpression = tableExpression as EntitySetExpression;
+                    if (setExpression != null)
+                        tableExpression = setExpression.TableExpression;
+                    var anyClause = Analyze(parameters[1], tableExpression, projectionQueryBuilderContext);
+                    //RegisterWhere(anyClause, projectionQueryBuilderContext);
+                    //}
+
+                    projectionQueryBuilderContext.CurrentSelect = projectionQueryBuilderContext.CurrentSelect.ChangeOperands(new SpecialExpression(specialExpressionType, anyClause));
+
+                    return projectionQueryBuilderContext.CurrentSelect;
+                }
+
                 //from here we build a custom clause:
                 // <anyClause> ==> "(select count(*) from <table> where <anyClause>)>0"
                 // TODO (later...): see if some vendors support native Any operator and avoid this substitution
+                // WHY Here!? It's not used by Any and breaks Average...
                 if (parameters.Count > 1)
                 {
                     setExpression = tableExpression as EntitySetExpression;
