@@ -32,6 +32,7 @@ using DbLinq.Data.Linq.Sql;
 using DbLinq.Vendor.Implementation;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using System.Data.Linq.Mapping;
+using System.Text;
 
 namespace DbLinq.PostgreSql
 {
@@ -177,5 +178,13 @@ namespace DbLinq.PostgreSql
 
             return string.Format("({0})::{1}", a, sqlTypeName);
         }
+
+        protected override SqlStatement GetLiteralDateTimeGranularity(SqlStatement dateExpression, SpecialExpressionType operationType)
+        {
+            var s = operationType.ToString();
+            return "date_trunc('"+ s.Substring(0, s.Length - "Granularity".Length).ToLower() +"', "+dateExpression+ ")";
+        }
+
+
     }
 }

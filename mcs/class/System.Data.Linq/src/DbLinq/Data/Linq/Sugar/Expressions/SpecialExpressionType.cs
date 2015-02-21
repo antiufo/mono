@@ -88,6 +88,13 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         Between,
         NotBetween,
 
-        ShamanUserLikeTable
+        ShamanUserLikeTable,
+
+        YearGranularity,
+        MonthGranularity,
+        DayGranularity,
+        HourGranularity,
+        MinuteGranularity,
+        SecondGranularity,
     }
 }

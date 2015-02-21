@@ -94,6 +94,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Sign:
                 case SpecialExpressionType.Sqrt:
                 case SpecialExpressionType.FullTextRank:
+                case SpecialExpressionType.YearGranularity:
+                case SpecialExpressionType.MonthGranularity:
+                case SpecialExpressionType.DayGranularity:
+                case SpecialExpressionType.HourGranularity:
+                case SpecialExpressionType.MinuteGranularity:
+                case SpecialExpressionType.SecondGranularity:
                 case SpecialExpressionType.ShamanUserLikeTable:
                     return ExpressionPrecedence.Primary;
                 case SpecialExpressionType.In:
@@ -247,7 +253,13 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Round:
                 case SpecialExpressionType.Sign:
                 case SpecialExpressionType.Sqrt:
-                    return ExpressionTier.Any;
+                case SpecialExpressionType.YearGranularity:
+                case SpecialExpressionType.MonthGranularity:
+                case SpecialExpressionType.DayGranularity:
+                case SpecialExpressionType.HourGranularity:
+                case SpecialExpressionType.MinuteGranularity:
+                case SpecialExpressionType.SecondGranularity:
+                        return ExpressionTier.Any;
 
                 case SpecialExpressionType.Between:
                 case SpecialExpressionType.NotBetween:

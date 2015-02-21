@@ -391,6 +391,13 @@ namespace DbLinq.Vendor.Implementation
             case SpecialExpressionType.Second:
             case SpecialExpressionType.Millisecond:
                 return GetLiteralDateTimePart(p[0], operationType);
+            case SpecialExpressionType.YearGranularity:
+            case SpecialExpressionType.MonthGranularity:
+            case SpecialExpressionType.DayGranularity:
+            case SpecialExpressionType.HourGranularity:
+            case SpecialExpressionType.MinuteGranularity:
+            case SpecialExpressionType.SecondGranularity:
+                return GetLiteralDateTimeGranularity(p[0], operationType);
             case SpecialExpressionType.Date:
                 return p[0];
             case SpecialExpressionType.DateDiffInMilliseconds:
@@ -574,7 +581,10 @@ namespace DbLinq.Vendor.Implementation
         {
             return SqlStatement.Format("EXTRACT({0} FROM {1})", operationType.ToString().ToUpper(), dateExpression);
         }
-
+        protected virtual SqlStatement GetLiteralDateTimeGranularity(SqlStatement dateExpression, SpecialExpressionType operationType)
+        {
+            throw new NotSupportedException("Not supported by SQL provider: GetLiteralDateTimeGranularity");
+        }
 
         /// <summary>
         /// Gets the literal string index of.

@@ -26,7 +26,9 @@
 
 using System.Collections.Generic;
 using DbLinq.Data.Linq.Sql;
+using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Vendor.Implementation;
+using System;
 
 namespace DbLinq.Sqlite
 {
@@ -100,6 +102,27 @@ namespace DbLinq.Sqlite
 
             return "strftime('%" + qualifier + "', datetime(("+ dateExpression + " - 621355968000000000) / 10000000, 'unixepoch'))";
         }
+
+
+        protected override SqlStatement GetLiteralDateTimeGranularity(SqlStatement dateExpression, SpecialExpressionType operationType)
+        {
+            string qualifier;
+            switch (operationType)
+            {
+                case SpecialExpressionType.YearGranularity: qualifier = "%Y-01-01"; break;
+                case SpecialExpressionType.MonthGranularity: qualifier = "%Y-%m-01"; break; // Yes M and m have opposite meaning compared to .NET
+                case SpecialExpressionType.DayGranularity: qualifier = "%Y-%m-%d"; break;
+                case SpecialExpressionType.HourGranularity: qualifier = "%Y-%m-%d %H:00:00"; break;
+                case SpecialExpressionType.MinuteGranularity: qualifier = "%Y-%m-%d %H:%M:00"; break;
+                case SpecialExpressionType.SecondGranularity: qualifier = "%Y-%m-%d %H:%M:%S"; break;
+                default: throw new NotSupportedException("Not supported by SQLite: " + operationType);
+            }
+
+            return "(strftime('%s', datetime(strftime('" + qualifier + "', datetime((" + dateExpression + " - 621355968000000000) / 10000000, 'unixepoch')))) * 10000000 + 621355968000000000)";
+
+        }
+
+
 
     }
 }

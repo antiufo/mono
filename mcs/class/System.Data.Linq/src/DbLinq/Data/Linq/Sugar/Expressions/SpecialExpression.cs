@@ -111,6 +111,12 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                 case SpecialExpressionType.Millisecond:
                     return typeof(int);
                 case SpecialExpressionType.Now:
+                case SpecialExpressionType.YearGranularity:
+                case SpecialExpressionType.MonthGranularity:
+                case SpecialExpressionType.DayGranularity:
+                case SpecialExpressionType.HourGranularity:
+                case SpecialExpressionType.MinuteGranularity:
+                case SpecialExpressionType.SecondGranularity:
                 case SpecialExpressionType.Date:
                     return typeof(DateTime);
                 case SpecialExpressionType.DateDiffInMilliseconds:
