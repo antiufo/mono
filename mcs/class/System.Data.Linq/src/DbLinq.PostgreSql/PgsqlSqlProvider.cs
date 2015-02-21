@@ -159,8 +159,13 @@ namespace DbLinq.PostgreSql
 
         public override SqlStatement GetLiteralConvert(SqlStatement a, Type type)
         {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (type.IsGenericType)
+            {
+                var generic = type.GetGenericTypeDefinition();
+                if (generic == typeof(IEnumerable<>) || generic == typeof(IQueryable<>)) return a;
+                
                 type = type.GetGenericArguments().First();
+            }
 
             if (type == typeof(object)) return a;
 
