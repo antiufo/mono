@@ -198,6 +198,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             {
                 case "Search":
                     return popCallStack(AnalyzeSearch(parameters, builderContext));
+                case "AsQueryable":
+                    return popCallStack(AnalyzeAsQueryable(parameters, builderContext));
                 case "All":
                     return popCallStack(AnalyzeAll(parameters, builderContext));
                 case "Any":
@@ -263,6 +265,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                         throw Error.BadArgument("S0133: Implement QueryMethod Queryable.{0}.", methodName);
                     return popCallStack(null);
             }
+        }
+
+        private Expression AnalyzeAsQueryable(IList<Expression> parameters, BuilderContext builderContext)
+        {
+            var enumerable = parameters[0];
+            return Analyze(enumerable, builderContext);
         }
 
         private Expression AnalyzeSearch(IList<Expression> parameters, BuilderContext builderContext)
