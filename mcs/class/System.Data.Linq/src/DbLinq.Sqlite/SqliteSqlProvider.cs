@@ -82,5 +82,24 @@ namespace DbLinq.Sqlite
                 return '`';
             }
         }
+
+
+        protected override SqlStatement GetLiteralDateTimePart(SqlStatement dateExpression, SpecialExpressionType operationType)
+        {
+            string qualifier;
+            switch (operationType)
+            {
+                case SpecialExpressionType.Year: qualifier = "Y"; break;
+                case SpecialExpressionType.Month: qualifier = "m"; break; // Yes M and m have opposite meaning compared to .NET
+                case SpecialExpressionType.Day: qualifier = "d"; break;
+                case SpecialExpressionType.Hour: qualifier = "H"; break;
+                case SpecialExpressionType.Minute: qualifier = "M"; break;
+                case SpecialExpressionType.Second: qualifier = "S"; break;
+                default: throw new NotSupportedException("Not supported by SQLite: " + operationType);
+            }
+
+            return "strftime('%" + qualifier + "', datetime(("+ dateExpression + " - 621355968000000000) / 10000000, 'unixepoch'))";
+        }
+
     }
 }
