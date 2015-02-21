@@ -470,8 +470,9 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var orderByClauses = new List<SqlStatement>();
             foreach (var clause in orderByExpressions)
             {
-                orderByClauses.Add(sqlProvider.GetOrderByColumn(BuildExpression(clause.ColumnExpression, queryContext),
-                                                                clause.Descending));
+                var z = BuildExpression(clause.ColumnExpression, queryContext);
+                if (z.ToString().StartsWith("SELECT ")) z = "(" + z + ")";
+                orderByClauses.Add(sqlProvider.GetOrderByColumn(z, clause.Descending));
             }
             return sqlProvider.GetOrderByClause(orderByClauses.ToArray());
         }
