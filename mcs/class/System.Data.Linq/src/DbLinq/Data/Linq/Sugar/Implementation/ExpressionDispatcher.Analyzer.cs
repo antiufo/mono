@@ -1148,7 +1148,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             if (isStaticMemberAccess)
             {
-                if (memberInfo.Name == "Now")
+                if (memberInfo.Name == "Now" || memberInfo.Name == "UtcNow")
                     return new SpecialExpression(SpecialExpressionType.Now);
                 else
                     throw new NotSupportedException(string.Format("DateTime Member access {0} not supported", memberInfo.Name));
