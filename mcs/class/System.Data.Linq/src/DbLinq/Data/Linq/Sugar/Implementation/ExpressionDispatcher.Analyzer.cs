@@ -871,11 +871,19 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <returns></returns>
         protected virtual Expression AnalyzeParameter(Expression expression, BuilderContext builderContext)
         {
+           
+
             Expression unaliasedExpression;
             var parameterName = GetParameterName(expression);
             builderContext.Parameters.TryGetValue(parameterName, out unaliasedExpression);
+
+            if (unaliasedExpression != null && unaliasedExpression.NodeType == ExpressionType.Convert)
+                unaliasedExpression = ((UnaryExpression)unaliasedExpression).Operand;
+
             if (unaliasedExpression == null)
                 throw Error.BadArgument("S0257: can not find parameter '{0}'", parameterName);
+
+
 
             #region set alias helper
 
