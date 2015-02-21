@@ -114,7 +114,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case ExpressionType.Conditional:
                     return AnalyzeConditional(expression, parameters, builderContext);
                 case ExpressionType.Quote:
-                    return AnalyzeQuote(expression, parameters, builderContext);
+                    BuilderContext dummy;
+                    return AnalyzeQuote(expression, parameters, builderContext, out dummy);
                 case ExpressionType.MemberAccess:
                     return AnalyzeMember(expression, builderContext);
                 #region case ExpressionType.<Common operators>:
@@ -1292,9 +1293,9 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="parameters"></param>
         /// <param name="builderContext"></param>
         /// <returns></returns>
-        protected virtual Expression AnalyzeQuote(Expression piece, IList<Expression> parameters, BuilderContext builderContext)
+        protected virtual Expression AnalyzeQuote(Expression piece, IList<Expression> parameters, BuilderContext builderContext, out BuilderContext builderContextClone)
         {
-            var builderContextClone = builderContext.NewQuote();
+            builderContextClone = builderContext.NewQuote();
             var firstExpression = piece.GetOperands().First();
             return Analyze(firstExpression, parameters, builderContextClone);
         }
