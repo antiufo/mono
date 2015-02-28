@@ -1334,6 +1334,19 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
             var operands = expression.GetOperands().ToList();
 
+            if (expression.NodeType == ExpressionType.Equal || expression.NodeType == ExpressionType.NotEqual)
+            {
+                if (IsNull(operands[0]))
+                {
+                    if (IsNull(operands[1])) return Expression.Constant(expression.NodeType == ExpressionType.Equal);
+                    return new SpecialExpression(expression.NodeType == ExpressionType.Equal ? SpecialExpressionType.IsNull : SpecialExpressionType.IsNotNull, Analyze(operands[1], builderContext));
+                }
+                else if (IsNull(operands[1]))
+                {
+                    return new SpecialExpression(expression.NodeType == ExpressionType.Equal ? SpecialExpressionType.IsNull : SpecialExpressionType.IsNotNull, Analyze(operands[0], builderContext));
+                }
+            }
+
             for (int operandIndex = 0; operandIndex < operands.Count; operandIndex++)
             {
                 var operand = operands[operandIndex];
@@ -1342,6 +1355,13 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             
 
             return expression.ChangeOperands(operands);
+        }
+
+        private bool IsNull(Expression expression)
+        {
+            if (expression.NodeType == ExpressionType.Constant) return ((ConstantExpression)expression).Value == null;
+            if (expression.NodeType == ExpressionType.Convert) return IsNull(((UnaryExpression)expression).Operand);
+            return false;
         }
 
         protected virtual Expression AnalyzeNewOperator(Expression expression, BuilderContext builderContext)
