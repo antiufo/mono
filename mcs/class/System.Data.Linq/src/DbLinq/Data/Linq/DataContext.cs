@@ -84,10 +84,6 @@ namespace DbLinq.Data.Linq
 
         }
 
-        public virtual Expression GetTextConditionUsingLike(string searchTerms, Type type, Func<ConstantExpression, MetaDataMember, Expression> getLike)
-        {
-            throw new NotSupportedException();
-        }
 
         protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<IDataRecord, MappingContext, T> rowObjectCreator, Func<ITransactionalCommand> getDbCommand)
         {

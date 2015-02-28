@@ -201,8 +201,6 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             string methodName = method.Name;
             switch (methodName)
             {
-                case "Search":
-                    return popCallStack(AnalyzeSearch(parameters, builderContext));
                 case "AsQueryable":
                     return popCallStack(AnalyzeAsQueryable(parameters, builderContext));
                 case "All":
@@ -278,86 +276,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return Analyze(enumerable, builderContext);
         }
 
-        private Expression AnalyzeSearch(IList<Expression> parameters, BuilderContext builderContext)
-        {
-
-            var searchTerms = (string)((ConstantExpression)parameters[1]).Value;
-            var table = (TableExpression)parameters[0];
 
 
-            if (builderContext.QueryContext.DataContext.Vendor.VendorName != "PostgreSQL")
-            {
-                var cond = builderContext.QueryContext.DataContext.GetTextConditionUsingLike(searchTerms, table.Type, (a, member) =>
-                {
-                    
-                    var col = RegisterColumn(table, member, builderContext);
-                    return new SpecialExpression(SpecialExpressionType.Like, col, 
-                     Expression.Constant("%" + (string)a.Value + "%")
-                        );
-
-                });
-                RegisterWhere(cond, builderContext);
-                return table;
-
-            }
-
-
-
-
-            var language = "english";
-            var searchQueryId = ++builderContext.QueryContext.FullTextSearchId;
-            //var rewritten = CreateSearchExpression(parameters[0], "english", );
-            //return rewritten;
-            var fte = new FullTextSearchExpression(language, searchTerms, searchQueryId);
-            var tex = new TableExpression(typeof(VirtualSearchTable), fte, "search$" + searchQueryId);
-            var ctx = builderContext.QueryContext.DataContext;
-
-
-            
-            var wordsField = ctx.GetWordsField(table.Type);
-
-
-            var searchTable = wordsField.DeclaringType.Type == table.Type ? table : CreateTable(wordsField.DeclaringType.Type, builderContext);
-            var wordsExpression = new ColumnExpression(searchTable, wordsField);
-
-            RegisterTable(tex, builderContext);
-            RegisterTable(searchTable, builderContext);
-            RegisterWhere(new SpecialExpression(SpecialExpressionType.MatchesFullText, Expression.Constant(searchQueryId), wordsExpression), builderContext);
-
-            if (searchTable.Type != table.Type)
-            {
-                Func<TableExpression, System.Data.Linq.Mapping.MetaDataMember, ColumnExpression> getcol = (a, b) => RegisterColumn(a, b, builderContext);
-                RegisterWhere(ctx.GetFullTextJoinWhere(wordsExpression, searchTable, table, getcol), builderContext);
-            }
-
-            if (builderContext.CurrentSelect.OrderBy.Count == 0)
-                builderContext.CurrentSelect.OrderBy.Add(new OrderByExpression(false, new SpecialExpression(SpecialExpressionType.FullTextRank, Expression.Constant(searchQueryId), wordsExpression)));
-
-
-
-
-            //builderContext.CurrentSelect.OrderBy
-            //return new QueryProvider<VirtualSearchTable>(typeof(VirtualSearchTable), null, new ExpressionChain(), tex);
-
-
-            //  RegisterWhere(
-            //AnalyzeOrderBy(
-            return table;
-        }
-
-
-        internal static Expression CreateSearchExpression(Expression b, string language, string searchTerms)
-        {
-            const int searchQueryId = 4;
-            throw new NotImplementedException();
-            //var plaintots = ObjectManager.ShamanDataContext.GetFullTextSearchTable(language, searchTerms, searchQueryId);
-
-            /*return 
-                .Where(x => Utils.MatchesFullText(searchQueryId, x.Words))
-                .OrderBy(x => Utils.FullTextRank(searchQueryId, x.Words))
-                .Join(plaintots, x => true, x => true, (a, b) => a)*/
-            //.Join(subreddits, a => a.Key, a => a.Db_EntityKey, (a, b) => b)
-        }
 
 
         internal Func<Expression, Expression> PushCallStack(MethodInfo method, BuilderContext builderContext)
@@ -1320,6 +1240,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <returns></returns>
         protected virtual Expression AnalyzeOperator(Expression expression, BuilderContext builderContext)
         {
+
             var u = expression as UnaryExpression;
             string parameterName;
             if (expression.NodeType == ExpressionType.Convert &&
