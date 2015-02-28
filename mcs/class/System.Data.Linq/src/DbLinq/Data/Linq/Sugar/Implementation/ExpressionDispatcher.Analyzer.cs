@@ -98,8 +98,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         protected internal virtual Expression Analyze(Expression expression, BuilderContext builderContext)
         {
-            return Analyze(expression, new Expression[0], builderContext);
+            return Analyze(expression, EmptyParameters, builderContext);
         }
+
+        private readonly static Expression[] EmptyParameters = new Expression[] { };
 
         protected virtual Expression Analyze(Expression expression, IList<Expression> parameters, BuilderContext builderContext)
         {
