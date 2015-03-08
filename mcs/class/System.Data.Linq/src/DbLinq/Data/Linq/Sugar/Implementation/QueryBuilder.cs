@@ -119,7 +119,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             var tables = builderContext.EnumerateAllTables().Distinct().ToList();
             // just to be nice: if we have only one table involved, there's no need to alias it
-            if (tables.Count == 1)
+            if (tables.Count == 1 && false)
             {
                 tables[0].Alias = null;
             }
