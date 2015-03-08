@@ -25,6 +25,8 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -139,6 +141,12 @@ namespace DbLinq.Util
         public static PropertyInfo GetPropertyInfo<T>(this Expression<Func<T, object>> lambdaExpression)
         {
             return (PropertyInfo)GetMemberInfo((LambdaExpression) lambdaExpression);
+        }
+
+        public static Type GetEnumerableType(this Type type)
+        {
+            if (type.IsInterface && type.GetGenericTypeDefinition() == typeof(IEnumerable<>)) return type;
+            return type.GetInterfaces().First(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)); 
         }
 
         /// <summary>

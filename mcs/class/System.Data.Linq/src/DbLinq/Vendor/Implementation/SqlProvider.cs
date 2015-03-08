@@ -432,6 +432,10 @@ namespace DbLinq.Vendor.Implementation
                 return GetLiteralBetween(p[0], p[1], p[2]);
             case SpecialExpressionType.NotBetween:
                 return GetLiteralNotBetween(p[0], p[1], p[2]);
+            case SpecialExpressionType.All:
+                return GetLiteralAll(p[0]);
+            case SpecialExpressionType.Any:
+                return GetLiteralAny(p[0]);
             case SpecialExpressionType.ShamanUserLikeTable:
                 return SqlStatement.Format("(SELECT \"Key\" FROM \"Shaman_UserLike\" WHERE \"Type\" = {0} AND \"User\" = {1} AND "+p[2].First().Sql.Trim('\'') + ")", p[0], p[1]);
             }
@@ -1715,6 +1719,14 @@ namespace DbLinq.Vendor.Implementation
         protected virtual SqlStatement GetLiteralNotBetween(SqlStatement value, SqlStatement min, SqlStatement max)
         {
             return SqlStatement.Format("({0} NOT BETWEEN ({1}) AND ({2}))", value, min, max);
+        }
+        protected virtual SqlStatement GetLiteralAll(SqlStatement value)
+        {
+            return SqlStatement.Format("ALL ({0})", value);
+        }
+        protected virtual SqlStatement GetLiteralAny(SqlStatement value)
+        {
+            return SqlStatement.Format("ANY ({0})", value);
         }
 
     }

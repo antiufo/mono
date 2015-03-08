@@ -103,7 +103,9 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.ShamanUserLikeTable:
                     return ExpressionPrecedence.Primary;
                 case SpecialExpressionType.In:
-                    return ExpressionPrecedence.Equality; // not sure for this one
+                case SpecialExpressionType.Any:
+                case SpecialExpressionType.All:
+                        return ExpressionPrecedence.Equality; // not sure for this one
                 default:
                     throw Error.BadArgument("S0050: Unhandled SpecialExpressionType {0}", specialNodeType);
                 }
@@ -272,6 +274,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Average:
                 case SpecialExpressionType.Count:
                 case SpecialExpressionType.In:
+                case SpecialExpressionType.All:
+                case SpecialExpressionType.Any:
                     return ExpressionTier.Sql; // don't tell anyone, but we can do it on both tiers, anyway this is significantly faster/efficient in SQL anyway
                 default:
                     throw Error.BadArgument("S0157: Unhandled node type {0}", specialExpressionType);

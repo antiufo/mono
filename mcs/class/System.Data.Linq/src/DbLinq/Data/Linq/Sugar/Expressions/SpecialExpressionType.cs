@@ -96,5 +96,8 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         HourGranularity,
         MinuteGranularity,
         SecondGranularity,
+
+        Any,
+        All
     }
 }
