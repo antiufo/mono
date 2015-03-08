@@ -628,12 +628,17 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if (!builderContext.IsExternalInExpressionChain)
             {
                 var m = parameters[0];
-                if (m.NodeType == ExpressionType.Convert) m = ((UnaryExpression)m).Operand;
-                if (m.NodeType == ExpressionType.Call)
+                while (true)
                 {
-                    var mm = (MethodCallExpression)m;
-                    if (mm.Method.Name == "AsQueryable") m = mm.Arguments[0];
+                    if (m.NodeType == ExpressionType.Convert) { m = ((UnaryExpression)m).Operand; continue; }
+                    if (m.NodeType == ExpressionType.Call)
+                    {
+                        var mm = (MethodCallExpression)m;
+                        if (mm.Method.Name == "AsQueryable") { m = mm.Arguments[0];  continue; }
+                    }
+                    break;
                 }
+
                 if (m.NodeType == ExpressionType.Parameter)
                 {
                     isGroupBySelection = true;
