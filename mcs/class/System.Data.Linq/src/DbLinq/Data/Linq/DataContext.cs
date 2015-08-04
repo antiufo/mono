@@ -220,7 +220,8 @@ namespace DbLinq.Data.Linq
             if (mapping == null)
                 throw new ArgumentNullException("mapping");
 
-            if (File.Exists(fileOrServerOrConnection))
+            if ((((fileOrServerOrConnection.Length >= 2 && fileOrServerOrConnection[1] == ':') || !fileOrServerOrConnection.Contains('=')) &&
+                File.Exists(fileOrServerOrConnection)))
                 throw new NotImplementedException("File names not supported.");
 
             // Is this a decent server name check?
