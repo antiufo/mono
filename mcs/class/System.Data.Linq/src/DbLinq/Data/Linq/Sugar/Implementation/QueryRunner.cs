@@ -61,7 +61,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
             else
             {
-                return selectQuery.DataContext.GetQueryEnumerable(rowObjectCreator, selectQuery.GetCommand);
+                return selectQuery.DataContext.GetQueryEnumerable(rowObjectCreator, selectQuery.GetCommandAsync);
 
             }
         }
@@ -186,9 +186,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         private void Upsert(object target, UpsertQuery insertQuery)
         {
+            BlockingIoWaiver.Check();
             insertQuery.Target = target;
             var dataContext = insertQuery.DataContext;
-            using (var dbCommand = insertQuery.GetCommand())
+            using (var dbCommand = insertQuery.GetCommandAsync(true).AssumeCompleted())
             {
                 object key = null;
                 // log first command
@@ -210,7 +211,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     var outputCommandTransaction = new ParameterizedQuery(dataContext, insertQuery.IdQuerySql, insertQuery.PrimaryKeyParameters, insertQuery.QueryContext);
                     outputCommandTransaction.Target = target;
 
-                    var outputCommand = outputCommandTransaction.GetCommandTransactional(false);
+                    var outputCommand = outputCommandTransaction.GetCommandTransactionalAsync(false, true).AssumeCompleted();
 
                     // then run commands
                     outputCommand.Command.Transaction = dbCommand.Command.Transaction;
@@ -264,7 +265,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         public void Delete(object target, DeleteQuery deleteQuery)
         {
             deleteQuery.Target = target;
-            using (var dbCommand = deleteQuery.GetCommand())
+            using (var dbCommand = deleteQuery.GetCommandAsync(true).AssumeCompleted())
             {
 
                 // log command
@@ -301,7 +302,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         public int Execute(DirectQuery directQuery, params object[] parameters)
         {
             directQuery.parameterValues = parameters;
-            using (var dbCommand = directQuery.GetCommand())
+            using (var dbCommand = directQuery.GetCommandAsync(true).AssumeCompleted())
             {
 
                 // log command
@@ -334,7 +335,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         public IEnumerable ExecuteSelect(Type tableType, DirectQuery directQuery, params object[] parameters)
         {
             directQuery.parameterValues = parameters;
-            using (var dbCommand = directQuery.GetCommand())
+            using (var dbCommand = directQuery.GetCommandAsync(true).AssumeCompleted())
             {
 
                 // log query

@@ -30,6 +30,7 @@ using System.Collections.Generic;
 
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Data.Linq.Sugar.Expressions;
+using System.Threading.Tasks;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -54,9 +55,9 @@ namespace DbLinq.Data.Linq.Sugar
         /// </summary>
         public IList<ObjectInputParameterExpression> InputParameters { get; protected set; }
 
-        public ITransactionalCommand GetCommandTransactional(bool createTransaction)
+        public async Task<ITransactionalCommand> GetCommandTransactionalAsync(bool createTransaction, bool synchronous)
         {
-            ITransactionalCommand command = base.GetCommand(createTransaction);
+            ITransactionalCommand command = await base.GetCommandTrAsync(createTransaction, synchronous);
             foreach (var inputParameter in InputParameters)
             {
                 var dbParameter = command.Command.CreateParameter();
@@ -68,9 +69,9 @@ namespace DbLinq.Data.Linq.Sugar
             return command;
         }
 
-        public override ITransactionalCommand GetCommand()
+        public override Task<ITransactionalCommand> GetCommandAsync(bool synchronous)
         {
-            return GetCommandTransactional(true);
+            return GetCommandTransactionalAsync(true, synchronous);
         }
 
         private object NormalizeDbType(object value)

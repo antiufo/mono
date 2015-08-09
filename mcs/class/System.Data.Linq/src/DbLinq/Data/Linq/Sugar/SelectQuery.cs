@@ -38,6 +38,7 @@ using DbLinq.Data.Linq;
 using DbLinq.Data.Linq.Mapping;
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Data.Linq.Sugar.Expressions;
+using System.Threading.Tasks;
 
 namespace DbLinq.Data.Linq.Sugar
 {
@@ -82,10 +83,10 @@ namespace DbLinq.Data.Linq.Sugar
             ExecuteMethodName = executeMethodName;
         }
 
-        public override ITransactionalCommand GetCommand()
+        public async override Task<ITransactionalCommand> GetCommandAsync(bool synchronous)
         {
             IDbDataParameter dbParameter;
-            var dbCommand = base.GetCommand(false);
+            var dbCommand = await base.GetCommandTrAsync(false, synchronous);
             foreach (var parameter in InputParameters)
             {
                 var val = DataContext.Mapping.GetInputParameterValue(parameter.GetValue());

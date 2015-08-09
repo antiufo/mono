@@ -30,6 +30,7 @@ using System.Collections.Generic;
 
 using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Data.Linq.Sql;
+using System.Threading.Tasks;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -46,11 +47,11 @@ namespace DbLinq.Data.Linq.Sugar
     /// </summary>
     internal abstract class AbstractQuery
     {
-        public abstract ITransactionalCommand GetCommand();
+        public abstract Task<ITransactionalCommand> GetCommandAsync(bool synchronous);
 
-        protected ITransactionalCommand GetCommand(bool createTransaction)
+        protected Task<ITransactionalCommand> GetCommandTrAsync(bool createTransaction, bool synchronous)
         {
-            return new DbLinq.Data.Linq.Database.Implementation.TransactionalCommand(Sql.ToString(), createTransaction, DataContext, QueryContext.Transaction != null ? QueryContext.Transaction.Connection : null);
+            return DbLinq.Data.Linq.Database.Implementation.TransactionalCommand.CreateAsync(Sql.ToString(), createTransaction, DataContext, QueryContext.Transaction != null ? QueryContext.Transaction.Connection : null, synchronous);
         }
 
         /// <summary>

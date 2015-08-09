@@ -31,6 +31,7 @@ using System.Data;
 
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Util;
+using System.Threading.Tasks;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -52,9 +53,9 @@ namespace DbLinq.Data.Linq.Sugar
             Parameters = parameters;
         }
 
-        public override ITransactionalCommand GetCommand()
+        public async override Task<ITransactionalCommand> GetCommandAsync(bool synchronous)
         {
-            ITransactionalCommand command = base.GetCommand(false);
+            ITransactionalCommand command = await base.GetCommandTrAsync(false, synchronous);
             FeedParameters(command);
             return command;
         }

@@ -57,6 +57,7 @@ using DbLinq.Vendor;
 using System.Diagnostics;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Data.Linq.Sugar.Implementation;
+using System.Threading.Tasks;
 
 #if MONO_STRICT
 namespace System.Data.Linq
@@ -85,9 +86,10 @@ namespace DbLinq.Data.Linq
         }
 
 
-        protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<IDataRecord, MappingContext, T> rowObjectCreator, Func<ITransactionalCommand> getDbCommand)
+        protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<IDataRecord, MappingContext, T> rowObjectCreator, Func<bool, Task<ITransactionalCommand>> getDbCommand)
         {
-            using (var dbCommand = getDbCommand())
+            BlockingIoWaiver.Check();
+            using (var dbCommand = getDbCommand(true).AssumeCompleted())
             {
                 WriteLog(dbCommand.Command);
 
@@ -1322,7 +1324,7 @@ namespace DbLinq.Data.Linq
             if (qp.ExpressionChain.Expressions.Count == 0)
                 qp.ExpressionChain.Expressions.Add(CreateDefaultQuery(query));
 
-            return qp.GetQuery(null).GetCommand().Command;
+            return qp.GetQuery(null).GetCommandAsync(true).AssumeCompleted().Command;
         }
 
         private Expression CreateDefaultQuery(IQueryable query)

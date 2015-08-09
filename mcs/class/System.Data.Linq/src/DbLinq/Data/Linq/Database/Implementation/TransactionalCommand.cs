@@ -33,6 +33,7 @@ using System.Data.Linq;
 
 using DbLinq.Data.Linq.Sql;
 using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace DbLinq.Data.Linq.Database.Implementation
 {
@@ -44,15 +45,15 @@ namespace DbLinq.Data.Linq.Database.Implementation
 #endif
     class TransactionalCommand : ITransactionalCommand
     {
-        private readonly IDisposable _connection;
+        private IDisposable _connection;
         /// <summary>
         /// Ambient transaction
         /// </summary>
-        private readonly IDbTransaction _transaction;
+        private IDbTransaction _transaction;
 
-        private readonly IDbCommand _command;
+        private IDbCommand _command;
 
-        private readonly bool haveHigherTransaction;
+        private bool haveHigherTransaction;
 
         /// <summary>
         /// Gets the command.
@@ -89,24 +90,34 @@ namespace DbLinq.Data.Linq.Database.Implementation
                 _transaction.Commit();
         }
 
-        public TransactionalCommand(string commandText, bool createTransaction, DataContext dataContext, DbConnection preferredConnection)
+        private TransactionalCommand()
         {
+
+        }
+
+        public static async Task<ITransactionalCommand> CreateAsync(string commandText, bool createTransaction, DataContext dataContext, DbConnection preferredConnection, bool synchronous)
+        {
+            var p = new TransactionalCommand();
+            BlockingIoWaiver.Check();
+
             // TODO: check if all this stuff is necessary
             // the OpenConnection() checks that the connection is already open
             // TODO: see if we can move this here (in theory the final DataContext shouldn't use)
-            _connection = dataContext.DatabaseContext.OpenConnection();
-                
-            _command = dataContext.DatabaseContext.CreateCommand(preferredConnection);
-            haveHigherTransaction = dataContext.Transaction != null;
+            p._connection = dataContext.DatabaseContext.OpenConnection();
+
+            p._command = dataContext.DatabaseContext.CreateCommand(preferredConnection);
+            p.haveHigherTransaction = dataContext.Transaction != null;
             // the transaction is optional
-            if (createTransaction && !haveHigherTransaction)
+            if (createTransaction && !p.haveHigherTransaction)
             {
-                _transaction = dataContext.DatabaseContext.CreateTransaction();
-                _command.Transaction = _transaction;
+                p._transaction = dataContext.DatabaseContext.CreateTransaction();
+                p._command.Transaction = p._transaction;
             }
             else
-                _command.Transaction = dataContext.Transaction;
-            Command.CommandText = commandText;
+                p._command.Transaction = dataContext.Transaction;
+
+            p.Command.CommandText = commandText;
+            return p;
         }
 
     }
