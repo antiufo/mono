@@ -95,10 +95,23 @@ namespace DbLinq.Data.Linq.Database.Implementation
 
         }
 
-        public static async Task<ITransactionalCommand> CreateAsync(string commandText, bool createTransaction, DataContext dataContext, DbConnection preferredConnection, bool synchronous)
+        public static Task<ITransactionalCommand> CreateAsync(string commandText, bool createTransaction, DataContext dataContext, DbConnection preferredConnection, bool synchronous)
+        {
+            if (synchronous)
+            {
+                BlockingIoWaiver.Check();
+                return Task.FromResult(CreateInternal(commandText, createTransaction, dataContext, preferredConnection));
+            }
+            else
+            {
+                return Task.Run(() => CreateInternal(commandText, createTransaction, dataContext, preferredConnection));
+            }
+        }
+
+
+        public static ITransactionalCommand CreateInternal(string commandText, bool createTransaction, DataContext dataContext, DbConnection preferredConnection)
         {
             var p = new TransactionalCommand();
-            BlockingIoWaiver.Check();
 
             // TODO: check if all this stuff is necessary
             // the OpenConnection() checks that the connection is already open
@@ -106,6 +119,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
             p._connection = dataContext.DatabaseContext.OpenConnection();
 
             p._command = dataContext.DatabaseContext.CreateCommand(preferredConnection);
+
             p.haveHigherTransaction = dataContext.Transaction != null;
             // the transaction is optional
             if (createTransaction && !p.haveHigherTransaction)
