@@ -139,6 +139,7 @@
     <Compile Include="..\DbLinq.SqlServer\SqlServerExpressionTranslator.cs">
       <Link>Vendors\DbLinq.SqlServer\SqlServerExpressionTranslator.cs</Link>
     </Compile>
+    <Compile Include="BlockingIoWaiver.cs" />
     <Compile Include="Data\Linq\ChangeAction.cs" />
     <Compile Include="Data\Linq\ChangeSet.cs" />
     <Compile Include="Data\Linq\Database\IDatabaseContext.cs" />
@@ -383,6 +384,7 @@
     <Compile Include="Util\ReflectionExtensions.cs" />
     <Compile Include="Util\ReflectionUtility.cs" />
     <Compile Include="Util\StringExtensions.cs" />
+    <Compile Include="Util\TaskExtensions.cs" />
     <Compile Include="Util\TextWriterExtension.cs" />
     <Compile Include="Util\ThreadSafeDictionary.cs" />
     <Compile Include="Util\TypeConvert.cs" />
