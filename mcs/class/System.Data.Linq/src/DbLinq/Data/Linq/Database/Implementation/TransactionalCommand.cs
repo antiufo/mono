@@ -34,6 +34,7 @@ using System.Data.Linq;
 using DbLinq.Data.Linq.Sql;
 using System.Data.Common;
 using System.Threading.Tasks;
+using DbLinq.Util;
 
 namespace DbLinq.Data.Linq.Database.Implementation
 {
@@ -99,7 +100,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
         {
             if (synchronous)
             {
-                BlockingIoWaiver.Check();
+                BlockingIoHandler.Check();
                 return Task.FromResult(CreateInternal(commandText, createTransaction, dataContext, preferredConnection));
             }
             else

@@ -186,7 +186,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         private void Upsert(object target, UpsertQuery insertQuery)
         {
-            BlockingIoWaiver.Check();
+            BlockingIoHandler.Check();
             insertQuery.Target = target;
             var dataContext = insertQuery.DataContext;
             using (var dbCommand = insertQuery.GetCommandAsync(true).AssumeCompleted())

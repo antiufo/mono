@@ -88,7 +88,7 @@ namespace DbLinq.Data.Linq
 
         protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<IDataRecord, MappingContext, T> rowObjectCreator, Func<bool, Task<ITransactionalCommand>> getDbCommand)
         {
-            BlockingIoWaiver.Check();
+            BlockingIoHandler.Check();
             using (var dbCommand = getDbCommand(true).AssumeCompleted())
             {
                 WriteLog(dbCommand.Command);

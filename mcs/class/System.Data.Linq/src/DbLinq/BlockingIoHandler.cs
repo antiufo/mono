@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DbLinq
+namespace DbLinq.Util
 {
-    static class BlockingIoWaiver
+    public static class BlockingIoHandler
     {
         public static void Check()
         {
