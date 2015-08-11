@@ -1,0 +1,12 @@
+﻿{
+  "version": "1.0.0-beta-3043.1",
+  "frameworks": {
+    "net45": {
+      "wrappedProject": "../../DbLinq/Shaman.DbLinq.csproj",
+      "bin": {
+        "assembly": "../../DbLinq/obj/{configuration}/Shaman.DbLinq.dll",
+        "pdb": "../../DbLinq/obj/{configuration}/Shaman.DbLinq.pdb"
+      }
+    }
+  }
+}
