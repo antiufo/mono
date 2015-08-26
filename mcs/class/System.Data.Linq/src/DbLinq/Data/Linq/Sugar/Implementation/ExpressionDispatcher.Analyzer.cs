@@ -175,7 +175,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <returns></returns>
         protected virtual Expression AnalyzeCall(MethodCallExpression expression, IList<Expression> parameters, BuilderContext builderContext)
         {
-            var operands = expression.GetOperands().ToList();
+            var operands = expression.GetOperandsBorrowed();
             var operarandsToSkip = expression.Method.IsStatic ? 1 : 0;
             var originalParameters = operands.Skip(parameters.Count + operarandsToSkip);
             var newParameters = parameters.Union(originalParameters).ToList();
@@ -1057,7 +1057,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if (!(objectExpression is BinaryExpression))
                 throw new NotSupportedException();
 
-            var operands = objectExpression.GetOperands();
+            var operands = objectExpression.GetOperandsBorrowed();
 
             bool absoluteSpam = memberInfo.Name.StartsWith("Total");
             string operationKey = absoluteSpam ? memberInfo.Name.Substring(5) : memberInfo.Name;
@@ -1223,7 +1223,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         protected virtual Expression AnalyzeQuote(Expression piece, IList<Expression> parameters, BuilderContext builderContext, out BuilderContext builderContextClone)
         {
             builderContextClone = builderContext.NewQuote();
-            var firstExpression = piece.GetOperands().First();
+            var firstExpression = piece.GetOperandsBorrowed().First();
             return Analyze(firstExpression, parameters, builderContextClone);
         }
 
@@ -1258,29 +1258,36 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 if (unaliasedExpression != null && unaliasedTableExpression != null)
                     return unaliasedTableExpression;
             }
-            var operands = expression.GetOperands().ToList();
+            var operands = expression.GetOperandsBorrowed();
 
             if (expression.NodeType == ExpressionType.Equal || expression.NodeType == ExpressionType.NotEqual)
             {
-                if (IsNull(operands[0]))
+                var enumerator = operands.GetEnumerator();
+                enumerator.MoveNext();
+                var first = enumerator.Current;
+                enumerator.MoveNext();
+                var second = enumerator.Current;
+                enumerator.Dispose();
+                if (IsNull(first))
                 {
-                    if (IsNull(operands[1])) return Expression.Constant(expression.NodeType == ExpressionType.Equal);
-                    return new SpecialExpression(expression.NodeType == ExpressionType.Equal ? SpecialExpressionType.IsNull : SpecialExpressionType.IsNotNull, Analyze(operands[1], builderContext));
+                    if (IsNull(second)) return Expression.Constant(expression.NodeType == ExpressionType.Equal);
+                    return new SpecialExpression(expression.NodeType == ExpressionType.Equal ? SpecialExpressionType.IsNull : SpecialExpressionType.IsNotNull, Analyze(second, builderContext));
                 }
-                else if (IsNull(operands[1]))
+                else if (IsNull(second))
                 {
-                    return new SpecialExpression(expression.NodeType == ExpressionType.Equal ? SpecialExpressionType.IsNull : SpecialExpressionType.IsNotNull, Analyze(operands[0], builderContext));
+                    return new SpecialExpression(expression.NodeType == ExpressionType.Equal ? SpecialExpressionType.IsNull : SpecialExpressionType.IsNotNull, Analyze(first, builderContext));
                 }
             }
 
-            for (int operandIndex = 0; operandIndex < operands.Count; operandIndex++)
+            var col = operands as ICollection<Expression>;
+            var newoperands = col != null ? new List<Expression>(col.Count) : new List<Expression>();
+            foreach (var item in operands)
             {
-                var operand = operands[operandIndex];
-                operands[operandIndex] = Analyze(operand, builderContext);
+                newoperands.Add(Analyze(item, builderContext));
             }
             
 
-            return expression.ChangeOperands(operands);
+            return expression.ChangeOperands(newoperands);
         }
 
         private bool IsNull(Expression expression)

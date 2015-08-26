@@ -50,6 +50,13 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator
             return ExpressionMutatorFactory.GetMutator(expression).Operands;
         }
 
+        public static IEnumerable<Expression> GetOperandsBorrowed(this Expression expression)
+        {
+            if (expression is MutableExpression)
+                return ((MutableExpression)expression).Operands;
+            return ExpressionMutatorFactory.GetMutator(expression).Operands;
+        }
+
         /// <summary>
         /// Changes all operands
         /// </summary>
@@ -80,16 +87,18 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator
         private static bool HaveOperandsChanged<T>(T expression, IList<Expression> operands)
             where T : Expression
         {
-            var oldOperands = GetOperands(expression).ToList();
-            if (operands.Count != oldOperands.Count)
+            var oldOperands = GetOperandsBorrowed(expression);
+            if (operands.Count != oldOperands.Count())
                 return true;
 
-            for (int operandIndex = 0; operandIndex < operands.Count; operandIndex++)
+            var operandIndex = 0;
+            foreach (var old in oldOperands)
             {
-                if (operands[operandIndex] != oldOperands[operandIndex])
+                if (operands[operandIndex] != old)
                 {
                     return true;
                 }
+                operandIndex++;
             }
             return false;
         }
@@ -155,7 +164,7 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator
         {
             var newOperands = new List<Expression>();
             // first, work on children (down)
-            foreach (var operand in GetOperands(expression))
+            foreach (var operand in GetOperandsBorrowed(expression))
             {
                 if (operand != null)
                     newOperands.Add(Recurse(operand, analyzer));

@@ -139,7 +139,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         protected virtual Expression AnalyzeConstant(Expression expression, BuilderContext builderContext)
         {
             // we try to find a non-constant operand, and if we do, we won't change this expression
-            foreach (var operand in expression.GetOperands())
+            foreach (var operand in expression.GetOperandsBorrowed())
             {
                 if (!(operand is ConstantExpression))
                     return expression;
@@ -176,27 +176,39 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             {
                 var notExpression = expression as UnaryExpression;
                 var subExpression = notExpression.Operand;
-                var subOperands = subExpression.GetOperands().ToList();
+                var subOperands = subExpression.GetOperandsBorrowed();
+                Expression first = null;
+                Expression second = null;
+                using (var enumerator = subOperands.GetEnumerator())
+                {
+                    if (enumerator.MoveNext())
+                    {
+                        first = enumerator.Current;
+                        if (enumerator.MoveNext())
+                            second = enumerator.Current;
+                    }
+                }
+
                 switch (subExpression.NodeType)
                 {
                     case ExpressionType.Equal:
-                        return Expression.NotEqual(subOperands[0], subOperands[1]);
+                        return Expression.NotEqual(first, second);
                     case ExpressionType.GreaterThan:
-                        return Expression.LessThanOrEqual(subOperands[0], subOperands[1]);
+                        return Expression.LessThanOrEqual(first, second);
                     case ExpressionType.GreaterThanOrEqual:
-                        return Expression.LessThan(subOperands[0], subOperands[1]);
+                        return Expression.LessThan(first, second);
                     case ExpressionType.LessThan:
-                        return Expression.GreaterThanOrEqual(subOperands[0], subOperands[1]);
+                        return Expression.GreaterThanOrEqual(first, second);
                     case ExpressionType.LessThanOrEqual:
-                        return Expression.GreaterThan(subOperands[0], subOperands[1]);
+                        return Expression.GreaterThan(first, second);
                     case ExpressionType.Not:
-                        return subOperands[0]; // not not x -> x :)
+                        return first; // not not x -> x :)
                     case ExpressionType.NotEqual:
-                        return Expression.Equal(subOperands[0], subOperands[1]);
+                        return Expression.Equal(first, second);
                     case (ExpressionType)SpecialExpressionType.IsNotNull: // is this dirty work?
-                        return new SpecialExpression(SpecialExpressionType.IsNull, subOperands);
+                        return new SpecialExpression(SpecialExpressionType.IsNull, first);
                     case (ExpressionType)SpecialExpressionType.IsNull:
-                        return new SpecialExpression(SpecialExpressionType.IsNotNull, subOperands);
+                        return new SpecialExpression(SpecialExpressionType.IsNotNull, second);
                 }
             }
             return expression;
@@ -207,10 +219,16 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // this first test only to speed up things a little
             if (expression.NodeType == ExpressionType.Equal || expression.NodeType == ExpressionType.NotEqual)
             {
-                var operands = expression.GetOperands().ToList();
-                var nullComparison = GetNullComparison(expression.NodeType, operands[0], operands[1]);
+                var operands = expression.GetOperandsBorrowed().GetEnumerator();
+                operands.MoveNext();
+                var first = operands.Current;
+                operands.MoveNext();
+                var second = operands.Current;
+                operands.Dispose();
+
+                var nullComparison = GetNullComparison(expression.NodeType, first, second);
                 if (nullComparison == null)
-                    nullComparison = GetNullComparison(expression.NodeType, operands[1], operands[0]);
+                    nullComparison = GetNullComparison(expression.NodeType, second, first);
                 if (nullComparison != null)
                     return nullComparison;
                 return expression;

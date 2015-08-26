@@ -174,7 +174,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var sqlProvider = queryContext.DataContext.Vendor.SqlProvider;
             var currentPrecedence = ExpressionQualifier.GetPrecedence(expression);
             // first convert operands
-            var operands = expression.GetOperands();
+            var operands = expression.GetOperandsBorrowed();
 
 
             var literalOperands = new List<SqlStatement>();
@@ -481,7 +481,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             var sqlProvider = queryContext.DataContext.Vendor.SqlProvider;
             var selectClauses = new List<SqlStatement>();
-            foreach (var selectExpression in select.GetOperands())
+            foreach (var selectExpression in select.GetOperandsBorrowed())
             {
                 var expressionString = BuildExpression(selectExpression, queryContext);
                 if (selectExpression is SelectExpression)

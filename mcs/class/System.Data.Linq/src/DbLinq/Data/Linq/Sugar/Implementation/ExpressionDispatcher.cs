@@ -194,7 +194,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 var convert = (UnaryExpression)expression;
                 if (convert.Type.IsGenericType && convert.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
-                    var op = expression.GetOperands().First();
+                    var op = expression.GetOperandsBorrowed().First();
                     if (op != null)
                     {
                         var avoid = CutOutOperands(op, dataRecordParameter, mappingContextParameter, builderContext, true);
@@ -204,7 +204,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
 
             var operands = new List<Expression>();
-            foreach (var operand in expression.GetOperands())
+            foreach (var operand in expression.GetOperandsBorrowed())
             {
                 operands.Add(operand == null 
                     ? null

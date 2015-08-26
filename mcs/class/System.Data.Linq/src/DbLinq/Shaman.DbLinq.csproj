@@ -294,6 +294,7 @@
     <Compile Include="Factory\ObjectFactory.cs" />
     <Compile Include="FastLinqExtensions.cs" />
     <Compile Include="MonoTODOAttribute.cs" />
+    <Compile Include="PerformanceUtils.cs" />
     <Compile Include="Schema\Case.cs" />
     <Compile Include="Schema\Dbml\Adapter\ArrayAdapter.cs" />
     <Compile Include="Schema\Dbml\Adapter\CsvArrayAdapter.cs" />

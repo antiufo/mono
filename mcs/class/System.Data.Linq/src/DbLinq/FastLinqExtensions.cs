@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace System.Linq
 {
 #if DBLINQ
-    internal partial static class FastLinqExtensions
+    internal static partial class FastLinqExtensions
 #else
     public static class FastLinqExtensions
 #endif
