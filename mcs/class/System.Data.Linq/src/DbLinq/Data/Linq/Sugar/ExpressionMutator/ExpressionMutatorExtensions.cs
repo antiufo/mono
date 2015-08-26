@@ -25,6 +25,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -154,25 +155,157 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator
             }
         }
 
+
+        public static Expression Recurse(this Expression expression, Func<Expression, Expression> analyzer)
+        {
+            var baseIndex = NextRecList;
+            try
+            {
+
+                if (RecList == null) RecList = new List<RecursionList>();
+                return expression.RecurseInternal(analyzer);
+            }
+            finally
+            {
+                NextRecList = baseIndex;
+            }
+        }
+
+
         /// <summary>
         /// Down-top pattern analysis.
         /// </summary>
         /// <param name="expression">The original expression</param>
         /// <param name="analyzer"></param>
         /// <returns>A new QueryExpression or the original one</returns>
-        public static Expression Recurse(this Expression expression, Func<Expression, Expression> analyzer)
+        private static Expression RecurseInternal(this Expression expression, Func<Expression, Expression> analyzer)
         {
-            var newOperands = new List<Expression>();
+            if (RecList.Count == NextRecList) RecList.Add(new RecursionList());
+            var newOperands = RecList[NextRecList];
+            newOperands._count = 0;
             // first, work on children (down)
             foreach (var operand in GetOperandsBorrowed(expression))
             {
                 if (operand != null)
-                    newOperands.Add(Recurse(operand, analyzer));
+                {
+                    NextRecList++;
+                    newOperands.Add(RecurseInternal(operand, analyzer));
+                    NextRecList--;
+                }
                 else
+                {
                     newOperands.Add(null);
+                }
             }
             // then on expression itself (top)
             return analyzer(expression.ChangeOperands(newOperands));
+        }
+
+
+        [ThreadStatic]
+        private static List<RecursionList> RecList;
+        [ThreadStatic]
+        private static int NextRecList;
+
+        internal class RecursionList : IList<Expression>
+        {
+
+            public RecursionList()
+            {
+                Data = new Expression[64];
+            }
+
+            public Expression[] Data;
+            public int _count;
+
+            public int Count
+            {
+                get
+                {
+                    return _count;
+                }
+            }
+
+            public bool IsReadOnly
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public Expression this[int index]
+            {
+                get
+                {
+                    return Data[index];
+                }
+
+                set
+                {
+                    throw new NotSupportedException();
+                }
+            }
+
+            public int IndexOf(Expression item)
+            {
+                return Array.IndexOf(Data, item, 0, _count);
+            }
+
+            public void Insert(int index, Expression item)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void RemoveAt(int index)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Add(Expression item)
+            {
+                if (Data.Length == _count)
+                {
+                    Array.Resize(ref Data, _count * 2);
+                }
+                Data[_count++] = item;
+            }
+
+            public void Clear()
+            {
+                _count = 0;
+            }
+
+            public bool Contains(Expression item)
+            {
+                return IndexOf(item) != -1;
+            }
+
+            public void CopyTo(Expression[] array, int arrayIndex)
+            {
+                for (int i = 0; i < _count; i++)
+                {
+                    array[arrayIndex++] = Data[i];
+                }
+            }
+
+            public bool Remove(Expression item)
+            {
+                throw new NotSupportedException();
+            }
+
+            public IEnumerator<Expression> GetEnumerator()
+            {
+                for (int i = 0; i < _count; i++)
+                {
+                    yield return Data[i];
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
         }
     }
 }
