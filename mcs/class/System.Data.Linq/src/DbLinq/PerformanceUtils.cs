@@ -42,6 +42,34 @@ namespace System.Linq
             }
             return l;
         }
+
+        public static TResult[] SelectToArray<T, TResult>(this IEnumerable<T> source, Func<T, TResult> selector, int count)
+        {
+
+            if (count == 0) return EmptyArray<TResult>.Instance;
+            var l = new TResult[count];
+            var i = 0;
+            foreach (var item in source)
+            {
+                l[i] = selector(item);
+                i++;
+            }
+            if (i != count) throw new ArgumentException("Incorrect length was provided to SelectoToArray().");
+            return l;
+        }
+        public static List<TResult> SelectToList<T, TResult>(this IEnumerable<T> source, Func<T, TResult> selector, int count)
+        {
+            var l = new List<TResult>(count);
+            if (count == 0) return l;
+            var i = 0;
+            foreach (var item in source)
+            {
+                l.Add(selector(item));
+                i++;
+            }
+            if (i != count) throw new ArgumentException("Incorrect length was provided to SelectoToList().");
+            return l;
+        }
     }
 }
 

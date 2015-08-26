@@ -30,7 +30,7 @@ namespace System
             {
 
 
-                var met = type.DefineMethod("Lambda_" + i, MethodAttributes.Public | MethodAttributes.Static, item.ReturnType, item.Parameters.Select(x => x.Type).ToArray());
+                var met = type.DefineMethod("Lambda_" + i, MethodAttributes.Public | MethodAttributes.Static, item.ReturnType, item.Parameters.SelectToArray(x => x.Type));
                 try
                 {
                     item.CompileToMethod(met);

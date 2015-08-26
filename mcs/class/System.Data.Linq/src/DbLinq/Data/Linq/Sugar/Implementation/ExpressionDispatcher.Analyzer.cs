@@ -406,16 +406,16 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         protected virtual Expression AnalyzeLog(IList<Expression> parameters, BuilderContext builderContext)
         {
             if (parameters.Count == 1)
-                return new SpecialExpression(SpecialExpressionType.Ln, parameters.Select(p => Analyze(p, builderContext)).ToList());
+                return new SpecialExpression(SpecialExpressionType.Ln, parameters.SelectToArray(p => Analyze(p, builderContext)));
             else if (parameters.Count == 2)
-                return new SpecialExpression(SpecialExpressionType.Log, parameters.Select(p => Analyze(p, builderContext)).ToList());
+                return new SpecialExpression(SpecialExpressionType.Log, parameters.SelectToArray(p => Analyze(p, builderContext)));
             else
                 throw new NotSupportedException();
         }
 
         protected virtual Expression AnalyzeGenericSpecialExpressionType(SpecialExpressionType specialType, IList<Expression> parameters, BuilderContext builderContext)
         {
-            return new SpecialExpression(specialType, parameters.Select(p => Analyze(p, builderContext)).ToList());
+            return new SpecialExpression(specialType, parameters.SelectToArray(p => Analyze(p, builderContext)));
         }
 
         protected virtual Expression AnalyzeParse(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)

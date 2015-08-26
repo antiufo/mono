@@ -614,26 +614,24 @@ namespace DbLinq.Data.Linq
             foreach (var assoc in metaType.Associations)
             {
                 var memberData = assoc.ThisMember;
-				//This is not correct - AutoSyncing applies to auto-updating columns, such as a TimeStamp, not to foreign key associations, which is always automatically synched
-				//Confirmed against default .NET l2sql - association columns are always set, even if AutoSync==AutoSync.Never
-				//if (memberData.Association.ThisKey.Any(m => (m.AutoSync != AutoSync.Always) && (m.AutoSync != sync)))
+                //This is not correct - AutoSyncing applies to auto-updating columns, such as a TimeStamp, not to foreign key associations, which is always automatically synched
+                //Confirmed against default .NET l2sql - association columns are always set, even if AutoSync==AutoSync.Never
+                //if (memberData.Association.ThisKey.Any(m => (m.AutoSync != AutoSync.Always) && (m.AutoSync != sync)))
                 //    continue;
-                var oks = memberData.Association.OtherKey.Select(m => m.StorageMember).ToList();
-                if (oks.Count == 0)
-                    continue;
+                if (memberData.Association.OtherKey.Count == 0) continue;
+                var oks = memberData.Association.OtherKey.SelectToArray(m => m.StorageMember);
                 var pks = memberData.Association.ThisKey
-                    .Select(m => m.StorageMember.GetMemberValue(root))
-                    .ToList();
-                if (pks.Count != oks.Count)
+                    .SelectToArray(m => m.StorageMember.GetMemberValue(root));
+                if (pks.Length != oks.Length)
                     throw new InvalidOperationException(
                         string.Format("Count of primary keys ({0}) doesn't match count of other keys ({1}).",
-                            pks.Count, oks.Count));
+                            pks.Length, oks.Length));
                 var members = memberData.Member.GetMemberValue(root) as IEnumerable;
                 if (members == null)
                     continue;
                 foreach (var member in members)
                 {
-                    for (int i = 0; i < pks.Count; ++i)
+                    for (int i = 0; i < pks.Length; ++i)
                     {
                         oks[i].SetMemberValue(member, pks[i]);
                     }

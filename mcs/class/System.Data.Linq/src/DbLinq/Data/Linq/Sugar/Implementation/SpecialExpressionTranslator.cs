@@ -140,7 +140,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             var parametersExpressions = operands.Skip(1);
             return Expression.Call(operands[0],
-                                   operands[0].Type.GetMethod(methodName, parametersExpressions.Select(op => op.Type).ToArray()),
+                                   operands[0].Type.GetMethod(methodName, parametersExpressions.SelectToArray(op => op.Type, operands.Count - 1)),
                                    parametersExpressions);
         }
 

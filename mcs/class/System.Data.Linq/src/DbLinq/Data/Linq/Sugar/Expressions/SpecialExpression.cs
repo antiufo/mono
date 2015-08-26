@@ -295,8 +295,8 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
 
         private object EvaluateMathCallInvoke(SpecialExpressionType SpecialNodeType, ReadOnlyCollection<Expression> operands)
         {
-            return typeof(Math).GetMethod(SpecialNodeType.ToString(), operands.Skip(1).Select(op => op.Type).ToArray())
-                    .Invoke(null, operands.Skip(1).Select(op => op.Evaluate()).ToArray());
+            return typeof(Math).GetMethod(SpecialNodeType.ToString(), operands.Skip(1).SelectToArray(op => op.Type, operands.Count - 1))
+                    .Invoke(null, operands.Skip(1).SelectToArray(op => op.Evaluate(), operands.Count - 1));
         }
         protected object EvaluateStatardMemberAccess(string propertyName, ReadOnlyCollection<Expression> operands)
         {
@@ -305,9 +305,9 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         protected object EvaluateStandardCallInvoke(string methodName, ReadOnlyCollection<Expression> operands)
         {
             return operands[0].Type.GetMethod(methodName,
-                                       operands.Skip(1).Select(op => op.Type).ToArray())
+                                       operands.Skip(1).SelectToArray(op => op.Type, operands.Count - 1))
                                        .Invoke(operands[0].Evaluate(),
-                                               operands.Skip(1).Select(op => op.Evaluate()).ToArray());
+                                               operands.Skip(1).SelectToArray(op => op.Evaluate(), operands.Count - 1));
         }
     }
 }
