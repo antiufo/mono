@@ -205,7 +205,7 @@ namespace DbLinq.Schema.Dbml.Adapter
         /// </summary>
         public void Clear()
         {
-            SetStatic(new T[0]);
+            SetStatic(EmptyArray<T>.Instance);
         }
 
         /// <summary>

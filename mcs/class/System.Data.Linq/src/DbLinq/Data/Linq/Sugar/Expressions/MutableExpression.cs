@@ -44,7 +44,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
 
         public virtual IEnumerable<Expression> Operands
         {
-            get { return new Expression[0]; }
+            get { return EmptyArray<Expression>.Instance; }
         }
 
         public virtual Expression Mutate(IList<Expression> newOperands)

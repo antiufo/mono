@@ -52,7 +52,7 @@ namespace DbLinq.Schema.Dbml.Adapter
         {
             var values = MemberInfo.GetMemberValue(Owner) as string;
             if (values == null)
-                return new string[0];
+                return EmptyArray<string>.Instance;
             var splitValues = values.Split(',');
             var trimmedSplitValues = from v in splitValues select v.Trim();
             return trimmedSplitValues;

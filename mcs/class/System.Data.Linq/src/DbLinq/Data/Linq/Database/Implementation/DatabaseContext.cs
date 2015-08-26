@@ -199,7 +199,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
                     PropertyInfo instancePropertyInfo = testType.GetProperty("Instance", bindingFlags);
                     if (instancePropertyInfo != null)
                     {
-                        return (DbProviderFactory)instancePropertyInfo.GetGetMethod().Invoke(null, new object[0]);
+                        return (DbProviderFactory)instancePropertyInfo.GetGetMethod().Invoke(null, EmptyArray<object>.Instance);
                     }
                 }
             }

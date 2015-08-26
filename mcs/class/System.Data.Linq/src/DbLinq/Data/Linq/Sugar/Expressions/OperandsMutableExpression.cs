@@ -39,8 +39,8 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         protected OperandsMutableExpression(ExpressionType expressionType, Type type, IList<Expression> operands)
             : base(expressionType, type)
         {
-            if(operands==null)
-                operands = new Expression[0];
+            if (operands == null)
+                operands = EmptyArray<Expression>.Instance;
             this.operands = new ReadOnlyCollection<Expression>(operands);
         }
 

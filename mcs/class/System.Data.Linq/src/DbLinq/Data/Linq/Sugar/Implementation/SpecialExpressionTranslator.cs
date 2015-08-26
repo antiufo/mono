@@ -205,12 +205,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         //protected virtual Expression TranslateToLower(List<Expression> operands)
         //{
-        //    return Expression.Call(operands[0], typeof(string).GetMethod("ToLower", new Type[0]));
+        //    return Expression.Call(operands[0], typeof(string).GetMethod("ToLower", EmptyArray<Type>.Instance));
         //}
 
         //protected virtual Expression TranslateToUpper(List<Expression> operands)
         //{
-        //    return Expression.Call(operands[0], typeof(string).GetMethod("ToUpper", new Type[0]));
+        //    return Expression.Call(operands[0], typeof(string).GetMethod("ToUpper", EmptyArray<Type>.Instance));
         //}
 
         protected virtual Expression TranslateConcat(List<Expression> operands)

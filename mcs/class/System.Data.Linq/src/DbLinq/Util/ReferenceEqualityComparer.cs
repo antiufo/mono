@@ -47,7 +47,7 @@ namespace DbLinq.Util
             }
         }
 
-        private object[] noArgs = new object[0];
+        private object[] noArgs = EmptyArray<object>.Instance;
 
         public bool Equals(T x, T y)
         {

@@ -255,7 +255,7 @@ namespace DbLinq.Language.Implementation
                 throw new ArgumentException("magma string must not be empty");
             // initalize matching
             IList<string> bestLeft = new[] { magma };
-            IList<string> bestRight = new string[0];
+            IList<string> bestRight = EmptyArray<string>.Instance;
             double bestNote = GetNote(bestLeft);
             if (bestNote > 0) // if we have something here, it is a full word, then don't look any further
                 return bestLeft; // that this may break the weight... for example toothpaste always win vs +++tooth +++paste
