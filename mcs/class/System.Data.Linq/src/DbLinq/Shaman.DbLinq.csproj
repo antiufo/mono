@@ -41,7 +41,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\build.dbg\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MOBILE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MOBILE; DBLINQ</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -50,7 +50,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\build\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MOBILE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MOBILE; DBLINQ</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -58,7 +58,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Mono Strict|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\build.dbg.mono\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MONO_STRICT</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MOBILE; DBLINQ</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -292,6 +292,7 @@
     <Compile Include="Factory\Implementation\ReflectionObjectFactory.cs" />
     <Compile Include="Factory\IObjectFactory.cs" />
     <Compile Include="Factory\ObjectFactory.cs" />
+    <Compile Include="FastLinqExtensions.cs" />
     <Compile Include="MonoTODOAttribute.cs" />
     <Compile Include="Schema\Case.cs" />
     <Compile Include="Schema\Dbml\Adapter\ArrayAdapter.cs" />
