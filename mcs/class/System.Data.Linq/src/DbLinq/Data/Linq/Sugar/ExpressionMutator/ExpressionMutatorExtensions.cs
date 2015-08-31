@@ -248,7 +248,7 @@ namespace DbLinq.Data.Linq.Sugar.ExpressionMutator
 
                 set
                 {
-                    throw new NotSupportedException();
+                    Data[index] = value;
                 }
             }
 
