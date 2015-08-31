@@ -37,7 +37,8 @@ using DbLinq.Data.Linq.Sugar.ExpressionMutator;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Data.Linq.Sugar.Implementation;
 using DbLinq.Factory;
-
+using System.Collections.Concurrent;
+using System.Text;
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
 {
@@ -80,6 +81,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return CreateTable(GetQueriedType(requestingType), builderContext);
         }
 
+        private static ConcurrentDictionary<string, RowCreator> RowCreatorCache = new ConcurrentDictionary<string, RowCreator>();
+
         /// <summary>
         /// Builds the upper select clause
         /// </summary>
@@ -87,6 +90,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="builderContext"></param>
         public virtual void BuildSelect(Expression selectExpression, BuilderContext builderContext)
         {
+
             // collect columns, split Expression in
             // - things we will do in CLR
             // - things we will do in SQL
@@ -108,7 +112,50 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // (this is done after cut, because the part that went to SQL must not be converted)
             //selectExpression = selectExpression.Recurse(e => CheckTableExpression(e, builderContext));
             // the last return value becomes the select, with CurrentScope
-            builderContext.CurrentSelect.Reader = lambdaSelectExpression;
+
+
+            string key = null;
+            var sel = selectExpression as TableExpression;
+            if (sel != null)
+            {
+                key = sel.Type.FullName;
+            }
+            var newexpr = selectExpression as NewExpression;
+            if (newexpr != null)
+            {
+                key = string.Join(";", newexpr.Members.Select((x, i) =>
+                {
+                    string convert = null;
+                    var arg = newexpr.Arguments[i];
+                    if (arg.NodeType == ExpressionType.Convert)
+                    {
+                        arg = ((UnaryExpression)arg).Operand;
+                        convert = arg.Type.FullName;
+                    }
+                    var col = arg as ColumnExpression;
+                    if (col == null) return "\0";
+                    return x.Name + "=(" + convert + ")" + col.Table.Name + "." + col.Name;
+                }));
+                if (key.Contains('\0')) key = null;
+            }
+            if (key != null)
+            {
+                RowCreator c;
+                if (RowCreatorCache.TryGetValue(key, out c))
+                {
+                    builderContext.CurrentSelect.Reader = c;
+                    return;
+                }
+            }
+
+            var z = new RowCreator(lambdaSelectExpression);
+            if (key != null)
+            {
+                RowCreatorCache[key] = z;
+                Console.WriteLine(key);
+                Console.WriteLine(lambdaSelectExpression);
+            }
+            builderContext.CurrentSelect.Reader = z;
         }
 
         /// <summary>
@@ -180,7 +227,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 // for EntitySets, we have a special EntitySet builder
                 if (expression is EntitySetExpression)
                 {
-                    return GetEntitySetBuilder((EntitySetExpression) expression, dataRecordParameter,
+                    return GetEntitySetBuilder((EntitySetExpression)expression, dataRecordParameter,
                                                mappingContextParameter, builderContext);
                     // TODO record EntitySet information, so we can initalize it with owner
                 }
@@ -206,7 +253,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var operands = new List<Expression>();
             foreach (var operand in expression.GetOperandsBorrowed())
             {
-                operands.Add(operand == null 
+                operands.Add(operand == null
                     ? null
                     : CutOutOperands(operand, dataRecordParameter, mappingContextParameter, builderContext, false));
             }
@@ -259,7 +306,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var bindings = new List<MemberBinding>();
             foreach (var columnExpression in RegisterAllColumns(tableExpression, builderContext))
             {
-                var binding = Expression.Bind((MethodInfo) columnExpression.MemberInfo, columnExpression);
+                var binding = Expression.Bind((MethodInfo)columnExpression.MemberInfo, columnExpression);
                 bindings.Add(binding);
             }
             var newExpression = Expression.New(tableExpression.Type);

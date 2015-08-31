@@ -295,6 +295,7 @@
     <Compile Include="FastLinqExtensions.cs" />
     <Compile Include="MonoTODOAttribute.cs" />
     <Compile Include="PerformanceUtils.cs" />
+    <Compile Include="RowCreator.cs" />
     <Compile Include="Schema\Case.cs" />
     <Compile Include="Schema\Dbml\Adapter\ArrayAdapter.cs" />
     <Compile Include="Schema\Dbml\Adapter\CsvArrayAdapter.cs" />

@@ -232,10 +232,10 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="builderContext"></param>
         protected virtual void CompileRowCreator(BuilderContext builderContext)
         {
-            var reader = builderContext.CurrentSelect.Reader;
-            reader = (LambdaExpression)SpecialExpressionTranslator.Translate(reader);
-            reader = (LambdaExpression)ExpressionOptimizer.Optimize(reader, builderContext);
-            builderContext.ExpressionQuery.RowObjectCreator = reader.CompileDebuggable();
+            //var reader = builderContext.CurrentSelect.Reader;
+            //reader = (LambdaExpression)SpecialExpressionTranslator.Translate(reader);
+            //reader = (LambdaExpression)ExpressionOptimizer.Optimize(reader, builderContext);
+            builderContext.ExpressionQuery.RowObjectCreator = builderContext.CurrentSelect.Reader.Compile();
         }
 
         /// <summary>
