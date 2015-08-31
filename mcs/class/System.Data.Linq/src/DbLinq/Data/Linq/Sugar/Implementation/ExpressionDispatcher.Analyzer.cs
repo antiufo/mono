@@ -924,7 +924,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if (typeof(IQueryable).IsAssignableFrom(memberExpression.Type) && objectExpression is ConstantExpression)
             {
                 var constval = ((ConstantExpression)objectExpression);
-                var func = (Func<IQueryable>)(Expression.Lambda(Expression.Convert(memberExpression, typeof(IQueryable)))).CompileDebuggable();
+                var func = (Func<IQueryable>)(Expression.Lambda(Expression.Convert(memberExpression, typeof(IQueryable)))).CompileDebuggable(true);
                 var val = func();
                 //var prop = memberExpression.Member as PropertyInfo;
 
