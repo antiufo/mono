@@ -442,7 +442,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             {
                 var lambda = ExpressionDispatcher.BuildTableReader(tableType, parameters,
                                                                    new BuilderContext(queryContext));
-                reader = lambda.CompileDebuggable();
+                reader = lambda.CompileDebuggable(false);
                 if (queryContext.DataContext.QueryCacheEnabled)
                 {
                     SetInTableReaderCache(tableType, parameters, reader);

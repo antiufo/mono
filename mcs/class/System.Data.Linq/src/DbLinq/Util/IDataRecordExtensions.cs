@@ -25,6 +25,7 @@
 #endregion
 using System;
 using System.Data;
+using System.Data.Common;
 
 namespace DbLinq.Util
 {
@@ -161,6 +162,13 @@ namespace DbLinq.Util
             if (dataRecord.IsDBNull(index))
                 return null;
             return GetAsGuid(dataRecord, index);
+        }
+
+        public static IDataReader Configure(this IDataReader reader)
+        {
+            if (Data.Linq.DataContext.ConfigureDataReader != null)
+                Data.Linq.DataContext.ConfigureDataReader(reader);
+            return reader;
         }
     }
 }

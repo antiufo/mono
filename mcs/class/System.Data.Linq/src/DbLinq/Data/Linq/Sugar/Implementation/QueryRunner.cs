@@ -219,7 +219,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     // log second command
                     dataContext.WriteLog(outputCommand.Command);
 
-                    using (var dataReader = outputCommand.Command.ExecuteReader())
+                    using (var dataReader = outputCommand.Command.ExecuteReader().Configure())
                     {
                         if (!dataReader.Read())
                             throw new InvalidOperationException("Could not retrieve data for inserted row on " + target.GetType());
@@ -341,7 +341,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 // log query
                 directQuery.DataContext.WriteLog(dbCommand.Command);
 
-                using (var dataReader = dbCommand.Command.ExecuteReader())
+                using (var dataReader = dbCommand.Command.ExecuteReader().Configure())
                 {
                     // Did you know? "return EnumerateResult(tableType, dataReader, dataContext);" disposes resources first
                     // before the enumerator is used

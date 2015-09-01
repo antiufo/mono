@@ -61,7 +61,7 @@ namespace DbLinq.Util
                     parameter.Value = db;
                     command.Parameters.Add(parameter);
                 }
-                using (var rdr = command.ExecuteReader())
+                using (var rdr = command.ExecuteReader().Configure())
                 {
                     var list = new List<T>();
                     while (rdr.Read())

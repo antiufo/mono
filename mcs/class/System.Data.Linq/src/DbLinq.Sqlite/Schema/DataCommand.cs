@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 // 
 #endregion
+using DbLinq.Util;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -43,7 +44,7 @@ namespace DbLinq.Sqlite.Schema
             using (IDbCommand cmd = connection.CreateCommand())
             {
                 cmd.CommandText = sql;
-                using (IDataReader rdr = cmd.ExecuteReader())
+                using (IDataReader rdr = cmd.ExecuteReader().Configure())
                 {
                     List<T> list = new List<T>();
 
@@ -55,7 +56,7 @@ namespace DbLinq.Sqlite.Schema
                         using (IDbCommand cmdPragma = connection.CreateCommand())
                         {
                             cmdPragma.CommandText = sqlPragma;
-                            using (IDataReader rdrPragma = cmdPragma.ExecuteReader())
+                            using (IDataReader rdrPragma = cmdPragma.ExecuteReader().Configure())
                             {
                                 while (rdrPragma.Read())
                                 {
