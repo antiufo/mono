@@ -61,7 +61,6 @@ using DbLinq.Factory;
 #endif
 
 [assembly: ComVisible (false)]
-[assembly: AllowPartiallyTrustedCallers]
 [assembly: DbLinqAttribute]
 
 // DbMetal needs access to the DbLinq internals
