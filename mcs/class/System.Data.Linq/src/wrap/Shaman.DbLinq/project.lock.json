@@ -1,0 +1,43 @@
+{
+  "locked": false,
+  "version": 1,
+  "targets": {
+    ".NETFramework,Version=v4.5": {
+      "Shaman.System.Linq.Expressions.Interpreter/1.0.0-beta-2884": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/System.Linq.Expressions.Interpreter.dll": {}
+        },
+        "runtime": {
+          "lib/net45/System.Linq.Expressions.Interpreter.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Shaman.System.Linq.Expressions.Interpreter/1.0.0-beta-2884": {
+      "type": "package",
+      "sha512": "o93IKR8cK36hX2D4vycJlVxnPce5G7s2xqThJp7Vp+tUEygVwk4Ihq3tGODimJpLO51p57Anu3HY0eGUi+j3xw==",
+      "files": [
+        "GitRepositoryRevParse.txt",
+        "GitRepositoryStatus.txt",
+        "lib/net45/System.Linq.Expressions.Interpreter.dll",
+        "Shaman.System.Linq.Expressions.Interpreter.1.0.0-beta-2884.nupkg",
+        "Shaman.System.Linq.Expressions.Interpreter.1.0.0-beta-2884.nupkg.sha512",
+        "Shaman.System.Linq.Expressions.Interpreter.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "": [],
+    ".NETFramework,Version=v4.5": [
+      "Shaman.System.Linq.Expressions.Interpreter >= 1.0.0-beta-2884"
+    ]
+  }
+}
