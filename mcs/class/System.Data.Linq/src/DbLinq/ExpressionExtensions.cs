@@ -15,11 +15,16 @@ namespace System
         private static List<LambdaExpression> lambdas = new List<LambdaExpression>();
 
 
-        public static Delegate CompileDebuggable(this LambdaExpression lambda, bool singleUse = false)
+        public static Delegate CompileDebuggable(this LambdaExpression lambda)
+        {
+            return lambda.CompileDebuggable(false);
+        }
+
+        public static Delegate CompileDebuggable(this LambdaExpression lambda, bool singleUse)
         {
             if (singleUse)
             {
-               // return (new System.Linq.Expressions.Interpreter.LightCompiler()).CompileTop(lambda).CreateDelegate();
+               return (new System.Linq.Expressions.Interpreter.LightCompiler()).CompileTop(lambda).CreateDelegate();
             }
             if (!singleUse)
             {

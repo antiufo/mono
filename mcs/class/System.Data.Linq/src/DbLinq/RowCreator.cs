@@ -19,7 +19,7 @@ namespace DbLinq
 
         internal Delegate Compile()
         {
-            return compiled ?? (compiled = lambdaSelectExpression.CompileDebuggable());
+            return compiled ?? (compiled = lambdaSelectExpression.CompileDebuggable(false));
         }
     }
 }

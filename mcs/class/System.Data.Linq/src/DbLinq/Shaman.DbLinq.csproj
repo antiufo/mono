@@ -67,12 +67,17 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Linq.Expressions.Interpreter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=712f6b6deeaf4702, processorArchitecture=MSIL">
+      <HintPath>C:\Repositories\Awdee\packages\Shaman.System.Linq.Expressions.Interpreter.1.0.0-beta-2884\lib\net45\System.Linq.Expressions.Interpreter.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -431,6 +436,7 @@
     <None Include="..\DbLinq.snk">
       <Link>Properties\DbLinq.snk</Link>
     </None>
+    <None Include="packages.config" />
     <None Include="Schema\Dbml\DbmlSchema.bat" />
     <None Include="Schema\Dbml\DbmlSchema.bat" />
     <None Include="System.Data.Linq\Assembly\ChangeLog" />

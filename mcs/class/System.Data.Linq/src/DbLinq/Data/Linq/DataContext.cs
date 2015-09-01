@@ -93,7 +93,7 @@ namespace DbLinq.Data.Linq
             {
                 WriteLog(dbCommand.Command);
 
-                using (var reader = dbCommand.Command.ExecuteReader())
+                using (var reader = dbCommand.Command.ExecuteReader().Configure())
                 {
                     while (reader.Read())
                     {
@@ -925,6 +925,8 @@ namespace DbLinq.Data.Linq
         }
 
 		internal static MethodInfo _WhereMethod = typeof(Queryable).GetMethods().First(m => m.Name == "Where");
+        internal static Action<IDataReader> ConfigureDataReader;
+
         internal object GetOtherTableQuery(Expression predicate, ParameterExpression parameter, Type otherTableType, IQueryable otherTable)
         {
             //predicate: other.EmployeeID== "WARTH"
