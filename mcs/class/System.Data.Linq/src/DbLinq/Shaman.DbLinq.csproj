@@ -123,18 +123,6 @@
     <Compile Include="..\DbLinq.Sqlite\SqliteDataContext.cs">
       <Link>Vendors\DbLinq.Sqlite\SqliteDataContext.cs</Link>
     </Compile>
-    <Compile Include="..\DbLinq.Sqlite\SqliteSchemaLoader.Columns.cs">
-      <Link>Vendors\DbLinq.Sqlite\SqliteSchemaLoader.Columns.cs</Link>
-    </Compile>
-    <Compile Include="..\DbLinq.Sqlite\SqliteSchemaLoader.Constraints.cs">
-      <Link>Vendors\DbLinq.Sqlite\SqliteSchemaLoader.Constraints.cs</Link>
-    </Compile>
-    <Compile Include="..\DbLinq.Sqlite\SqliteSchemaLoader.cs">
-      <Link>Vendors\DbLinq.Sqlite\SqliteSchemaLoader.cs</Link>
-    </Compile>
-    <Compile Include="..\DbLinq.Sqlite\SqliteSchemaLoader.Tables.cs">
-      <Link>Vendors\DbLinq.Sqlite\SqliteSchemaLoader.Tables.cs</Link>
-    </Compile>
     <Compile Include="..\DbLinq.Sqlite\SqliteSqlProvider.cs">
       <Link>Vendors\DbLinq.Sqlite\SqliteSqlProvider.cs</Link>
     </Compile>
@@ -143,6 +131,9 @@
     </Compile>
     <Compile Include="..\DbLinq.SqlServer\SqlServerExpressionTranslator.cs">
       <Link>Vendors\DbLinq.SqlServer\SqlServerExpressionTranslator.cs</Link>
+    </Compile>
+    <Compile Include="..\Shaman.DbLinq\StringComparisonEx.cs">
+      <Link>StringComparisonEx.cs</Link>
     </Compile>
     <Compile Include="BlockingIoHandler.cs" />
     <Compile Include="Data\Linq\ChangeAction.cs" />
@@ -188,7 +179,6 @@
     <Compile Include="Data\Linq\Mapping\AttributeMappingSource.cs" />
     <Compile Include="Data\Linq\Mapping\LambdaMetaAccessor.cs" />
     <Compile Include="Data\Linq\Mapping\MappingContext.cs" />
-    <Compile Include="Data\Linq\Mapping\XmlMappingSource.cs" />
     <Compile Include="Data\Linq\RefreshMode.cs" />
     <Compile Include="Data\Linq\SqlClient\FirebirdProvider.cs" />
     <Compile Include="Data\Linq\SqlClient\IngresProvider.cs" />
@@ -401,24 +391,14 @@
     <Compile Include="Util\Page.cs" />
     <Compile Include="Util\TypeExtensions.cs" />
     <Compile Include="Util\TypeLoader.cs" />
-    <Compile Include="Vendor\DbSchemaLoader.cs" />
     <Compile Include="Vendor\IDataTableColumn.cs" />
     <Compile Include="Vendor\IDataName.cs" />
     <Compile Include="Vendor\IDataType.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.Name.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.Columns.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.DataTableColumn.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.DataName.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.ForeignKey.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.StoredProcedures.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.Tables.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.TypeMapping.cs" />
     <Compile Include="Vendor\Implementation\Vendor.ProcedureResult.cs" />
     <Compile Include="Vendor\INameAliases.cs" />
     <Compile Include="Vendor\ISchemaLoader.cs" />
     <Compile Include="Vendor\ISqlProvider.cs" />
     <Compile Include="Vendor\IVendor.cs" />
-    <Compile Include="Vendor\Implementation\SchemaLoader.cs" />
     <Compile Include="Vendor\Implementation\Vendor.cs" />
     <Compile Include="Vendor\Implementation\SqlProvider.cs" />
     <Compile Include="..\DbLinq.SqlServer\SqlServerSqlProvider.cs">
