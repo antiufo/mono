@@ -27,12 +27,13 @@ using System.Collections.Generic;
 using System.Data;
 using DbLinq.Util;
 using DbLinq.Vendor;
+using System.Data.Common;
 
 namespace DbLinq.Sqlite
 {
     partial class SqliteSchemaLoader
     {
-        protected virtual IDataTableColumn ReadColumn(IDataReader dataReader, string table)
+        protected virtual IDataTableColumn ReadColumn(DbDataReader dataReader, string table)
         {
             var column = new DataTableColumn();
             column.TableSchema = "main";
@@ -47,7 +48,7 @@ namespace DbLinq.Sqlite
             return column;
         }
 
-        protected override IList<IDataTableColumn> ReadColumns(IDbConnection connectionString, string databaseName)
+        protected override IList<IDataTableColumn> ReadColumns(DbConnection connectionString, string databaseName)
         {
             var sql = string.Format(SelectTablesFormat, "");
             const string pragma = @"PRAGMA table_info('{0}');";

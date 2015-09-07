@@ -30,6 +30,7 @@ using System.Text;
 using DbLinq.Sqlite.Schema;
 using DbLinq.Util;
 using DataCommand = DbLinq.Sqlite.Schema.DataCommand;
+using System.Data.Common;
 
 namespace DbLinq.Sqlite
 {
@@ -57,7 +58,7 @@ namespace DbLinq.Sqlite
             }
         }
 
-        protected virtual DataConstraint ReadConstraint(IDataReader rdr, string table)
+        protected virtual DataConstraint ReadConstraint(DbDataReader rdr, string table)
         {
             DataConstraint t = new DataConstraint();
             const int K_ID = 0;
@@ -79,7 +80,7 @@ namespace DbLinq.Sqlite
 
         }
 
-        protected virtual List<DataConstraint> ReadConstraints(IDbConnection conn, string db)
+        protected virtual List<DataConstraint> ReadConstraints(DbConnection conn, string db)
         {
             //Could perhaps use conn.GetSchema() instead 
             //Warning... Sqlite doesnt enforce constraints unless you define some triggers

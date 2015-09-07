@@ -39,7 +39,7 @@ namespace DbLinq.Vendor
             return name;
         }
 
-        protected override void LoadConstraints(Database schema, DbLinq.Schema.SchemaName schemaName, IDbConnection conn, DbLinq.Schema.NameFormat nameFormat, Names names)
+        protected override void LoadConstraints(Database schema, DbLinq.Schema.SchemaName schemaName, DbConnection conn, DbLinq.Schema.NameFormat nameFormat, Names names)
         {
             DbConnection c = (DbConnection) conn;
             var foreignKeys = GetForeignKeys(c);
@@ -106,7 +106,7 @@ namespace DbLinq.Vendor
             return connection.GetSchema(schema);
         }
 
-#if false
+
         protected override void LoadForeignKey(Database schema, Table table, string columnName, string tableName, string tableSchema, string referencedColumnName, string referencedTableName, string referencedTableSchema, string constraintName, DbLinq.Schema.NameFormat nameFormat, SchemaLoader.Names names)
         {
             var foriegnKeys = GetSchema("ForeignKeys");
@@ -114,19 +114,17 @@ namespace DbLinq.Vendor
                 return;
             // throw new NotImplementedException();
         }
-#endif
 
-#if false
-        protected override void LoadStoredProcedures(Database schema, DbLinq.Schema.SchemaName schemaName, IDbConnection conn, DbLinq.Schema.NameFormat nameFormat)
+        protected override void LoadStoredProcedures(Database schema, DbLinq.Schema.SchemaName schemaName, DbConnection conn, DbLinq.Schema.NameFormat nameFormat)
         {
             var foriegnKeys = GetSchema("Procedures");
             if (foriegnKeys == null)
                 return;
            //  throw new NotImplementedException();
         }
-#endif
 
-        protected override IList<IDataTableColumn> ReadColumns(IDbConnection connection, string databaseName)
+
+        protected override IList<IDataTableColumn> ReadColumns(DbConnection connection, string databaseName)
         {
             var db = (DbConnection) connection;
 
@@ -234,7 +232,7 @@ namespace DbLinq.Vendor
                 .ToDictionary(r => r[iSqlType].ToString(), r => r[iNetType].ToString());
         }
 
-        public override IList<IDataName> ReadTables(IDbConnection connection, string databaseName)
+        public override IList<IDataName> ReadTables(DbConnection connection, string databaseName)
         {
             DbConnection db = (DbConnection) connection;
             var dbTables  = db.GetSchema("Tables");

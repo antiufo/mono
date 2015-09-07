@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 
 namespace DbLinq.Util
 {
@@ -49,9 +50,9 @@ namespace DbLinq.Util
         /// <param name="db">Optional parameter value</param>
         /// <param name="readDelegate">Function called for each row, returning an instance created for row data</param>
         /// <returns></returns>
-        public static List<T> Find<T>(IDbConnection conn, string sql, string dbParameterName, string db, Func<IDataReader, T> readDelegate)
+        public static List<T> Find<T>(DbConnection conn, string sql, string dbParameterName, string db, Func<DbDataReader, T> readDelegate)
         {
-            using (IDbCommand command = conn.CreateCommand())
+            using (DbCommand command = conn.CreateCommand())
             {
                 command.CommandText = sql;
                 if (dbParameterName != null)
@@ -84,7 +85,7 @@ namespace DbLinq.Util
         /// <param name="sql">SQL string</param>
         /// <param name="readDelegate">Function called for each row, returning an instance created for row data</param>
         /// <returns></returns>
-        public static List<T> Find<T>(IDbConnection conn, string sql, Func<IDataReader, T> readDelegate)
+        public static List<T> Find<T>(DbConnection conn, string sql, Func<DbDataReader, T> readDelegate)
         {
             return Find<T>(conn, sql, null, null, readDelegate);
         }

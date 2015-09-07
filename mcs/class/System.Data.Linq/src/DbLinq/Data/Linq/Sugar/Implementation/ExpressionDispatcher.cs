@@ -39,19 +39,20 @@ using DbLinq.Data.Linq.Sugar.Implementation;
 using DbLinq.Factory;
 using System.Collections.Concurrent;
 using System.Text;
+using System.Data.Common;
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
 {
     internal partial class ExpressionDispatcher : IExpressionDispatcher
     {
         public IExpressionQualifier ExpressionQualifier { get; set; }
-        public IDataRecordReader DataRecordReader { get; set; }
+        public DbDataReaderReader DataRecordReader { get; set; }
         public IDataMapper DataMapper { get; set; }
 
         public ExpressionDispatcher()
         {
             ExpressionQualifier = ObjectFactory.Get<IExpressionQualifier>();
-            DataRecordReader = ObjectFactory.Get<IDataRecordReader>();
+            DataRecordReader = ObjectFactory.Get<DbDataReaderReader>();
             DataMapper = ObjectFactory.Get<IDataMapper>();
         }
 
@@ -169,7 +170,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         protected virtual LambdaExpression BuildSelectGroup(LambdaExpression select, LambdaExpression selectKey,
                                                             BuilderContext builderContext)
         {
-            var dataRecordParameter = Expression.Parameter(typeof(IDataRecord), "dataRecord");
+            var dataRecordParameter = Expression.Parameter(typeof(DbDataReader), "dataRecord");
             var mappingContextParameter = Expression.Parameter(typeof(MappingContext), "mappingContext");
             var kType = selectKey.Body.Type;
             var lType = select.Body.Type;
@@ -194,7 +195,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="builderContext"></param>
         protected virtual LambdaExpression CutOutOperands(Expression selectExpression, BuilderContext builderContext, bool avoidUnnullabilityConversion = false)
         {
-            var dataRecordParameter = Expression.Parameter(typeof(IDataRecord), "dataRecord");
+            var dataRecordParameter = Expression.Parameter(typeof(DbDataReader), "dataRecord");
             var mappingContextParameter = Expression.Parameter(typeof(MappingContext), "mappingContext");
             var expression = CutOutOperands(selectExpression, dataRecordParameter, mappingContextParameter, builderContext, avoidUnnullabilityConversion);
             return Expression.Lambda(expression, dataRecordParameter, mappingContextParameter);
@@ -239,7 +240,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             if (expression.NodeType == ExpressionType.Convert)
             {
                 var convert = (UnaryExpression)expression;
-                if (convert.Type.IsGenericType && convert.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                if (convert.Type.GetTypeInfo().IsGenericType && convert.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     var op = expression.GetOperandsBorrowed().First();
                     if (op != null)
@@ -332,7 +333,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             if (typeof(IQueryable).IsAssignableFrom(type))
             {
-                if (type.IsGenericType)
+                if (type.GetTypeInfo().IsGenericType)
                     return type.GetGenericArguments()[0];
             }
             return null;

@@ -32,6 +32,7 @@ using System.Xml;
 using DbLinq.Util;
 using DbLinq.Data.Linq.Sugar;
 using DbLinq.Data.Linq.Sugar.Implementation;
+using System.Linq;
 
 namespace DbLinq.Factory.Implementation
 {
@@ -78,11 +79,11 @@ namespace DbLinq.Factory.Implementation
         {
             return new[]
                        {
-                           typeof(object).Assembly,         // mscorlib
-                           typeof(Uri).Assembly,            // System
-                           typeof(Action).Assembly,         // System.Core
-                           typeof(IDbConnection).Assembly,  // System.Data
-                           typeof(XmlDocument).Assembly     // System.Xml
+                           typeof(object).GetTypeInfo().Assembly,         // mscorlib
+                           typeof(Uri).GetTypeInfo().Assembly,            // System
+                           typeof(Action).GetTypeInfo().Assembly,         // System.Core
+                           typeof(System.Data.Common.DbConnection).GetTypeInfo().Assembly,  // System.Data
+                           typeof(XmlDocument).GetTypeInfo().Assembly     // System.Xml
                        };
         }
 
@@ -93,7 +94,7 @@ namespace DbLinq.Factory.Implementation
         protected IDictionary<Type, IList<Type>> ParseAppDomain()
         {
             var interfaceImplementations = new Dictionary<Type, IList<Type>>();
-            Parse(typeof(DataMapper).Assembly, interfaceImplementations);
+            Parse(typeof(DataMapper).GetTypeInfo().Assembly, interfaceImplementations);
             /*var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var assembliesToAvoid = GetAssembliesToAvoid();
             foreach (var assembly in assemblies)
@@ -127,11 +128,11 @@ namespace DbLinq.Factory.Implementation
 
         private void Register(Type type, IDictionary<Type, IList<Type>> interfaceImplementations)
         {
-            if (type.IsAbstract)
+            if (type.GetTypeInfo().IsAbstract)
                 return;
             foreach (Type i in type.GetInterfaces())
             {
-                if (i.Assembly.GetCustomAttributes(typeof(DbLinqAttribute), false).Length > 0)
+                if (i.GetTypeInfo().Assembly.GetCustomAttribute<DbLinqAttribute>() != null)
                 {
                     IList<Type> types;
                     if (!interfaceImplementations.TryGetValue(i, out types))
@@ -179,7 +180,7 @@ namespace DbLinq.Factory.Implementation
             //So - let's add two future rules:
             //1) for know types from DbLinq, don't load via Activator.
             //2) surround all Activator calls with try/catch block.
-            if (t.IsInterface)
+            if (t.GetTypeInfo().IsInterface)
             {
                 if (t == typeof(IExpressionDispatcher))
                     return new ExpressionDispatcher();

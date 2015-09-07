@@ -501,7 +501,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 return parameterToHandle;
             }
 
-            if (!parameter.Type.IsPrimitive && parameterToHandle.Type != typeof(string))
+            if (!parameter.Type.GetTypeInfo().IsPrimitive && parameterToHandle.Type != typeof(string))
             {
                 //TODO: ExpressionDispacher.Analyze.AnalyzeToString is not complete
                 //This is the standar behaviour in linq2sql, nonetheless the behaviour isn't complete since when the expression
@@ -1356,7 +1356,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
                 var sourceParam = Expression.Parameter(lambda.Parameters[0].Type, "source");
                 var retType = lambda.ReturnType;
-                var enumerable = retType.IsGenericType && retType.GetGenericTypeDefinition() == typeof(IEnumerable<>) ? retType : retType.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                var enumerable = retType.GetTypeInfo().IsGenericType && retType.GetGenericTypeDefinition() == typeof(IEnumerable<>) ? retType : retType.GetInterfaces().FirstOrDefault(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
                 var itemParam = Expression.Parameter(enumerable.GetGenericArguments()[0], "item");
                 resultSelector = Expression.Quote(Expression.Lambda(itemParam, sourceParam, itemParam));
 
@@ -1399,7 +1399,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 if (aliasedExpression == null && checkCast)
                     throw Error.BadArgument("S0541: Expected an specific Expression type for GetTypeInitializers()");
                 var memberInfo = newExpression.Members[ctorParameterIndex];
-                metaType = memberInfo.ReflectedType;
+                metaType = memberInfo.DeclaringType;
                 // the property info is the reflecting property for the memberInfo, if memberInfo is a get_*
                 // otherwise we keep the memberInfo as is, since it is a field
                 var propertyInfo = memberInfo.GetExposingProperty() ?? memberInfo;
@@ -1698,7 +1698,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 if (typeof(IQueryable).IsAssignableFrom(parameters[0].Type))
                 {
 
-                    var elType = parameters[0].Type.GetInterfaces().First(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IQueryable<>)).GetGenericArguments()[0];
+                    var elType = parameters[0].Type.GetInterfaces().First(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IQueryable<>)).GetGenericArguments()[0];
                     var param = Expression.Parameter(elType, "x");
                     var lambda = Expression.Lambda(Expression.Equal(param, parameters[1]), param);
                     var any = Expression.Call(IQueryable_Any.MakeGenericMethod(elType), parameters[0], Expression.Quote(lambda));

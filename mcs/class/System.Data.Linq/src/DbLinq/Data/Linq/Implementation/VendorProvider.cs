@@ -54,8 +54,9 @@ namespace DbLinq.Data.Linq.Implementation
                 {
                     // the strategy is:
                     // we parse the current AppDomain...
-                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                   // foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                     {
+                        var assembly = typeof(VendorProvider).GetTypeInfo().Assembly;
                         foreach (var type in assembly.GetTypes())
                         {
                             // ... then look for an IVendor implementation ...

@@ -28,6 +28,7 @@ using System.Data;
 using System.IO;
 using DbLinq.Schema;
 using DbLinq.Schema.Dbml;
+using System.Data.Common;
 
 namespace DbLinq.Vendor
 {
@@ -43,7 +44,7 @@ namespace DbLinq.Vendor
         /// <summary>
         /// Connection used to read schema
         /// </summary>
-        IDbConnection Connection { get; set; }
+        DbConnection Connection { get; set; }
 
         /// <summary>
         /// Log output

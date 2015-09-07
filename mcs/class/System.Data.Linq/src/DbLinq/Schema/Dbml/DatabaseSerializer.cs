@@ -9,6 +9,7 @@ using System.Globalization;
 
 namespace DbLinq.Schema.Dbml
 {
+    
 	#if !MONO_STRICT
 	public
 	#endif

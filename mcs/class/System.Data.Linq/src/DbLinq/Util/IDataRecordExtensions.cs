@@ -32,12 +32,12 @@ namespace DbLinq.Util
 #if !MONO_STRICT
     public
 #endif
-    static class IDataRecordExtensions
+    static class DbDataReaderExtensions
     {
         // please note that sometimes (depending on driver), GetValue() returns DBNull instead of null
         // so at this level, we handle both
 
-        public static string GetAsString(this IDataRecord dataRecord, int index)
+        public static string GetAsString(this DbDataReader dataRecord, int index)
         {
             if (dataRecord.IsDBNull(index))
                 return null;
@@ -47,40 +47,40 @@ namespace DbLinq.Util
             return o.ToString();
         }
 
-        public static bool GetAsBool(this IDataRecord dataRecord, int index)
+        public static bool GetAsBool(this DbDataReader dataRecord, int index)
         {
             object b = dataRecord.GetValue(index);
             return TypeConvert.ToBoolean(b);
         }
 
-        public static bool? GetAsNullableBool(this IDataRecord dataRecord, int index)
+        public static bool? GetAsNullableBool(this DbDataReader dataRecord, int index)
         {
             if (dataRecord.IsDBNull(index))
                 return null;
             return GetAsBool(dataRecord, index);
         }
 
-        public static char GetAsChar(this IDataRecord dataRecord, int index)
+        public static char GetAsChar(this DbDataReader dataRecord, int index)
         {
             object c = dataRecord.GetValue(index);
             return TypeConvert.ToChar(c);
         }
 
-        public static char? GetAsNullableChar(this IDataRecord dataRecord, int index)
+        public static char? GetAsNullableChar(this DbDataReader dataRecord, int index)
         {
             if (dataRecord.IsDBNull(index))
                 return null;
             return GetAsChar(dataRecord, index);
         }
 
-        public static U GetAsNumeric<U>(this IDataRecord dataRecord, int index)
+        public static U GetAsNumeric<U>(this DbDataReader dataRecord, int index)
         {
             if (dataRecord.IsDBNull(index))
                 return default(U);
             return GetAsNumeric<U>(dataRecord.GetValue(index));
         }
 
-        public static U? GetAsNullableNumeric<U>(this IDataRecord dataRecord, int index)
+        public static U? GetAsNullableNumeric<U>(this DbDataReader dataRecord, int index)
             where U : struct
         {
             if (dataRecord.IsDBNull(index))
@@ -97,13 +97,13 @@ namespace DbLinq.Util
             return TypeConvert.ToNumber<U>(o);
         }
 
-        public static int GetAsEnum(this IDataRecord dataRecord, Type enumType, int index)
+        public static int GetAsEnum(this DbDataReader dataRecord, Type enumType, int index)
         {
             int enumAsInt = dataRecord.GetAsNumeric<int>(index);
             return enumAsInt;
         }
 
-        public static byte[] GetAsBytes(this IDataRecord dataRecord, int index)
+        public static byte[] GetAsBytes(this DbDataReader dataRecord, int index)
         {
             if (dataRecord.IsDBNull(index))
                 return EmptyArray<byte>.Instance;
@@ -118,7 +118,7 @@ namespace DbLinq.Util
             return EmptyArray<byte>.Instance;
         }
 
-        public static System.Data.Linq.Binary GetAsBinary(this IDataRecord dataRecord, int index)
+        public static System.Data.Linq.Binary GetAsBinary(this DbDataReader dataRecord, int index)
         {
             byte[] bytes = GetAsBytes(dataRecord, index);
             if (bytes.Length == 0)
@@ -126,7 +126,7 @@ namespace DbLinq.Util
             return new System.Data.Linq.Binary(bytes);
         }
 
-        public static object GetAsObject(this IDataRecord dataRecord, int index)
+        public static object GetAsObject(this DbDataReader dataRecord, int index)
         {
             if (dataRecord.IsDBNull(index))
                 return null;
@@ -134,7 +134,7 @@ namespace DbLinq.Util
             return obj;
         }
 
-        public static DateTime GetAsDateTime(this IDataRecord dataRecord, int index)
+        public static DateTime GetAsDateTime(this DbDataReader dataRecord, int index)
         {
             // Convert an InvalidCastException (thrown for example by Npgsql when an
             // operation like "SELECT '2012-'::timestamp - NULL" that is perfectly
@@ -146,25 +146,25 @@ namespace DbLinq.Util
             return dataRecord.GetDateTime(index);
         }
 
-        public static DateTime? GetAsNullableDateTime(this IDataRecord dataRecord, int index)
+        public static DateTime? GetAsNullableDateTime(this DbDataReader dataRecord, int index)
         {
             if (dataRecord.IsDBNull(index))
                 return null;
             return GetAsDateTime(dataRecord, index);
         }
 
-        public static Guid GetAsGuid(this IDataRecord dataRecord, int index)
+        public static Guid GetAsGuid(this DbDataReader dataRecord, int index)
         {
             return dataRecord.GetGuid(index);
         }
-        public static Guid? GetAsNullableGuid(this IDataRecord dataRecord, int index)
+        public static Guid? GetAsNullableGuid(this DbDataReader dataRecord, int index)
         {
             if (dataRecord.IsDBNull(index))
                 return null;
             return GetAsGuid(dataRecord, index);
         }
 
-        public static IDataReader Configure(this IDataReader reader)
+        public static DbDataReader Configure(this DbDataReader reader)
         {
             if (Data.Linq.DataContext.ConfigureDataReader != null)
                 Data.Linq.DataContext.ConfigureDataReader(reader);

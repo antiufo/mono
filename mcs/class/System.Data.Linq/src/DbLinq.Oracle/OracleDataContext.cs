@@ -24,6 +24,7 @@
 // 
 #endregion
 using System.Data;
+using System.Data.Common;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -51,7 +52,7 @@ namespace DbLinq.Oracle
         }
 #endif
 
-        public OracleDataContext(IDbConnection conn)
+        public OracleDataContext(DbConnection conn)
 #if MONO_STRICT
             : base(conn)
 #else

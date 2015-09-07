@@ -30,6 +30,7 @@ using DbLinq.Schema;
 using DbLinq.Schema.Dbml;
 using System.Text;
 using System.Collections.Generic;
+using System.Data.Common;
 
 namespace DbLinq.Vendor.Implementation
 {
@@ -43,7 +44,7 @@ namespace DbLinq.Vendor.Implementation
         /// <param name="conn">The conn.</param>
         /// <param name="nameFormat">The name format.</param>
         /// <param name="names">The names.</param>
-        protected abstract void LoadConstraints(Database schema, SchemaName schemaName, IDbConnection conn, NameFormat nameFormat, Names names);
+        protected abstract void LoadConstraints(Database schema, SchemaName schemaName, DbConnection conn, NameFormat nameFormat, Names names);
 
         protected string BuildForeignKey(IDictionary<string, ColumnName> table, string key)
         {

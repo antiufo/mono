@@ -26,6 +26,7 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 
 namespace DbLinq.Data.Linq.Database
 {
@@ -41,7 +42,7 @@ namespace DbLinq.Data.Linq.Database
         /// Gets the command.
         /// </summary>
         /// <value>The command.</value>
-        IDbCommand Command { get; }
+        DbCommand Command { get; }
         /// <summary>
         /// Commits the current transaction.
         /// throws NRE if _transaction is null. Behavior is intentional.

@@ -31,15 +31,17 @@ using System.Linq.Expressions;
 using DbLinq.Data.Linq.Mapping;
 using DbLinq.Data.Linq.Sugar;
 using DbLinq.Util;
+using System.Data.Common;
+using System.Reflection;
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
 {
-    internal class DataRecordReader : IDataRecordReader
+    internal class DataRecordReader : DbDataReaderReader
     {
         /// <summary>
-        /// Returns a Expression reading a property from a IDataRecord, at the specified index
+        /// Returns a Expression reading a property from a DbDataReader, at the specified index
         /// The lambda parameters are:
-        /// - IDataRecord
+        /// - DbDataReader
         /// - MappingContext
         /// - int (field index)
         /// </summary>
@@ -61,109 +63,109 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             if (simpleReturnType == typeof(string))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, string>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, string>>)((dataRecord, mappingContext, valueIndex)
                                                                                     => GetAsString(dataRecord, valueIndex, mappingContext));
             }
             if (simpleReturnType == typeof(bool))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, bool?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, bool?>>)((dataRecord, mappingContext, valueIndex)
                                                                                    => dataRecord.GetAsNullableBool(valueIndex));
             }
             if (simpleReturnType == typeof(char))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, char?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, char?>>)((dataRecord, mappingContext, valueIndex)
                                                                                    => dataRecord.GetAsNullableChar(valueIndex));
             }
             if (simpleReturnType == typeof(byte))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, byte?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, byte?>>)((dataRecord, mappingContext, valueIndex)
                                                                                    => dataRecord.GetAsNullableNumeric<byte>(valueIndex));
             }
             if (simpleReturnType == typeof(sbyte))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, sbyte?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, sbyte?>>)((dataRecord, mappingContext, valueIndex)
                                                                                     => dataRecord.GetAsNullableNumeric<sbyte>(valueIndex));
             }
             if (simpleReturnType == typeof(short))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, short?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, short?>>)((dataRecord, mappingContext, valueIndex)
                                                                                     => dataRecord.GetAsNullableNumeric<short>(valueIndex));
             }
             if (simpleReturnType == typeof(ushort))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, ushort?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, ushort?>>)((dataRecord, mappingContext, valueIndex)
                                                                                      => dataRecord.GetAsNullableNumeric<ushort>(valueIndex));
             }
             if (simpleReturnType == typeof(int))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, int?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, int?>>)((dataRecord, mappingContext, valueIndex)
                                                                                   => dataRecord.GetAsNullableNumeric<int>(valueIndex));
             }
             if (simpleReturnType == typeof(uint))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, uint?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, uint?>>)((dataRecord, mappingContext, valueIndex)
                                                                                    => dataRecord.GetAsNullableNumeric<uint>(valueIndex));
             }
             if (simpleReturnType == typeof(long))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, long?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, long?>>)((dataRecord, mappingContext, valueIndex)
                                                                                    => dataRecord.GetAsNullableNumeric<long>(valueIndex));
             }
             if (simpleReturnType == typeof(ulong))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, ulong?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, ulong?>>)((dataRecord, mappingContext, valueIndex)
                                                                                     => dataRecord.GetAsNullableNumeric<ulong>(valueIndex));
             }
             if (simpleReturnType == typeof(float))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, float?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, float?>>)((dataRecord, mappingContext, valueIndex)
                                                                                     => dataRecord.GetAsNullableNumeric<float>(valueIndex));
             }
             if (simpleReturnType == typeof(double))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, double?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, double?>>)((dataRecord, mappingContext, valueIndex)
                                                                                      => dataRecord.GetAsNullableNumeric<double>(valueIndex));
             }
             if (simpleReturnType == typeof(decimal))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, decimal?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, decimal?>>)((dataRecord, mappingContext, valueIndex)
                                                                                       => dataRecord.GetAsNullableNumeric<decimal>(valueIndex));
             }
             if (simpleReturnType == typeof(DateTime))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, DateTime?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, DateTime?>>)((dataRecord, mappingContext, valueIndex)
                                                                                        => dataRecord.GetAsNullableDateTime(valueIndex));
             }
             if (simpleReturnType == typeof(Guid))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, Guid?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, Guid?>>)((dataRecord, mappingContext, valueIndex)
                                                                                        => dataRecord.GetAsNullableGuid(valueIndex));
             }
             if (simpleReturnType == typeof(byte[]))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, byte[]>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, byte[]>>)((dataRecord, mappingContext, valueIndex)
                                                                                     => dataRecord.GetAsBytes(valueIndex));
             }
-            if (simpleReturnType.IsEnum)
+            if (simpleReturnType.GetTypeInfo().IsEnum)
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, int?>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, int?>>)((dataRecord, mappingContext, valueIndex)
                                                                                   => dataRecord.GetAsNullableNumeric<int>(valueIndex));
             }
             if (simpleReturnType == typeof(System.Data.Linq.Binary))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, System.Data.Linq.Binary>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, System.Data.Linq.Binary>>)((dataRecord, mappingContext, valueIndex)
                                                                                     => dataRecord.GetAsBinary(valueIndex));
             }
             // for polymorphic types especially for ExecuteQuery<>()
             if (simpleReturnType == typeof(object))
             {
-                return (Expression<Func<IDataRecord, MappingContext, int, object>>)((dataRecord, mappingContext, valueIndex)
+                return (Expression<Func<DbDataReader, MappingContext, int, object>>)((dataRecord, mappingContext, valueIndex)
                                                                                     => GetAsObject(dataRecord, valueIndex, mappingContext, simpleReturnType));
             }
             //s_rdr.GetUInt32();
             //s_rdr.GetFloat();
             
-            var dataRecordArg = Expression.Parameter(typeof(IDataRecord));
+            var dataRecordArg = Expression.Parameter(typeof(DbDataReader));
             var mappingContextArg = Expression.Parameter(typeof(MappingContext));
             var valueIndexArg = Expression.Parameter(typeof(int));
             var body = Expression.Call(Expression.Constant(this), typeof(DataRecordReader).GetMethod("GetAsObject", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance),
@@ -173,7 +175,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 Expression.Constant(simpleReturnType, typeof(Type))
             );
 
-            return Expression.Lambda(Expression.Convert(body, simpleReturnType.IsValueType && !simpleReturnType.IsNullable() ? typeof(Nullable<>).MakeGenericType(simpleReturnType) : simpleReturnType), 
+            return Expression.Lambda(Expression.Convert(body, simpleReturnType.GetTypeInfo().IsValueType && !simpleReturnType.IsNullable() ? typeof(Nullable<>).MakeGenericType(simpleReturnType) : simpleReturnType), 
                 dataRecordArg,
                 mappingContextArg,
                 valueIndexArg
@@ -188,7 +190,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="columnIndex"></param>
         /// <param name="mappingContext"></param>
         /// <returns></returns>
-        protected virtual string GetAsString(IDataRecord dataRecord, int columnIndex, MappingContext mappingContext)
+        protected virtual string GetAsString(DbDataReader dataRecord, int columnIndex, MappingContext mappingContext)
         {
             var value = dataRecord.GetAsString(columnIndex);
             mappingContext.OnGetAsString(dataRecord, ref value, null, columnIndex); // return type null here, expression can be a little more complex than a known type
@@ -196,7 +198,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             return value;
         }
 
-        protected virtual object GetAsObject(IDataRecord dataRecord, int columnIndex, MappingContext mappingContext, Type type)
+        protected virtual object GetAsObject(DbDataReader dataRecord, int columnIndex, MappingContext mappingContext, Type type)
         {
             var value = dataRecord.GetAsObject(columnIndex);
             mappingContext.OnGetAsObject(dataRecord, ref value, null, columnIndex, type);

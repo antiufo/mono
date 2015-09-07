@@ -424,8 +424,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         }
 
         /// <summary>
-        /// Returns a Delegate to create a row for a given IDataRecord
-        /// The Delegate is Func&lt;IDataRecord,MappingContext,"tableType">
+        /// Returns a Delegate to create a row for a given DbDataReader
+        /// The Delegate is Func&lt;DbDataReader,MappingContext,"tableType">
         /// </summary>
         /// <param name="tableType">The table type (must be managed by DataContext)</param>
         /// <param name="parameters"></param>

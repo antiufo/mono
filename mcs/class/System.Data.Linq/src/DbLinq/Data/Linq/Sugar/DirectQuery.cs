@@ -68,7 +68,7 @@ namespace DbLinq.Data.Linq.Sugar
         /// <param name="parameterValues"></param>
         private void FeedParameters(ITransactionalCommand command)
         {
-            IDbCommand dbCommand = command.Command;
+            DbCommand dbCommand = command.Command;
             for (int parameterIndex = 0; parameterIndex < Parameters.Count; parameterIndex++)
             {
                 var dbParameter = dbCommand.CreateParameter();

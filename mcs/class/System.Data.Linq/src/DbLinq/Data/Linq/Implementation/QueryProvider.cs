@@ -31,6 +31,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using DbLinq.Data.Linq.Sugar;
 using DbLinq.Util;
+using System.Reflection;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -133,7 +134,7 @@ namespace DbLinq.Data.Linq.Implementation
         public IQueryable CreateQuery(Expression expression)
         {
             var type = expression.Type;
-            if (!type.IsGenericType)
+            if (!type.GetTypeInfo().IsGenericType)
                 throw Error.BadArgument("S0066: Don't know how to handle non-generic type '{0}'", type);
             var genericType = type.GetGenericTypeDefinition();
             if (genericType == typeof(IQueryable<>) || genericType == typeof(IOrderedQueryable<>))

@@ -26,12 +26,13 @@
 using System.Collections.Generic;
 using System.Data;
 using DbLinq.Vendor;
+using System.Data.Common;
 
 namespace DbLinq.Sqlite
 {
     partial class SqliteSchemaLoader
     {
-        public override IList<IDataName> ReadTables(IDbConnection connectionString, string databaseName)
+        public override IList<IDataName> ReadTables(DbConnection connectionString, string databaseName)
         {
             string sql = string.Format(SelectTablesFormat, ", 'main'");
             return Util.DataCommand.Find<IDataName>(connectionString, sql, ReadDataNameAndSchema);

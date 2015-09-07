@@ -26,6 +26,7 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 
 namespace DbLinq.Data.Linq.Database.Implementation
 {
@@ -34,14 +35,14 @@ namespace DbLinq.Data.Linq.Database.Implementation
     /// </summary>
     internal class DatabaseConnection: IDisposable
     {
-        private readonly IDbConnection _connection;
+        private readonly DbConnection _connection;
         private readonly bool _mustClose;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabaseConnection"/> class.
         /// </summary>
         /// <param name="connection">The connection.</param>
-        public DatabaseConnection(IDbConnection connection)
+        public DatabaseConnection(DbConnection connection)
         {
             _connection = connection;
             switch (_connection.State)
@@ -53,7 +54,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
                 _mustClose = true;
                 break;
             default:
-                throw new ApplicationException("L33: Can only handle Open or Closed connection states, not " + _connection.State);
+                throw new InvalidOperationException("L33: Can only handle Open or Closed connection states, not " + _connection.State);
             }
             if (_mustClose)
                 _connection.Open();

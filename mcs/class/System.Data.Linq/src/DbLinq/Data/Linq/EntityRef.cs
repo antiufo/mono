@@ -64,11 +64,13 @@ namespace DbLinq.Data.Linq
         public EntityRef(EntityRef<TEntity> entityRef)
         {
             this.entity = entityRef.entity;
+#if false
             if (entityRef.entity == null && entityRef.source is ICloneable)
             {
                 source = (IEnumerable<TEntity>)((ICloneable)entityRef.source).Clone();
             }
             else
+#endif
                 source = null;
             hasLoadedOrAssignedValue = entityRef.hasLoadedOrAssignedValue;
         }

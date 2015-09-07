@@ -145,8 +145,8 @@ namespace DbLinq.Util
 
         public static Type GetEnumerableType(this Type type)
         {
-            if (type.IsInterface && type.GetGenericTypeDefinition() == typeof(IEnumerable<>)) return type;
-            return type.GetInterfaces().First(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)); 
+            if (type.GetTypeInfo().IsInterface && type.GetGenericTypeDefinition() == typeof(IEnumerable<>)) return type;
+            return type.GetInterfaces().First(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)); 
         }
 
         /// <summary>

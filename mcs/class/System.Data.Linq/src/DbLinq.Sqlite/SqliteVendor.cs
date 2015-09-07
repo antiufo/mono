@@ -35,7 +35,7 @@ using DbLinq.Data.Linq.SqlClient;
 using DbLinq.Sqlite;
 using DbLinq.Util;
 using DbLinq.Vendor;
-
+using System.Data.Common;
 #if MONO_STRICT
 using DataContext = System.Data.Linq.DataContext;
 #else
@@ -79,7 +79,7 @@ namespace DbLinq.Sqlite
 
             string sp_name = functionAttrib.MappedName;
 
-            using (IDbCommand command = context.Connection.CreateCommand())
+            using (DbCommand command = context.Connection.CreateCommand())
             {
                 command.CommandText = sp_name;
                 //SQLiteCommand command = new SQLiteCommand("select hello0()");
@@ -98,7 +98,7 @@ namespace DbLinq.Sqlite
 
                     System.Data.ParameterDirection direction = GetDirection(paramInfo, paramAttrib);
                     //SQLiteDbType dbType = SQLiteTypeConversions.ParseType(paramAttrib.DbType);
-                    IDataParameter cmdParam = command.CreateParameter();
+                    var cmdParam = command.CreateParameter();
                     cmdParam.ParameterName = paramName;
                     //cmdParam.Direction = System.Data.ParameterDirection.Input;
                     if (direction == ParameterDirection.Input || direction == ParameterDirection.InputOutput)
@@ -126,18 +126,19 @@ namespace DbLinq.Sqlite
                     cmdText = cmdText.Replace("$args", string.Join(",", paramNames.ToArray()));
                     command.CommandText = cmdText;
                 }
-
+#if false
                 if (method.ReturnType == typeof(DataSet))
                 {
                     //unknown shape of resultset:
                     System.Data.DataSet dataSet = new DataSet();
-                    IDbDataAdapter adapter = CreateDataAdapter(context);
+                    DbDataAdapter adapter = CreateDataAdapter(context);
                     adapter.SelectCommand = command;
                     adapter.Fill(dataSet);
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
                     return new ProcedureResult(dataSet, outParamValues.ToArray());
                 }
                 else
+#endif
                 {
                     object obj = command.ExecuteScalar();
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
@@ -161,12 +162,12 @@ namespace DbLinq.Sqlite
         /// <summary>
         /// Collect all Out or InOut param values, casting them to the correct .net type.
         /// </summary>
-        private List<object> CopyOutParams(ParameterInfo[] paramInfos, IDataParameterCollection paramSet)
+        private List<object> CopyOutParams(ParameterInfo[] paramInfos, DbParameterCollection paramSet)
         {
             List<object> outParamValues = new List<object>();
             //Type type_t = typeof(T);
             int i = -1;
-            foreach (IDataParameter param in paramSet)
+            foreach (DbParameter param in paramSet)
             {
                 i++;
                 if (param.Direction == System.Data.ParameterDirection.Input)

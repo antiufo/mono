@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 
 namespace DbLinq.Language.Implementation
 {
@@ -113,7 +114,7 @@ namespace DbLinq.Language.Implementation
         {
             WordsWeights = new Dictionary<string, int>();
             var type = GetType();
-            using (var resourceStream = type.Assembly.GetManifestResourceStream(type, resourceName))
+            using (var resourceStream = type.GetTypeInfo().Assembly.GetManifestResourceStream(resourceName))
             {
                 using (var resourceReader = new StreamReader(resourceStream))
                 {

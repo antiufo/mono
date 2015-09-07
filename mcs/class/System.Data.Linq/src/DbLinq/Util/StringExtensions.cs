@@ -50,7 +50,8 @@ namespace DbLinq.Util
         {
             for (int index = 0; index < name.Length; index++)
             {
-                var category = char.GetUnicodeCategory(name, index);
+                
+                var category = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(name, index);
                 // this is not nice, but I found no other way to identity a valid identifier
                 switch (category)
                 {
@@ -71,7 +72,7 @@ namespace DbLinq.Util
         {
             if (text == null)
                 return false;
-            var comparison = ignoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture;
+            var comparison = ignoreCase ? StringComparisonEx.InvariantCultureIgnoreCase : StringComparisonEx.InvariantCulture;
             var endIndex = text.IndexOf(find, 0, comparison);
             return endIndex >= 0;
         }
@@ -79,7 +80,7 @@ namespace DbLinq.Util
         public static string ReplaceCase(this string text, string find, string replace, bool ignoreCase)
         {
             var result = new StringBuilder();
-            var comparison = ignoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture;
+            var comparison = ignoreCase ? StringComparisonEx.InvariantCultureIgnoreCase : StringComparisonEx.InvariantCulture;
             for (int index = 0; ; )
             {
                 var endIndex = text.IndexOf(find, index, comparison);

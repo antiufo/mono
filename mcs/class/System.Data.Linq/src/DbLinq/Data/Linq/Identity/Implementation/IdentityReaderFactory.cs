@@ -33,6 +33,7 @@ using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
 #endif
+using System.Reflection;
 
 namespace DbLinq.Data.Linq.Identity.Implementation
 {

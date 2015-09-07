@@ -48,7 +48,7 @@ namespace DbLinq.Util
         public static A GetAttribute<A>(this Assembly a)
             where A : Attribute
         {
-            return GetSingleAttribute<A>(a.GetCustomAttributes(typeof(A), true));
+            return a.GetCustomAttribute<A>();
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace DbLinq.Util
         public static A GetAttribute<A>(this Type t)
             where A: Attribute
         {
-            return GetSingleAttribute<A>(t.GetCustomAttributes(typeof(A), true));
+            return t.GetTypeInfo().GetCustomAttribute<A>(true);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace DbLinq.Util
         public static A GetAttribute<A>(this MemberInfo m)
             where A : Attribute
         {
-            return GetSingleAttribute<A>(m.GetCustomAttributes(typeof(A), true));
+            return m.GetCustomAttribute<A>(true);
         }
 
     }

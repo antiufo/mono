@@ -35,6 +35,7 @@ using DbLinq.Util;
 using DbLinq.Data.Linq.Mapping;
 using DbLinq.Data.Linq.Sugar;
 using DbLinq.Data.Linq.Sugar.Expressions;
+using System.Data.Common;
 
 #if MONO_STRICT
 using DataContext = System.Data.Linq.DataContext;
@@ -429,7 +430,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <returns></returns>
         public virtual LambdaExpression BuildTableReader(Type tableType, IList<string> parameters, BuilderContext builderContext)
         {
-            var dataRecordParameter = Expression.Parameter(typeof(IDataRecord), "dataRecord");
+            var dataRecordParameter = Expression.Parameter(typeof(DbDataReader), "dataRecord");
             var mappingContextParameter = Expression.Parameter(typeof(MappingContext), "mappingContext");
             //var table = builderContext.QueryContext.DataContext.Mapping.GetTable(tableType);
             var bindings = new List<MemberBinding>();
@@ -473,7 +474,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
             return -1;
         }
-
+        
         /// <summary>
         /// Creates an entity set creator, to be used at run-time
         /// </summary>
@@ -489,11 +490,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var entityType = expression.EntitySetType.GetGenericArguments()[0];
             List<ElementInit> members = new List<ElementInit>();
             var entitySetType = typeof(EntitySet<>).MakeGenericType(entityType);
-            var add = entitySetType.GetMethod("Add", 
-                    BindingFlags.NonPublic | BindingFlags.Instance,
-                    null,
-                    new Type[] { typeof(KeyValuePair<object, MemberInfo>) },
-                    null);
+            var add = entitySetType.GetMethod("AddInternal", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             foreach (var info in expression.Columns)
             {
@@ -513,13 +510,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 }
             }
 
+            var ctor = entitySetType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
+                                        .First(x => x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == typeof(DataContext));
+            
             return Expression.ListInit(
                     Expression.New(
-                        entitySetType.GetConstructor(
-                            BindingFlags.NonPublic | BindingFlags.Instance,
-                            null,
-                            new[] { typeof(DataContext) },
-                            null),
+                        ctor,
                         Expression.Constant(builderContext.QueryContext.DataContext)),
                     members);
         }

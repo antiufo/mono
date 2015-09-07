@@ -39,6 +39,7 @@ using DbLinq.Data.Linq.Mapping;
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using System.Threading.Tasks;
+using System.Data.Common;
 
 namespace DbLinq.Data.Linq.Sugar
 {
@@ -64,9 +65,9 @@ namespace DbLinq.Data.Linq.Sugar
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Func<IDataRecord, MappingContext, T> GetRowObjectCreator<T>()
+        public Func<DbDataReader, MappingContext, T> GetRowObjectCreator<T>()
         {
-            return (Func<IDataRecord, MappingContext, T>)RowObjectCreator;
+            return (Func<DbDataReader, MappingContext, T>)RowObjectCreator;
         }
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace DbLinq.Data.Linq.Sugar
 
         public async override Task<ITransactionalCommand> GetCommandAsync(bool synchronous)
         {
-            IDbDataParameter dbParameter;
+            DbParameter dbParameter;
             var dbCommand = await base.GetCommandTrAsync(false, synchronous);
             foreach (var parameter in InputParameters)
             {

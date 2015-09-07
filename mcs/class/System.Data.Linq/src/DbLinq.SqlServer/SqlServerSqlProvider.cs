@@ -32,6 +32,7 @@ using DbLinq.Vendor.Implementation;
 
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Data.Linq.Sugar.Expressions;
+using System.Reflection;
 
 namespace DbLinq.SqlServer
 {
@@ -260,10 +261,10 @@ namespace DbLinq.SqlServer
 
         public override SqlStatement GetLiteralConvert(SqlStatement a, Type type)
         {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 type = type.GetGenericArguments().First();
 
-            if (type.IsValueType && a[0].Sql.StartsWith("@"))
+            if (type.GetTypeInfo().IsValueType && a[0].Sql.StartsWith("@"))
                 return a;
 
             SqlStatement sqlTypeName;

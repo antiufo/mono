@@ -37,9 +37,21 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
 #endif
     abstract class MutableExpression : Expression, IMutableExpression
     {
+      
         protected MutableExpression(ExpressionType expressionType, Type type)
-            : base(expressionType, type)
         {
+            this.NodeType = expressionType;
+            this.Type = type;
+        }
+
+
+        public override Type Type
+        {
+            get;
+        }
+        public override ExpressionType NodeType
+        {
+            get;
         }
 
         public virtual IEnumerable<Expression> Operands

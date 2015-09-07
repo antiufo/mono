@@ -49,7 +49,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
 
         // Clauses
         public string ExecuteMethodName { get; set; } // for Execute<> calls, this member is filled with the method name
-        internal RowCreator Reader { get; set; } // Func<IDataRecord,DataMapper,T> --> creates an object from data record
+        internal RowCreator Reader { get; set; } // Func<DbDataReader,DataMapper,T> --> creates an object from data record
         public IList<Expression> Where { get; private set; }
         public IList<OrderByExpression> OrderBy { get; private set; }
         public IList<GroupExpression> Group { get; private set; }

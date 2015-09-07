@@ -40,7 +40,7 @@ namespace DbLinq.Util
         /// <returns></returns>
         public static bool CanBeNull(this Type t)
         {
-            return IsNullable(t) || !t.IsValueType;
+            return IsNullable(t) || !t.GetTypeInfo().IsValueType;
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace DbLinq.Util
         /// <returns></returns>
         public static bool IsNullable(this Type t)
         {
-            return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>);
+            return t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace DbLinq.Util
         public static string GetShortName(this Type t)
         {
             var name = t.Name;
-            if (t.IsGenericTypeDefinition)
+            if (t.GetTypeInfo().IsGenericTypeDefinition)
                 return name.Split('`')[0];
             return name;
         }

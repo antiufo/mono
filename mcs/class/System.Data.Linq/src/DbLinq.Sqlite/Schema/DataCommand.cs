@@ -27,6 +27,7 @@ using DbLinq.Util;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 
@@ -37,14 +38,14 @@ namespace DbLinq.Sqlite.Schema
 #endif
     static class DataCommand
     {
-        public delegate T ReadDelegate<T>(IDataReader reader, string table);
+        public delegate T ReadDelegate<T>(DbDataReader reader, string table);
 
-        public static List<T> Find<T>(IDbConnection connection, string sql, string pragma, ReadDelegate<T> readDelegate)
+        public static List<T> Find<T>(DbConnection connection, string sql, string pragma, ReadDelegate<T> readDelegate)
         {
-            using (IDbCommand cmd = connection.CreateCommand())
+            using (var cmd = connection.CreateCommand())
             {
                 cmd.CommandText = sql;
-                using (IDataReader rdr = cmd.ExecuteReader().Configure())
+                using (DbDataReader rdr = cmd.ExecuteReader().Configure())
                 {
                     List<T> list = new List<T>();
 
@@ -53,10 +54,10 @@ namespace DbLinq.Sqlite.Schema
                         string table = rdr.GetString(0);
                         //string sqlPragma = @"PRAGMA foreign_key_list('" + table + "');";
                         string sqlPragma = string.Format(pragma, table);
-                        using (IDbCommand cmdPragma = connection.CreateCommand())
+                        using (var cmdPragma = connection.CreateCommand())
                         {
                             cmdPragma.CommandText = sqlPragma;
-                            using (IDataReader rdrPragma = cmdPragma.ExecuteReader().Configure())
+                            using (DbDataReader rdrPragma = cmdPragma.ExecuteReader().Configure())
                             {
                                 while (rdrPragma.Read())
                                 {

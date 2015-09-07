@@ -27,7 +27,8 @@
 using System.Collections.Generic;
 using System.Data;
 using DbLinq.Util;
-
+using IDbConnection = System.Data.Common.DbConnection;
+using IDataReader = System.Data.Common.DbDataReader;
 namespace DbLinq.Ingres
 {
     partial class IngresSchemaLoader

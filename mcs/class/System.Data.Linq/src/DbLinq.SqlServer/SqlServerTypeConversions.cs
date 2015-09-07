@@ -26,7 +26,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Data.SqlClient;
 using System.Data;
 
 namespace DbLinq.SqlServer
@@ -42,11 +41,11 @@ namespace DbLinq.SqlServer
 #endif
     static class SqlServerTypeConversions
     {
-        static Dictionary<string, SqlDbType> s_typeMap = new Dictionary<string, SqlDbType>();
+        static Dictionary<string, DbType> s_typeMap = new Dictionary<string, DbType>();
 
         static SqlServerTypeConversions()
         {
-            foreach (SqlDbType dbType in Enum.GetValues(typeof(SqlDbType)))
+            foreach (DbType dbType in Enum.GetValues(typeof(DbType)))
             {
                 s_typeMap[dbType.ToString().ToLower()] = dbType;
             }
@@ -55,7 +54,7 @@ namespace DbLinq.SqlServer
         /// <summary>
         /// given name of MySqlType, return it's MySqlDbType enum.
         /// </summary>
-        public static SqlDbType ParseType(string typeStr)
+        public static DbType ParseType(string typeStr)
         {
             string typeStrL = typeStr.ToLower();
 
@@ -68,18 +67,17 @@ namespace DbLinq.SqlServer
             if (bracket > 0)
                 typeStrL = typeStrL.Substring(0, bracket);
 
-
             if(!s_typeMap.ContainsKey(typeStrL))
             {
                 switch(typeStrL){
                     case "tinyint":
-                        return SqlDbType.Int;
+                        return DbType.Int32;
                     case "int":
-                        return SqlDbType.Int;
+                        return DbType.Int32;
                 }
                 string msg = "TODO L24: add parsing of type "+typeStr;
                 Console.WriteLine(msg);
-                throw new ApplicationException(msg);
+                throw new InvalidOperationException(msg);
             }
             return s_typeMap[typeStrL];
         }

@@ -37,14 +37,14 @@ namespace DbLinq.Data.Linq.Database.Implementation
     internal class DatabaseContext : IDatabaseContext
     {
         private bool _connectionOwner;
-        private IDbConnection _connection;
-        public IDbConnection Connection
+        private DbConnection _connection;
+        public DbConnection Connection
         {
             get { return _connection; }
             set { ChangeConnection(value, false); }
         }
 
-        public IDbTransaction CurrentTransaction { get; set; }
+        public DbTransaction CurrentTransaction { get; set; }
 
         private readonly DbProviderFactory _providerFactory;
         /// <summary>
@@ -68,7 +68,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// <param name="connectionString">The connection string.</param>
         public void Connect(string connectionString)
         {
-            IDbConnection connection = null;
+            DbConnection connection = null;
             if (connectionString != null)
             {
                 connection = ProviderFactory.CreateConnection();
@@ -103,7 +103,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// Creates a transaction.
         /// </summary>
         /// <returns></returns>
-        public IDbTransaction CreateTransaction()
+        public DbTransaction CreateTransaction()
         {
             if (CurrentTransaction != null)
                 throw new InvalidOperationException("Attempting to create a transaction while within a transaction.");
@@ -114,24 +114,25 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// Creates a command.
         /// </summary>
         /// <returns></returns>
-        public IDbCommand CreateCommand(IDbConnection preferredConnection)
+        public DbCommand CreateCommand(DbConnection preferredConnection)
         {
-            IDbCommand command = (preferredConnection ?? Connection).CreateCommand();
+            DbCommand command = (preferredConnection ?? Connection).CreateCommand();
             command.CommandTimeout = 0;
             if (command.Transaction == null)
                 command.Transaction = CurrentTransaction;
             return command;
         }
 
+#if false
         /// <summary>
         /// Creates a DataAdapter.
         /// </summary>
         /// <returns></returns>
-        public IDbDataAdapter CreateDataAdapter()
+        public DbDataAdapter CreateDataAdapter()
         {
             return ProviderFactory.CreateDataAdapter();
         }
-
+#endif
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -145,7 +146,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// </summary>
         /// <param name="connection">The connection.</param>
         /// <param name="owner">if set to <c>true</c> [owner].</param>
-        protected void SetConnection(IDbConnection connection, bool owner)
+        protected void SetConnection(DbConnection connection, bool owner)
         {
             if (connection == null)
                 return;
@@ -170,7 +171,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// </summary>
         /// <param name="connection">The connection.</param>
         /// <param name="owner">if set to <c>true</c> [owner].</param>
-        protected void ChangeConnection(IDbConnection connection, bool owner)
+        protected void ChangeConnection(DbConnection connection, bool owner)
         {
             ClearConnection();
             SetConnection(connection, owner);
@@ -181,10 +182,10 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// </summary>
         /// <param name="connection">The connection.</param>
         /// <returns></returns>
-        protected static DbProviderFactory FindFactory(IDbConnection connection)
+        protected static DbProviderFactory FindFactory(DbConnection connection)
         {
             // we start from connection assembly
-            var connectionAssembly = connection.GetType().Assembly;
+            var connectionAssembly = connection.GetType().GetTypeInfo().Assembly;
             // then look for all types present in assembly
             foreach (var testType in connectionAssembly.GetExportedTypes())
             {
@@ -217,7 +218,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
             Connect(connectionString);
         }
 
-        public DatabaseContext(IDbConnection connection)
+        public DatabaseContext(DbConnection connection)
         {
             _providerFactory = FindFactory(connection);
             Connection = connection;

@@ -31,6 +31,7 @@ namespace System
 
             }
             return lambda.Compile();
+#if false
             var modifiedLambda = (LambdaExpression)new ReplaceInMemoryObjectsVisitor(lambda).Visit(lambda);
 
             lambdas.Add(modifiedLambda);
@@ -58,6 +59,7 @@ namespace System
             asm.Save(@"Emitted.dll");
             
             return lambda.Compile();
+#endif
         }
     }
 
@@ -71,7 +73,7 @@ namespace System
         {
             var value = node.Value;
             
-            if (value != null && !value.GetType().IsPrimitive && !(value is string) && !value.GetType().IsEnum)
+            if (value != null && !value.GetType().GetTypeInfo().IsPrimitive && !(value is string) && !value.GetType().GetTypeInfo().IsEnum)
             {
                 return Expression.Constant(null, node.Type);
             }

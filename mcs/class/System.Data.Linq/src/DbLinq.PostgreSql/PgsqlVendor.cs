@@ -66,19 +66,19 @@ namespace DbLinq.PostgreSql
         protected readonly PgsqlSqlProvider sqlProvider = new PgsqlSqlProvider();
         public override ISqlProvider SqlProvider { get { return sqlProvider; } }
 
-        protected void SetParameterType(IDbDataParameter parameter, PropertyInfo property, string literal)
+        protected void SetParameterType(DbParameter parameter, PropertyInfo property, string literal)
         {
             object dbType = Enum.Parse(property.PropertyType, literal);
             property.GetSetMethod().Invoke(parameter, new object[] { dbType });
         }
 
-        protected void SetParameterType(IDbDataParameter parameter, string literal)
+        protected void SetParameterType(DbParameter parameter, string literal)
         {
             SetParameterType(parameter, parameter.GetType().GetProperty("NpgsqlDbType"), literal);
         }
 
         /*
-                public override IDbDataParameter CreateSqlParameter(IDbCommand cmd, string dbTypeName, string paramName)
+                public override DbParameter CreateSqlParameter(DbCommand cmd, string dbTypeName, string paramName)
                 {
                     //System.Data.SqlDbType dbType = DbLinq.util.SqlTypeConversions.ParseType(dbTypeName);
                     //SqlParameter param = new SqlParameter(paramName, dbType);
@@ -108,7 +108,7 @@ namespace DbLinq.PostgreSql
 
             string sp_name = functionAttrib.MappedName;
 
-            using (IDbCommand command = context.Connection.CreateCommand())
+            using (DbCommand command = context.Connection.CreateCommand())
             {
                 command.CommandText = sp_name;
                 //MySqlCommand command = new MySqlCommand("select hello0()");
@@ -128,7 +128,7 @@ namespace DbLinq.PostgreSql
 
                     System.Data.ParameterDirection direction = GetDirection(paramInfo, paramAttrib);
                     //MySqlDbType dbType = MySqlTypeConversions.ParseType(paramAttrib.DbType);
-                    IDbDataParameter cmdParam = command.CreateParameter();
+                    DbParameter cmdParam = command.CreateParameter();
                     cmdParam.ParameterName = paramName;
                     //cmdParam.Direction = System.Data.ParameterDirection.Input;
                     if (direction == ParameterDirection.Input || direction == ParameterDirection.InputOutput)
@@ -157,17 +157,19 @@ namespace DbLinq.PostgreSql
                     command.CommandText = cmdText;
                 }
 
+#if false
                 if (method.ReturnType == typeof(DataSet))
                 {
                     //unknown shape of resultset:
                     System.Data.DataSet dataSet = new DataSet();
-                    IDbDataAdapter adapter = CreateDataAdapter(context);
+                    DbDataAdapter adapter = CreateDataAdapter(context);
                     adapter.SelectCommand = command;
                     adapter.Fill(dataSet);
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
                     return new ProcedureResult(dataSet, outParamValues.ToArray());
                 }
                 else
+#endif
                 {
                     object obj = command.ExecuteScalar();
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
@@ -191,12 +193,12 @@ namespace DbLinq.PostgreSql
         /// <summary>
         /// Collect all Out or InOut param values, casting them to the correct .net type.
         /// </summary>
-        private List<object> CopyOutParams(ParameterInfo[] paramInfos, IDataParameterCollection paramSet)
+        private List<object> CopyOutParams(ParameterInfo[] paramInfos, DbParameterCollection paramSet)
         {
             List<object> outParamValues = new List<object>();
             //Type type_t = typeof(T);
             int i = -1;
-            foreach (IDbDataParameter param in paramSet)
+            foreach (DbParameter param in paramSet)
             {
                 i++;
                 if (param.Direction == ParameterDirection.Input)

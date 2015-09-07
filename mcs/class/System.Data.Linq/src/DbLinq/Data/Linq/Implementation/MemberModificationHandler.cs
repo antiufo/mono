@@ -67,7 +67,7 @@ namespace DbLinq.Data.Linq.Implementation
         /// </returns>
         protected static bool IsPrimitiveType(Type type)
         {
-            if (type.IsValueType)
+            if (type.GetTypeInfo().IsValueType)
                 return true;
             if (type == typeof(string))
                 return true;

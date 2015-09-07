@@ -29,13 +29,13 @@ using System.Linq.Expressions;
 
 namespace DbLinq.Data.Linq.Sugar
 {
-    internal interface IDataRecordReader
+    internal interface DbDataReaderReader
     {
         /// <summary>
-        /// Returns a Expression reading a property from a IDataRecord, at the specified index
+        /// Returns a Expression reading a property from a DbDataReader, at the specified index
         /// </summary>
         /// <param name="returnType">The expected return type (to be mapped to the property)</param>
-        /// <returns>A lambda(IDataRecord,MappingColumn,fieldIndex) returning the field value</returns>
+        /// <returns>A lambda(DbDataReader,MappingColumn,fieldIndex) returning the field value</returns>
         LambdaExpression GetPropertyReader(Type returnType);
     }
 }

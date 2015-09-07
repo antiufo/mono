@@ -35,11 +35,11 @@ using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
 #endif
-
 using Data = DbLinq.Data;
 
 using IExecuteResult = System.Data.Linq.IExecuteResult;
 using System.Text;
+using System.Data.Common;
 
 namespace DbLinq.Vendor.Implementation
 {
@@ -78,7 +78,7 @@ namespace DbLinq.Vendor.Implementation
         /// <param name="rows"></param>
         /// <param name="pageSize"></param>
         /// <param name="transaction"></param>
-        public virtual void BulkInsert<T>(Table<T> table, List<T> rows, int pageSize, IDbTransaction transaction) where T : class
+        public virtual void BulkInsert<T>(Table<T> table, List<T> rows, int pageSize, DbTransaction transaction) where T : class
         {
             throw new NotImplementedException();
         }
@@ -98,16 +98,17 @@ namespace DbLinq.Vendor.Implementation
         /// <returns></returns>
         public abstract IExecuteResult ExecuteMethodCall(DataContext context, MethodInfo method, params object[] sqlParams);
 
+#if false
         /// <summary>
         /// Creates the data adapter.
         /// </summary>
         /// <param name="dataContext">The data context.</param>
         /// <returns></returns>
-        protected virtual IDbDataAdapter CreateDataAdapter(DataContext dataContext)
+        protected virtual DbDataAdapter CreateDataAdapter(DataContext dataContext)
         {
             return dataContext.CreateDataAdapter();
         }
-
+#endif
         /// <summary>
         /// Gets the connection string server part name.
         /// </summary>
@@ -193,9 +194,9 @@ namespace DbLinq.Vendor.Implementation
         }
 
         /// <summary>
-        /// called from DataContext ctor, which needs to create an IDbConnection, given an IVendor
+        /// called from DataContext ctor, which needs to create an DbConnection, given an IVendor
         /// </summary>
-        public IDbConnection CreateDbConnection(string connectionString)
+        public DbConnection CreateDbConnection(string connectionString)
         {
             var reConnectionType = new System.Text.RegularExpressions.Regex(@"DbLinqConnectionType=([^;]*);?");
             string connTypeVal = null;
@@ -216,7 +217,7 @@ namespace DbLinq.Vendor.Implementation
                         "Could not load the specified DbLinqConnectionType `{0}'.",
                         connTypeVal),
                     "connectionString");
-            return (IDbConnection)Activator.CreateInstance(connType, connectionString);
+            return (DbConnection)Activator.CreateInstance(connType, connectionString);
         }
     }
 }

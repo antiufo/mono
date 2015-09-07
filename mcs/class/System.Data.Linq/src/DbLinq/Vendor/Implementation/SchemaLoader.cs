@@ -39,6 +39,7 @@ using DbLinq.Factory;
 using DbLinq.Schema;
 using DbLinq.Schema.Dbml;
 using System.Text.RegularExpressions;
+using System.Data.Common;
 
 namespace DbLinq.Vendor.Implementation
 {
@@ -56,7 +57,7 @@ namespace DbLinq.Vendor.Implementation
         /// Connection used to read schema
         /// </summary>
         /// <value></value>
-        public IDbConnection Connection { get; set; }
+        public DbConnection Connection { get; set; }
         /// <summary>
         /// Gets or sets the name formatter.
         /// </summary>
@@ -317,7 +318,7 @@ namespace DbLinq.Vendor.Implementation
         /// <param name="connection">The connection.</param>
         /// <param name="nameFormat">The name format.</param>
         /// <returns></returns>
-        protected virtual SchemaName CreateSchemaName(string databaseName, IDbConnection connection, NameFormat nameFormat)
+        protected virtual SchemaName CreateSchemaName(string databaseName, DbConnection connection, NameFormat nameFormat)
         {
             if (string.IsNullOrEmpty(databaseName))
             {
@@ -360,7 +361,7 @@ namespace DbLinq.Vendor.Implementation
         /// <param name="nameAliases">The name aliases.</param>
         /// <param name="nameFormat">The name format.</param>
         /// <param name="names">The names.</param>
-        protected virtual void LoadTables(Database schema, SchemaName schemaName, IDbConnection conn, INameAliases nameAliases, NameFormat nameFormat, Names names)
+        protected virtual void LoadTables(Database schema, SchemaName schemaName, DbConnection conn, INameAliases nameAliases, NameFormat nameFormat, Names names)
         {
             var tables = ReadTables(conn, schemaName.DbName);
             foreach (var row in tables)
@@ -385,7 +386,7 @@ namespace DbLinq.Vendor.Implementation
         /// <param name="nameAliases">The name aliases.</param>
         /// <param name="nameFormat">The name format.</param>
         /// <param name="names">The names.</param>
-        protected void LoadColumns(Database schema, SchemaName schemaName, IDbConnection conn, INameAliases nameAliases, NameFormat nameFormat, Names names)
+        protected void LoadColumns(Database schema, SchemaName schemaName, DbConnection conn, INameAliases nameAliases, NameFormat nameFormat, Names names)
         {
             var columnRows = ReadColumns(conn, schemaName.DbName);
             foreach (var columnRow in columnRows)

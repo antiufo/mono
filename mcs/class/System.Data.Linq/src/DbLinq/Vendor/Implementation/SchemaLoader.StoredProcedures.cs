@@ -27,6 +27,7 @@
 using System.Data;
 using DbLinq.Schema;
 using DbLinq.Schema.Dbml;
+using System.Data.Common;
 
 namespace DbLinq.Vendor.Implementation
 {
@@ -39,7 +40,7 @@ namespace DbLinq.Vendor.Implementation
         /// <param name="schemaName">Name of the schema.</param>
         /// <param name="conn">The conn.</param>
         /// <param name="nameFormat">The name format.</param>
-        protected virtual void LoadStoredProcedures(Database schema, SchemaName schemaName, IDbConnection conn, NameFormat nameFormat)
+        protected virtual void LoadStoredProcedures(Database schema, SchemaName schemaName, DbConnection conn, NameFormat nameFormat)
         {
         }
     }

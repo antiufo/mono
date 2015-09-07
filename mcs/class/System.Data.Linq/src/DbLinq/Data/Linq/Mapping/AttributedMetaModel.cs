@@ -180,19 +180,19 @@ namespace DbLinq.Data.Linq.Mapping
         //If you add to properties with the same T of Table<T> only the first gets into the list.
         public override IEnumerable<MetaTable> GetTables()
         {
-            const BindingFlags scope = BindingFlags.GetField |
-                BindingFlags.GetProperty | BindingFlags.Static |
+            const BindingFlags scope = /*BindingFlags.GetField |
+                BindingFlags.GetProperty |*/ BindingFlags.Static |
                 BindingFlags.Instance | BindingFlags.NonPublic |
                 BindingFlags.Public;
             var seen = new HashSet<Type>();
             foreach (var info in _ContextType.GetMembers(scope))
             {
                 // Only look for Fields & Properties.
-                if (info.MemberType != MemberTypes.Field && info.MemberType != MemberTypes.Property)
+                if (!(info is FieldInfo || info is PropertyInfo))
                     continue;
                 Type memberType = info.GetMemberType();
 
-                if (memberType == null || !memberType.IsGenericType ||
+                if (memberType == null || !memberType.GetTypeInfo().IsGenericType ||
                         memberType.GetGenericTypeDefinition() != typeof(Table<>))
                     continue;
                 var tableType = memberType.GetGenericArguments()[0];

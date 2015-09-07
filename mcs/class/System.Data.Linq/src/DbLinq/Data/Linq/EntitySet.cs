@@ -176,7 +176,7 @@ namespace DbLinq.Data.Linq
 
         ParameterExpression nestedQueryParam;
         BinaryExpression nestedQueryPredicate;
-        internal void Add(KeyValuePair<object, MemberInfo> info)
+        internal void AddInternal(KeyValuePair<object, MemberInfo> info)
         {
             var value = info.Key;
             var member = info.Value;

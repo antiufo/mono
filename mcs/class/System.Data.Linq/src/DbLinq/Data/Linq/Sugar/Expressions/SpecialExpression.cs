@@ -37,6 +37,7 @@ using DbLinq.Data.Linq.Sugar;
 using DbLinq.Data.Linq.Sugar.ExpressionMutator;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Util;
+using System.Reflection;
 
 namespace DbLinq.Data.Linq.Sugar.Expressions
 {

@@ -71,7 +71,7 @@ namespace DbLinq.Language.Implementation
         /// <returns></returns>
         public bool Supports(CultureInfo cultureInfo)
         {
-            return cultureInfo.IsNeutralCulture || cultureInfo.ThreeLetterISOLanguageName == "IVL";
+            return cultureInfo.IsNeutralCulture || cultureInfo.TwoLetterISOLanguageName.Equals("iv", System.StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

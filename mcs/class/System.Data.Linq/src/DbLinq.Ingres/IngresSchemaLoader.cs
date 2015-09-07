@@ -32,6 +32,7 @@ using DbLinq.Schema.Dbml;
 using DbLinq.Util;
 using DbLinq.Vendor;
 using DbLinq.Vendor.Implementation;
+using IDbConnection = System.Data.Common.DbConnection;
 
 namespace DbLinq.Ingres
 {

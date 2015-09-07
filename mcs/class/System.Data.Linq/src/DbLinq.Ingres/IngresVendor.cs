@@ -34,6 +34,7 @@ using System.Text;
 using DbLinq.Data.Linq.SqlClient;
 using DbLinq.Util;
 using DbLinq.Vendor;
+using System.Data.Common;
 
 #if MONO_STRICT
 using DataContext = System.Data.Linq.DataContext;
@@ -59,7 +60,7 @@ namespace DbLinq.Ingres
 
         //private string lastIdExpression = null;
 
-        private bool isReplaceable(IDbDataParameter param)
+        private bool isReplaceable(DbParameter param)
         {
             switch (param.DbType)
             {
@@ -73,7 +74,7 @@ namespace DbLinq.Ingres
             return false;
         }
 
-        private string getParamValueAsString(IDbDataParameter param)
+        private string getParamValueAsString(DbParameter param)
         {
             switch (param.DbType)
             {
@@ -88,13 +89,13 @@ namespace DbLinq.Ingres
             throw new Exception("Not prepared to convert " + param.DbType.ToString());
         }
 
-        protected void SetParameterType(IDbDataParameter parameter, PropertyInfo property, string literal)
+        protected void SetParameterType(DbParameter parameter, PropertyInfo property, string literal)
         {
             object dbType = Enum.Parse(property.PropertyType, literal);
             property.GetSetMethod().Invoke(parameter, new object[] { dbType });
         }
 
-        protected void SetParameterType(IDbDataParameter parameter, string literal)
+        protected void SetParameterType(DbParameter parameter, string literal)
         {
             SetParameterType(parameter, parameter.GetType().GetProperty("IngresDbType"), literal);
         }
@@ -120,7 +121,7 @@ namespace DbLinq.Ingres
 
             string sp_name = functionAttrib.MappedName;
 
-            using (IDbCommand command = context.Connection.CreateCommand())
+            using (var command = context.Connection.CreateCommand())
             {
                 command.CommandText = sp_name;
                 //MySqlCommand command = new MySqlCommand("select hello0()");
@@ -140,7 +141,7 @@ namespace DbLinq.Ingres
 
                     System.Data.ParameterDirection direction = GetDirection(paramInfo, paramAttrib);
                     //MySqlDbType dbType = MySqlTypeConversions.ParseType(paramAttrib.DbType);
-                    IDbDataParameter cmdParam = command.CreateParameter();
+                    DbParameter cmdParam = command.CreateParameter();
                     cmdParam.ParameterName = paramName;
                     //cmdParam.Direction = System.Data.ParameterDirection.Input;
                     if (direction == ParameterDirection.Input || direction == ParameterDirection.InputOutput)
@@ -169,17 +170,19 @@ namespace DbLinq.Ingres
                     command.CommandText = cmdText;
                 }
 
+#if false
                 if (method.ReturnType == typeof(DataSet))
                 {
                     //unknown shape of resultset:
                     System.Data.DataSet dataSet = new DataSet();
-                    IDbDataAdapter adapter = CreateDataAdapter(context);
+                    DbDataAdapter adapter = CreateDataAdapter(context);
                     adapter.SelectCommand = command;
                     adapter.Fill(dataSet);
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
                     return new ProcedureResult(dataSet, outParamValues.ToArray());
                 }
                 else
+#endif
                 {
                     object obj = command.ExecuteScalar();
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
@@ -203,12 +206,12 @@ namespace DbLinq.Ingres
         /// <summary>
         /// Collect all Out or InOut param values, casting them to the correct .net type.
         /// </summary>
-        static List<object> CopyOutParams(ParameterInfo[] paramInfos, IDataParameterCollection paramSet)
+        static List<object> CopyOutParams(ParameterInfo[] paramInfos, DbParameterCollection paramSet)
         {
             List<object> outParamValues = new List<object>();
             //Type type_t = typeof(T);
             int i = -1;
-            foreach (IDbDataParameter param in paramSet)
+            foreach (DbParameter param in paramSet)
             {
                 i++;
                 if (param.Direction == ParameterDirection.Input)

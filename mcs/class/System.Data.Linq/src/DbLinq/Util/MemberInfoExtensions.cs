@@ -52,8 +52,8 @@ namespace DbLinq.Util
                 return ((MethodInfo)memberInfo).ReturnType;
             if (memberInfo is ConstructorInfo)
                 return null;
-            if (memberInfo is Type)
-                return (Type)memberInfo;
+            if (memberInfo is TypeInfo)
+                return ((TypeInfo)memberInfo).AsType();
             throw new ArgumentException();
         }
 
@@ -110,7 +110,7 @@ namespace DbLinq.Util
         /// <returns></returns>
         public static PropertyInfo GetExposingProperty(this MemberInfo memberInfo)
         {
-            var reflectedType = memberInfo.ReflectedType;
+            var reflectedType = memberInfo.DeclaringType;
             foreach (var propertyInfo in reflectedType.GetProperties())
             {
                 if (propertyInfo.GetGetMethod() == memberInfo || propertyInfo.GetSetMethod() == memberInfo)
@@ -132,7 +132,7 @@ namespace DbLinq.Util
 			if (type == null)
 				return null;
 
-			if (type.IsGenericType)
+			if (type.GetTypeInfo().IsGenericType)
 			{
 				return type.GetGenericArguments()[0];
 			}

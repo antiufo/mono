@@ -175,7 +175,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // TODO: Should be cached in a static thread safe cache.
 
             return type.GetProperties()
-                .Where(p => p.PropertyType.IsGenericType && 
+                .Where(p => p.PropertyType.GetTypeInfo().IsGenericType && 
                     
                     p.PropertyType.GetGenericTypeDefinition() == typeof(DbLinq.Data.Linq.EntitySet<>)
 
@@ -197,7 +197,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 if (associationAttribute != null)
                 {
                     FieldInfo field = type.GetField(associationAttribute.Storage, BindingFlags.NonPublic | BindingFlags.Instance);
-                    if (field != null && field.FieldType.IsGenericType &&
+                    if (field != null && field.FieldType.GetTypeInfo().IsGenericType &&
 #if MONO_STRICT
                         field.FieldType.GetGenericTypeDefinition() == typeof(System.Data.Linq.EntityRef<>)
 #else

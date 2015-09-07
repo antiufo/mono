@@ -71,7 +71,7 @@ namespace DbLinq.Data.Linq
         private readonly Dictionary<Type, ITable> _tableMap = new Dictionary<Type, ITable>();
 
         public MetaModel Mapping { get; private set; }
-        // PC question: at ctor, we get a IDbConnection and the Connection property exposes a DbConnection
+        // PC question: at ctor, we get a DbConnection and the Connection property exposes a DbConnection
         //              WTF?
         public DbConnection Connection { get { return DatabaseContext.Connection as DbConnection; } }
 
@@ -86,7 +86,7 @@ namespace DbLinq.Data.Linq
         }
 
 
-        protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<IDataRecord, MappingContext, T> rowObjectCreator, Func<bool, Task<ITransactionalCommand>> getDbCommand)
+        protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<DbDataReader, MappingContext, T> rowObjectCreator, Func<bool, Task<ITransactionalCommand>> getDbCommand)
         {
             BlockingIoHandler.Check();
             using (var dbCommand = getDbCommand(true).AssumeCompleted())
@@ -195,22 +195,22 @@ namespace DbLinq.Data.Linq
         [DBLinqExtended]
         internal IVendorProvider _VendorProvider { get; set; }
 
-        public DataContext(IDbConnection connection, MappingSource mapping)
+        public DataContext(DbConnection connection, MappingSource mapping)
         {
-            Profiler.At("START DataContext(IDbConnection, MappingSource)");
+            Profiler.At("START DataContext(DbConnection, MappingSource)");
             
             Init(new DatabaseContext(connection), mapping, null);
-            Profiler.At("END DataContext(IDbConnection, MappingSource)");
+            Profiler.At("END DataContext(DbConnection, MappingSource)");
         }
 
-        public DataContext(IDbConnection connection)
+        public DataContext(DbConnection connection)
         {
-            Profiler.At("START DataContext(IDbConnection)");
+            Profiler.At("START DataContext(DbConnection)");
             if (connection == null)
                 throw new ArgumentNullException("connection");
 
             Init(new DatabaseContext(connection), null, null);
-            Profiler.At("END DataContext(IDbConnection)");
+            Profiler.At("END DataContext(DbConnection)");
         }
 
         [DbLinqToDo]
@@ -235,7 +235,7 @@ namespace DbLinq.Data.Linq
             // Assume it's a connection string...
             IVendor ivendor = GetVendor(ref fileOrServerOrConnection);
 
-            IDbConnection dbConnection = ivendor.CreateDbConnection(fileOrServerOrConnection);
+            DbConnection dbConnection = ivendor.CreateDbConnection(fileOrServerOrConnection);
             Init(new DatabaseContext(dbConnection), mapping, ivendor);
             Profiler.At("END DataContext(string, MappingSource)");
         }
@@ -256,7 +256,7 @@ namespace DbLinq.Data.Linq
             Profiler.At("START DataContext(string)");
             IVendor ivendor = GetVendor(ref connectionString);
 
-            IDbConnection dbConnection = ivendor.CreateDbConnection(connectionString);
+            DbConnection dbConnection = ivendor.CreateDbConnection(connectionString);
             Init(new DatabaseContext(dbConnection), null, ivendor);
 
             Profiler.At("END DataContext(string)");
@@ -323,7 +323,7 @@ namespace DbLinq.Data.Linq
             }
 
             typeName = vendor + "Vendor";
-            assembly = typeof(DataContext).Assembly;
+            assembly = typeof(DataContext).GetTypeInfo().Assembly;
             /*
             try
             {
@@ -476,7 +476,7 @@ namespace DbLinq.Data.Linq
                     SubmitChangesImpl(failureMode);
                 else
                 {
-                    using (IDbTransaction transaction = DatabaseContext.CreateTransaction())
+                    using (DbTransaction transaction = DatabaseContext.CreateTransaction())
                     {
                         try
                         {
@@ -925,7 +925,7 @@ namespace DbLinq.Data.Linq
         }
 
 		internal static MethodInfo _WhereMethod = typeof(Queryable).GetMethods().First(m => m.Name == "Where");
-        internal static Action<IDataReader> ConfigureDataReader;
+        internal static Action<DbDataReader> ConfigureDataReader;
 
         internal object GetOtherTableQuery(Expression predicate, ParameterExpression parameter, Type otherTableType, IQueryable otherTable)
         {
@@ -1049,14 +1049,14 @@ namespace DbLinq.Data.Linq
         public virtual Type IsEntitySet(Type memberType)
         {
             // one check, a generic EntityRef<> or inherited
-            if (memberType.IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
+            if (memberType.GetTypeInfo().IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
             {
                 return memberType.GetGenericArguments()[0];
             }
 #if !MONO_STRICT
             // this is for compatibility with previously generated .cs files
             // TODO: remove in 2009
-            if (memberType.IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
+            if (memberType.GetTypeInfo().IsGenericType && typeof(EntitySet<>).IsAssignableFrom(memberType.GetGenericTypeDefinition()))
             {
                 return memberType.GetGenericArguments()[0];
             }
@@ -1198,15 +1198,16 @@ namespace DbLinq.Data.Linq
             throw new NotImplementedException();
         }
 
+#if false
         /// <summary>
-        /// Creates a IDbDataAdapter. Used internally by Vendors
+        /// Creates a DbDataAdapter. Used internally by Vendors
         /// </summary>
         /// <returns></returns>
-        internal IDbDataAdapter CreateDataAdapter()
+        internal DbDataAdapter CreateDataAdapter()
         {
             return DatabaseContext.CreateDataAdapter();
         }
-
+#endif
         /// <summary>
         /// Sets a TextWriter where generated SQL commands are written
         /// </summary>
@@ -1224,39 +1225,39 @@ namespace DbLinq.Data.Linq
         }
 
         /// <summary>
-        /// Write an IDbCommand to Log (if non null)
+        /// Write an DbCommand to Log (if non null)
         /// </summary>
         /// <param name="command"></param>
-        internal void WriteLog(IDbCommand command)
+        internal void WriteLog(DbCommand command)
         {
             Console.WriteLine(command.CommandText);
             return;
             if (Log != null)
             {
                 Log.WriteLine(command.CommandText);
-                foreach (IDbDataParameter parameter in command.Parameters)
+                foreach (DbParameter parameter in command.Parameters)
                     WriteLog(parameter);
                 Log.Write("--");
                 Log.Write(" Context: {0}", Vendor.VendorName);
                 Log.Write(" Model: {0}", Mapping.GetType().Name);
-                Log.Write(" Build: {0}", Assembly.GetExecutingAssembly().GetName().Version);
+                Log.Write(" Build: {0}", typeof(DataContext).GetTypeInfo().Assembly.GetName().Version);
                 Log.WriteLine();
             }
         }
 
         /// <summary>
-        /// Writes and IDbDataParameter to Log (if non null)
+        /// Writes and DbParameter to Log (if non null)
         /// </summary>
         /// <param name="parameter"></param>
-        internal void WriteLog(IDbDataParameter parameter)
+        internal void WriteLog(DbParameter parameter)
         {
             if (Log != null)
             {
                 // -- @p0: Input Int (Size = 0; Prec = 0; Scale = 0) [2]
                 // -- <name>: <direction> <type> (...) [<value>]
-                Log.WriteLine("-- {0}: {1} {2} (Size = {3}; Prec = {4}; Scale = {5}) [{6}]",
+                Log.WriteLine("-- {0}: {1} {2} (Size = {3}) [{4}]",
                     parameter.ParameterName, parameter.Direction, parameter.DbType,
-                    parameter.Size, parameter.Precision, parameter.Scale, parameter.Value);
+                    parameter.Size, parameter.Value);
             }
         }
 
@@ -1304,7 +1305,7 @@ namespace DbLinq.Data.Linq
         [DbLinqToDo]
         public DbCommand GetCommand(IQueryable query)
         {
-            DbCommand dbCommand = GetIDbCommand(query) as DbCommand;
+            DbCommand dbCommand = GetDbCommand(query) as DbCommand;
             if (dbCommand == null)
                 throw new InvalidOperationException();
 
@@ -1312,7 +1313,7 @@ namespace DbLinq.Data.Linq
         }
 
         [DBLinqExtended]
-        public IDbCommand GetIDbCommand(IQueryable query)
+        public DbCommand GetDbCommand(IQueryable query)
         {
             if (query == null)
                 throw new ArgumentNullException("query");

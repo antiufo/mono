@@ -314,7 +314,7 @@ namespace DbLinq.Data.Linq
         [DbLinqToDo]
         ModifiedMemberInfo[] ITable.GetModifiedMembers(object entity)
         {
-            throw new ApplicationException("L579 Not implemented");
+            throw new NotImplementedException("L579 Not implemented");
         }
 
         // PC: complementary to GetModifiedMembers(), we probably need a few changes to the IMemberModificationHandler,
@@ -323,7 +323,7 @@ namespace DbLinq.Data.Linq
         [DbLinqToDo]
         object ITable.GetOriginalEntityState(object entity)
         {
-            throw new ApplicationException("L585 Not implemented");
+            throw new NotImplementedException("L585 Not implemented");
         }
 
         bool IListSource.ContainsListCollection

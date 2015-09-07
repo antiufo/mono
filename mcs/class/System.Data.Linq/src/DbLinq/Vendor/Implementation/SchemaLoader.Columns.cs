@@ -25,11 +25,12 @@
 #endregion
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 
 namespace DbLinq.Vendor.Implementation
 {
     partial class SchemaLoader
     {
-        protected abstract IList<IDataTableColumn> ReadColumns(IDbConnection connectionString, string databaseName);
+        protected abstract IList<IDataTableColumn> ReadColumns(DbConnection connectionString, string databaseName);
     }
 }

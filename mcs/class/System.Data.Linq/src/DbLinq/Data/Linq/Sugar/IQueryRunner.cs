@@ -31,6 +31,7 @@ using System.Data;
 using System.Reflection;
 
 using DbLinq.Data.Linq.Sugar;
+using System.Data.Common;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -105,6 +106,6 @@ namespace DbLinq.Data.Linq.Sugar
         /// <param name="dataReader"></param>
         /// <param name="dataContext"></param>
         /// <returns></returns>
-        IEnumerable EnumerateResult(Type tableType, IDataReader dataReader, DataContext dataContext);
+        IEnumerable EnumerateResult(Type tableType, DbDataReader dataReader, DataContext dataContext);
     }
 }

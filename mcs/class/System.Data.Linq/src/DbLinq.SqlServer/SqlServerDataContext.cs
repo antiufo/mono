@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -43,6 +43,7 @@ namespace DbLinq.SqlServer
 #endif
     class SqlServerDataContext : DataContext
     {
+#if false
         public SqlServerDataContext(string connStr)
             : base(new SqlConnection(connStr)
 #if !MONO_STRICT
@@ -51,9 +52,9 @@ namespace DbLinq.SqlServer
               )
         {
         }
-
-        public SqlServerDataContext(IDbConnection conn)
-            : base((SqlConnection)conn
+#endif
+        public SqlServerDataContext(DbConnection conn)
+            : base(conn
 #if !MONO_STRICT
                 , new SqlServerVendor()
 #endif

@@ -26,6 +26,7 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 
 namespace DbLinq.Data.Linq.Database
 {
@@ -40,12 +41,12 @@ namespace DbLinq.Data.Linq.Database
     interface IDatabaseContext : IDisposable
     {
         // there are two ways to specify a connection:
-        // 1. use a provided IDbConnection
+        // 1. use a provided DbConnection
         /// <summary>
         /// Gets or sets the connection.
         /// </summary>
         /// <value>The connection.</value>
-        IDbConnection Connection { set; get; }
+        DbConnection Connection { set; get; }
         // 2. create our own
         /// <summary>
         /// Connects with the specified connection string.
@@ -63,9 +64,9 @@ namespace DbLinq.Data.Linq.Database
         /// Creates a transaction.
         /// </summary>
         /// <returns></returns>
-        IDbTransaction CreateTransaction();
+        DbTransaction CreateTransaction();
 
-        IDbTransaction CurrentTransaction { get; set; }
+        DbTransaction CurrentTransaction { get; set; }
 
         /// <summary>
         /// Opens a connection.
@@ -78,11 +79,14 @@ namespace DbLinq.Data.Linq.Database
         /// Creates a command.
         /// </summary>
         /// <returns></returns>
-        IDbCommand CreateCommand(IDbConnection preferredConnection);
+        DbCommand CreateCommand(DbConnection preferredConnection);
+
+#if false
         /// <summary>
         /// Creates a DataAdapter.
         /// </summary>
         /// <returns></returns>
-        IDbDataAdapter CreateDataAdapter();
+        DbDataAdapter CreateDataAdapter();
+#endif
     }
 }

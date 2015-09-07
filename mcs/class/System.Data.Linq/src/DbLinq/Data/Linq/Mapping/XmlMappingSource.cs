@@ -120,6 +120,7 @@ using System.Xml;
 using DbLinq;
 using DbLinq.Schema.Dbml;
 using DbLinq.Util;
+using System.Data.Linq.Mapping;
 
 #if MONO_STRICT
 namespace System.Data.Linq.Mapping
@@ -539,7 +540,7 @@ namespace DbLinq.Data.Linq.Mapping
             {
                 string ns = context_type.Namespace;
                 string full = !name.Contains('.') && !String.IsNullOrEmpty(ns) ? String.Concat(ns, ".", name) : name;
-                var t = this.context_type.Assembly.GetType(full) ?? System.Type.GetType(full);
+                var t = this.context_type.GetTypeInfo().Assembly.GetType(full) ?? System.Type.GetType(full);
                 if (t == null)
                     throw new ArgumentException(String.Format("Type '{0}' was not found", full));
                 return t;

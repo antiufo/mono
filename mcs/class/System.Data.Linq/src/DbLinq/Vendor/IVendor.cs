@@ -38,6 +38,7 @@ using DataContext = DbLinq.Data.Linq.DataContext;
 using Data = DbLinq.Data;
 using DbLinq.Data.Linq;
 using IExecuteResult = System.Data.Linq.IExecuteResult;
+using System.Data.Common;
 
 namespace DbLinq.Vendor
 {
@@ -95,11 +96,11 @@ namespace DbLinq.Vendor
         /// <param name="rows"></param>
         /// <param name="pageSize"></param>
         /// <param name="transaction"></param>
-        void BulkInsert<T>(Table<T> table, List<T> rows, int pageSize, IDbTransaction transaction) where T : class;
+        void BulkInsert<T>(Table<T> table, List<T> rows, int pageSize, DbTransaction transaction) where T : class;
 
         /// <summary>
-        /// required by DataContext ctor, which needs to create an IDbConnection, given an IVendor
+        /// required by DataContext ctor, which needs to create an DbConnection, given an IVendor
         /// </summary>
-        IDbConnection CreateDbConnection(string connectionString);
+        DbConnection CreateDbConnection(string connectionString);
     }
 }

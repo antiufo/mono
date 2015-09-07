@@ -26,22 +26,24 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Data.Linq;
+using System.Reflection;
 
 namespace DbLinq.Util
 {
 #if !MONO_STRICT
     public
 #endif
-    static class IDbDataParameterExtensions
+    static class DbParameterExtensions
     {
-        public static void SetValue(this IDbDataParameter dbParameter, object value, Type type)
+        public static void SetValue(this DbParameter dbParameter, object value, Type type)
         {
             if (value == null)
             {
                 if (type.IsNullable())
                     dbParameter.Value = TypeConvert.GetDefault(type.GetNullableType());
-                else if (type.IsValueType)
+                else if (type.GetTypeInfo().IsValueType)
                     dbParameter.Value = TypeConvert.GetDefault(type);
                 else
                 {
@@ -64,7 +66,7 @@ namespace DbLinq.Util
             return null;
         }
 
-        public static void SetValue<T>(this IDbDataParameter dbParameter, T value)
+        public static void SetValue<T>(this DbParameter dbParameter, T value)
         {
             SetValue(dbParameter, value, typeof(T));
         }

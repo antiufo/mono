@@ -33,6 +33,7 @@ using DbLinq.Vendor.Implementation;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using System.Data.Linq.Mapping;
 using System.Text;
+using System.Reflection;
 
 namespace DbLinq.PostgreSql
 {
@@ -160,7 +161,7 @@ namespace DbLinq.PostgreSql
 
         public override SqlStatement GetLiteralConvert(SqlStatement a, Type type)
         {
-            if (type.IsGenericType)
+            if (type.GetTypeInfo().IsGenericType)
             {
                 var generic = type.GetGenericTypeDefinition();
                 if (generic == typeof(IEnumerable<>) || generic == typeof(IQueryable<>)) return a;

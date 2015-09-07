@@ -57,11 +57,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 if (Analyzers == null)
                 {
                     // man, this is the kind of line I'm proud of :)
-                    Analyzers = from method in GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-                                let m = (Analyzer)Delegate.CreateDelegate(typeof(Analyzer), this, method, false)
-                                where m != null
-                                select m;
-                    Analyzers = Analyzers.ToList(); // result is faster from here
+                    Analyzers = GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Select(method => {
+                            var x = Expression.Parameter(typeof(Expression), "x");
+                            return (Analyzer)Expression.Lambda<Analyzer>(Expression.Call(Expression.Constant(this), method, x), x).CompileDebuggable();
+                        }).ToList();
+                                
                 }
                 return Analyzers;
             }

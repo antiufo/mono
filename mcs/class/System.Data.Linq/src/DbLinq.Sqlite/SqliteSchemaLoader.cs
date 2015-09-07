@@ -35,6 +35,7 @@ using DbLinq.Sqlite.Schema;
 using DbLinq.Util;
 using DbLinq.Vendor;
 using DbLinq.Vendor.Implementation;
+using System.Data.Common;
 
 namespace DbLinq.Sqlite
 {
@@ -78,7 +79,7 @@ namespace DbLinq.Sqlite
             return Path.GetFileNameWithoutExtension(databaseName);
         }
 
-        protected override void LoadConstraints(Database schema, SchemaName schemaName, IDbConnection conn, NameFormat nameFormat, Names names)
+        protected override void LoadConstraints(Database schema, SchemaName schemaName, DbConnection conn, NameFormat nameFormat, Names names)
         {
             var constraints = ReadConstraints(conn, schemaName.DbName);
 

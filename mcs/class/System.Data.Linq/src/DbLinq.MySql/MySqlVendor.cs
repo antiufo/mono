@@ -60,7 +60,7 @@ namespace DbLinq.MySql
         /// because it does not fill up the translation log.
         /// This is enabled for tables where Vendor.UserBulkInsert[db.Table] is true.
         /// </summary>
-        public override void BulkInsert<T>(Table<T> table, List<T> rows, int pageSize, IDbTransaction transaction)
+        public override void BulkInsert<T>(Table<T> table, List<T> rows, int pageSize, DbTransaction transaction)
         {
             // name parameters we're going to insert
             var members = new Dictionary<string, MemberInfo>();
@@ -104,7 +104,7 @@ namespace DbLinq.MySql
         }
 
 #if OBSOLETE
-        public override void DoBulkInsert<T>(Table<T> table, List<T> rows, IDbConnection connection)
+        public override void DoBulkInsert<T>(Table<T> table, List<T> rows, DbConnection connection)
         {
             int pageSize = UseBulkInsert[table];
             //ProjectionData projData = ProjectionData.FromReflectedType(typeof(T));
@@ -118,9 +118,9 @@ namespace DbLinq.MySql
             {
                 int numFieldsAdded = 0;
                 StringBuilder sbValues = new StringBuilder(" VALUES ");
-                List<IDbDataParameter> paramList = new List<IDbDataParameter>();
+                List<DbParameter> paramList = new List<DbParameter>();
 
-                IDbCommand cmd = connection.CreateCommand();
+                DbCommand cmd = connection.CreateCommand();
 
                 //package up all fields in N rows:
                 string separator = "";
@@ -163,7 +163,7 @@ namespace DbLinq.MySql
             string sp_name = functionAttrib.MappedName;
 
             // picrap: is there any way to abstract some part of this?
-            using (IDbCommand command = context.Connection.CreateCommand())
+            using (DbCommand command = context.Connection.CreateCommand())
             {
                 command.CommandText = sp_name;
                 //MySqlCommand command = new MySqlCommand("select hello0()");
@@ -182,7 +182,7 @@ namespace DbLinq.MySql
 
                     System.Data.ParameterDirection direction = GetDirection(paramInfo, paramAttrib);
                     //MySqlDbType dbType = MySqlTypeConversions.ParseType(paramAttrib.DbType);
-                    IDbDataParameter cmdParam = command.CreateParameter();
+                    DbParameter cmdParam = command.CreateParameter();
                     cmdParam.ParameterName = paramName;
                     //cmdParam.Direction = System.Data.ParameterDirection.Input;
                     if (direction == System.Data.ParameterDirection.Input || direction == System.Data.ParameterDirection.InputOutput)
@@ -211,18 +211,20 @@ namespace DbLinq.MySql
                     command.CommandText = cmdText;
                 }
 
+#if false
                 if (method.ReturnType == typeof(DataSet))
                 {
                     //unknown shape of resultset:
                     System.Data.DataSet dataSet = new DataSet();
                     //IDataAdapter adapter = new MySqlDataAdapter((MySqlCommand)command);
-                    IDbDataAdapter adapter = CreateDataAdapter(context);
+                    DbDataAdapter adapter = CreateDataAdapter(context);
                     adapter.SelectCommand = command;
                     adapter.Fill(dataSet);
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
                     return new ProcedureResult(dataSet, outParamValues.ToArray());
                 }
                 else
+#endif
                 {
                     object obj = command.ExecuteScalar();
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
@@ -246,12 +248,12 @@ namespace DbLinq.MySql
         /// <summary>
         /// Collect all Out or InOut param values, casting them to the correct .net type.
         /// </summary>
-        private List<object> CopyOutParams(ParameterInfo[] paramInfos, IDataParameterCollection paramSet)
+        private List<object> CopyOutParams(ParameterInfo[] paramInfos, DbParameterCollection paramSet)
         {
             List<object> outParamValues = new List<object>();
             //Type type_t = typeof(T);
             int i = -1;
-            foreach (IDbDataParameter param in paramSet)
+            foreach (DbParameter param in paramSet)
             {
                 i++;
                 if (param.Direction == System.Data.ParameterDirection.Input)

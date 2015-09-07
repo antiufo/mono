@@ -62,7 +62,7 @@ namespace DbLinq.Util
         /// <returns></returns>
         public static object GetDefault(Type t)
         {
-            if (!t.IsValueType)
+            if (!t.GetTypeInfo().IsValueType)
                 return null;
             return Activator.CreateInstance(t);
         }
@@ -175,7 +175,7 @@ namespace DbLinq.Util
                 return (DateTime)o;
             if (targetType == typeof(Guid))
                 return ToGuid(o);
-            if (targetType.IsEnum)
+            if (targetType.GetTypeInfo().IsEnum)
                 return ToEnum(o, targetType);
             throw new ArgumentException(string.Format("L0117: Unhandled type {0}", targetType));
         }

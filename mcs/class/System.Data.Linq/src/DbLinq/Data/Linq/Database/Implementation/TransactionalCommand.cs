@@ -50,9 +50,9 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// <summary>
         /// Ambient transaction
         /// </summary>
-        private IDbTransaction _transaction;
+        private DbTransaction _transaction;
 
-        private IDbCommand _command;
+        private DbCommand _command;
 
         private bool haveHigherTransaction;
 
@@ -60,7 +60,7 @@ namespace DbLinq.Data.Linq.Database.Implementation
         /// Gets the command.
         /// </summary>
         /// <value>The command.</value>
-        public IDbCommand Command
+        public DbCommand Command
         {
             get
             {

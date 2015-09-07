@@ -1,0 +1,91 @@
+{
+  "version": "1.0.0-beta-3052",
+  "compilationOptions": {
+    "define": [
+      "MOBILE",
+      "DBLINQ"
+    ],
+    "keyFile": "../DbLinq.snk"
+  },
+  "compile": [
+    "../DbLinq/**/*.cs",
+    "../DbLinq.*/**/*.cs"
+  ],
+  "exclude": [
+    "../DbLinq/Test",
+    "../DbLinq.*/**/Test",
+    "../DbLinq.*/**/AssemblyInfo.cs",
+    "../DbLinq/Util/CacheChecker.cs",
+    "../DbLinq/System.Data.Linq/EntitySet.cs",
+    "../DbLinq/obj",
+    "../DbLinq/Properties/AssemblyInfo.cs",
+    "../DbLinq/Data/Linq/Database/Implementation/DatabaseTransaction.cs",
+    "../DbLinq/Data/Linq/Database/IDatabaseTransaction.cs",
+    "../DbLinq/Data/Linq/SqlClient/Sql2000Provider.cs",
+    "../DbLinq/Data/Linq/SqlClient/Sql2005Provider.cs",
+    "../DbLinq/Data/Linq/SqlClient/Sql2008Provider.cs",
+    "../DbLinq/Data/Linq/Sugar/Expressions/GroupByExpression.cs",
+    "../DbLinq/Data/Linq/Sugar/Expressions/ScopeExpression.cs",
+    "../DbLinq/Schema/Dbml",
+    "../DbLinq/Vendor/DbSchemaLoader.cs",
+    "../DbLinq/Vendor/Implementation/SchemaLoader.*.cs",
+    "../**/*SchemaLoader*",
+    "../DbLinq/Util/TypeLoader.cs",
+    "../DbLinq/Data/Linq/Mapping/XmlMappingSource.cs",
+    "../DbLinq/Util/DbmlExtensions.cs",
+    "../DbLinq/Vendors/DbLinq.SqlServer",
+    "../DbLinq/Vendor/INameAliases.cs"
+  ],
+  "dependencies": {
+    "Shaman.System.Linq.Expressions.Interpreter": "1.0.0-beta-2889"
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Data": "4.0.0.0",
+        "System.Runtime.Serialization": "4.0.0.0",
+        "System.Xml": "4.0.0.0"
+      }
+    },
+    "dnxcore50": {
+      "compilationOptions": {
+        "define": [
+          "CORECLR"
+        ]
+      },
+      "dependencies": {
+        "System.Console": "4.0.0-beta-23225",
+        "System.Collections": "4.0.10",
+        "System.Collections.Concurrent": "4.0.11-beta-23225",
+        "System.Diagnostics.Contracts": "4.0.0",
+        "System.Diagnostics.Debug": "4.0.10",
+        "System.Diagnostics.Tools": "4.0.0",
+        "System.Globalization": "4.0.10",
+        "System.Data.Common": "4.0.0-beta-23109",
+        "System.IO": "4.0.10",
+        "System.Linq": "4.0.0",
+        "System.ComponentModel.TypeConverter": "4.0.1-beta-23225",
+        "System.ObjectModel": "4.0.10",
+        "System.Reflection": "4.1.0-beta-23225",
+        "System.Reflection.Emit": "4.0.1-beta-23225",
+        "System.Reflection.Emit.ILGeneration": "4.0.1-beta-23225",
+        "System.Reflection.Emit.Lightweight": "4.0.1-beta-23225",
+        "System.Reflection.Extensions": "4.0.1-beta-23225",
+        "System.Reflection.Primitives": "4.0.1-beta-23225",
+        "System.Reflection.TypeExtensions": "4.0.1-beta-23225",
+        "System.Resources.ResourceManager": "4.0.0",
+        "System.Runtime": "4.0.20",
+        "System.Runtime.Extensions": "4.0.10",
+        "System.Text.Encoding": "4.0.10",
+        "System.Threading": "4.0.10",
+        "System.Threading.Tasks": "4.0.10",
+        "System.Linq.Expressions": "4.0.11-beta-23225",
+        "System.Linq.Queryable": "4.0.1-beta-23225",
+        "System.Xml.XmlSerializer": "4.0.11-beta-23225",
+        "System.ComponentModel": "4.0.1-beta-23225",
+        "System.ComponentModel.Primitives": "4.0.1-beta-23225",
+        "System.Runtime.Serialization.Primitives": "4.0.11-beta-23225"
+      }
+    }
+  }
+}

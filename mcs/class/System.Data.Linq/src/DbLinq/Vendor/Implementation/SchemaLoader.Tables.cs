@@ -26,6 +26,7 @@
 using System.Collections.Generic;
 using System.Data;
 using DbLinq.Util;
+using System.Data.Common;
 
 namespace DbLinq.Vendor.Implementation
 {
@@ -36,7 +37,7 @@ namespace DbLinq.Vendor.Implementation
         /// </summary>
         /// <param name="dataRecord">The data record.</param>
         /// <returns></returns>
-        protected virtual IDataName ReadDataNameAndSchema(IDataRecord dataRecord)
+        protected virtual IDataName ReadDataNameAndSchema(DbDataReader dataRecord)
         {
             var dataName = new DataName { Name = dataRecord.GetAsString(0), Schema = dataRecord.GetAsString(1) };
             return dataName;
@@ -48,6 +49,6 @@ namespace DbLinq.Vendor.Implementation
         /// <param name="connectionString">The connection string.</param>
         /// <param name="databaseName">Name of the database.</param>
         /// <returns></returns>
-        public abstract IList<IDataName> ReadTables(IDbConnection connectionString, string databaseName);
+        public abstract IList<IDataName> ReadTables(DbConnection connectionString, string databaseName);
     }
 }

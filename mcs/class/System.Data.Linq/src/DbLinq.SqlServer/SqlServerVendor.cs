@@ -26,7 +26,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Text;
 using System.Data;
@@ -36,6 +35,7 @@ using DbLinq.Data.Linq;
 using DbLinq.Data.Linq.SqlClient;
 using DbLinq.Util;
 using DbLinq.Vendor;
+using System.Data.Common;
 
 #if MONO_STRICT
 using DataContext = System.Data.Linq.DataContext;
@@ -73,12 +73,13 @@ namespace DbLinq.SqlServer
         //NOTE: for Oracle, we want to consider 'Array Binding'
         //http://download-west.oracle.com/docs/html/A96160_01/features.htm#1049674
 
+#if false
         /// <summary>
         /// for large number of rows, we want to use BULK INSERT, 
         /// because it does not fill up the translation log.
         /// This is enabled for tables where Vendor.UserBulkInsert[db.Table] is true.
         /// </summary>
-        public override void BulkInsert<T>(DataLinq.Table<T> table, List<T> rows, int pageSize, IDbTransaction transaction)
+        public override void BulkInsert<T>(DataLinq.Table<T> table, List<T> rows, int pageSize, DbTransaction transaction)
         {
             //use TableLock for speed:
             var bulkCopy = new SqlBulkCopy((SqlConnection)transaction.Connection, SqlBulkCopyOptions.TableLock, null);
@@ -126,7 +127,7 @@ namespace DbLinq.SqlServer
             bulkCopy.WriteToServer(dt);
 
         }
-
+#endif
         public override System.Data.Linq.IExecuteResult ExecuteMethodCall(DataContext context, System.Reflection.MethodInfo method, params object[] sqlParams)
         {
             throw new NotImplementedException();

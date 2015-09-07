@@ -77,7 +77,7 @@ namespace DbLinq.Firebird
             string sp_name = functionAttrib.MappedName;
 
             // picrap: is there any way to abstract some part of this?
-            using (IDbCommand command = context.Connection.CreateCommand())
+            using (DbCommand command = context.Connection.CreateCommand())
             {
                 command.CommandText = sp_name;
                 //FbSqlCommand command = new FbSqlCommand("select * from hello0()");
@@ -96,7 +96,7 @@ namespace DbLinq.Firebird
 
                     System.Data.ParameterDirection direction = GetDirection(paramInfo, paramAttrib);
                     //FbDbType dbType = FbSqlTypeConversions.ParseType(paramAttrib.DbType);
-                    IDbDataParameter cmdParam = command.CreateParameter();
+                    DbParameter cmdParam = command.CreateParameter();
                     cmdParam.ParameterName = paramName;
                     //cmdParam.Direction = System.Data.ParameterDirection.Input;
                     if (direction == System.Data.ParameterDirection.Input || direction == System.Data.ParameterDirection.InputOutput)
@@ -124,18 +124,20 @@ namespace DbLinq.Firebird
                         + string.Join(",", paramNames.ToArray()) + ")";
                 }
 
+#if false
                 if (method.ReturnType == typeof(DataSet))
                 {
                     //unknown shape of resultset:
                     System.Data.DataSet dataSet = new DataSet();
                     //IDataAdapter adapter = new FbDataAdapter((FbCommand)command);
-                    IDbDataAdapter adapter = CreateDataAdapter(context);
+                    DbDataAdapter adapter = CreateDataAdapter(context);
                     adapter.SelectCommand = command;
                     adapter.Fill(dataSet);
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
                     return new ProcedureResult(dataSet, outParamValues.ToArray());
                 }
                 else
+#endif
                 {
                     object obj = command.ExecuteScalar();
                     List<object> outParamValues = CopyOutParams(paramInfos, command.Parameters);
@@ -159,12 +161,12 @@ namespace DbLinq.Firebird
         /// <summary>
         /// Collect all Out or InOut param values, casting them to the correct .net type.
         /// </summary>
-        private List<object> CopyOutParams(ParameterInfo[] paramInfos, IDataParameterCollection paramSet)
+        private List<object> CopyOutParams(ParameterInfo[] paramInfos, DbParameterCollection paramSet)
         {
             List<object> outParamValues = new List<object>();
             //Type type_t = typeof(T);
             int i = -1;
-            foreach (IDbDataParameter param in paramSet)
+            foreach (DbParameter param in paramSet)
             {
                 i++;
                 if (param.Direction == System.Data.ParameterDirection.Input)

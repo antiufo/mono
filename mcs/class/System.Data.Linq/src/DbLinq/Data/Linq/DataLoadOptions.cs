@@ -125,7 +125,7 @@ using DbLinq.Util;
         private Type GetMemberEntityType(MemberInfo member)
         {
             var mt = member.GetMemberType();
-            if (mt.IsGenericType)
+            if (mt.GetTypeInfo().IsGenericType)
             {
                 if (mt.GetGenericTypeDefinition() == typeof(EntitySet<>))
                     mt = mt.GetGenericArguments()[0];

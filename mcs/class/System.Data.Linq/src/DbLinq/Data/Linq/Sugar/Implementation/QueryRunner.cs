@@ -34,6 +34,7 @@ using DbLinq.Data.Linq.Database;
 using DbLinq.Data.Linq.Sql;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Util;
+using System.Data.Common;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -282,7 +283,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="dbCommand"></param>
         /// <param name="parameterNames"></param>
         /// <param name="parameterValues"></param>
-        private void FeedParameters(IDbCommand dbCommand, IList<string> parameterNames, IList<object> parameterValues)
+        private void FeedParameters(DbCommand dbCommand, IList<string> parameterNames, IList<object> parameterValues)
         {
             for (int parameterIndex = 0; parameterIndex < parameterNames.Count; parameterIndex++)
             {
@@ -317,7 +318,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         }
 
         // TODO: move method?
-        protected virtual Delegate GetTableBuilder(Type elementType, IDataReader dataReader, DataContext dataContext)
+        protected virtual Delegate GetTableBuilder(Type elementType, DbDataReader dataReader, DataContext dataContext)
         {
             var fields = new List<string>();
             for (int fieldIndex = 0; fieldIndex < dataReader.FieldCount; fieldIndex++)
@@ -359,7 +360,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="dataReader"></param>
         /// <param name="dataContext"></param>
         /// <returns></returns>
-        public IEnumerable EnumerateResult(Type tableType, IDataReader dataReader, DataContext dataContext)
+        public IEnumerable EnumerateResult(Type tableType, DbDataReader dataReader, DataContext dataContext)
         {
             return EnumerateResult(tableType, true, dataReader, dataContext);
         }
@@ -373,7 +374,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <param name="dataReader"></param>
         /// <param name="dataContext"></param>
         /// <returns></returns>
-        protected virtual IEnumerable EnumerateResult(Type tableType, bool dynamicallyReadShape, IDataReader dataReader, DataContext dataContext)
+        protected virtual IEnumerable EnumerateResult(Type tableType, bool dynamicallyReadShape, DbDataReader dataReader, DataContext dataContext)
         {
             Delegate tableBuilder = null;
             while (dataReader.Read())

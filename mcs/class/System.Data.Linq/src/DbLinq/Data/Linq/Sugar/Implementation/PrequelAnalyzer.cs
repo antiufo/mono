@@ -29,6 +29,7 @@ using System.Linq.Expressions;
 using DbLinq.Data.Linq.Sugar;
 using DbLinq.Data.Linq.Sugar.ExpressionMutator;
 using DbLinq.Data.Linq.Sugar.Expressions;
+using System.Reflection;
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
 {
@@ -54,7 +55,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // string Add --> Concat
             var binaryExpression = expression as BinaryExpression;
             if (expression.NodeType == ExpressionType.Add
-                && binaryExpression != null && typeof(string).IsAssignableFrom(binaryExpression.Left.Type))
+                && binaryExpression != null && typeof(string).GetTypeInfo().IsAssignableFrom(binaryExpression.Left.Type.GetTypeInfo()))
             {
                 return new SpecialExpression(SpecialExpressionType.Concat, binaryExpression.Left, binaryExpression.Right);
             }
