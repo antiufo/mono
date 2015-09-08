@@ -56,13 +56,16 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             {
                 if (Analyzers == null)
                 {
-                    // man, this is the kind of line I'm proud of :)
                     Analyzers = GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Select(method => {
+                        .Select(method =>
+                        {
+                            //Delegate.CreateDelegate(
+                            if (method.ReturnType != typeof(Expression)) return null;
+                            if (method.GetParameters().Length != 1) return null;
                             var x = Expression.Parameter(typeof(Expression), "x");
                             return (Analyzer)Expression.Lambda<Analyzer>(Expression.Call(Expression.Constant(this), method, x), x).CompileDebuggable();
-                        }).ToList();
-                                
+                        }).Where(x => x != null).ToList();
+
                 }
                 return Analyzers;
             }
