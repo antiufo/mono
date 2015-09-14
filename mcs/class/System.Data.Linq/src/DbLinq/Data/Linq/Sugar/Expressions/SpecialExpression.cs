@@ -85,6 +85,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                     return typeof(string);
                 case SpecialExpressionType.In:
                 case SpecialExpressionType.MatchesFullText:
+                case SpecialExpressionType.Match:
                 case SpecialExpressionType.Between:
                 case SpecialExpressionType.NotBetween:
                     return typeof(bool);
@@ -286,6 +287,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                     return EvaluateMathCallInvoke(SpecialNodeType, operands);
                 case SpecialExpressionType.Between:
                 case SpecialExpressionType.NotBetween:
+                case SpecialExpressionType.Match:
                 case SpecialExpressionType.MatchesFullText:
                 case SpecialExpressionType.FullTextRank:
                     throw new NotSupportedException("The function is only supported in database-executed queries.");

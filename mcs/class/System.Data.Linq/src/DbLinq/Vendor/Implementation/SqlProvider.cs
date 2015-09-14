@@ -428,6 +428,8 @@ namespace DbLinq.Vendor.Implementation
                return GetLiteralFullTextRank(p[0], p[1]);
             case SpecialExpressionType.MatchesFullText:
                 return GetLiteralMatchesFullText(p[0], p[1]);
+            case SpecialExpressionType.Match:
+                return GetLiteralMatch(p[0], p[1]);
             case SpecialExpressionType.Between:
                 return GetLiteralBetween(p[0], p[1], p[2]);
             case SpecialExpressionType.NotBetween:
@@ -440,6 +442,11 @@ namespace DbLinq.Vendor.Implementation
                 return SqlStatement.Format("(SELECT \"Key\" FROM \"Shaman_UserLike\" WHERE \"Type\" = {0} AND \"User\" = {1} AND "+p[2].First().Sql.Trim('\'') + ")", p[0], p[1]);
             }
             throw new ArgumentException(operationType.ToString());
+        }
+
+        private SqlStatement GetLiteralMatch(SqlStatement sqlStatement1, SqlStatement sqlStatement2)
+        {
+            return new SqlStatement(GetTable(sqlStatement1.ToString().Trim('\''))) + " MATCH " + sqlStatement2;
         }
 
         protected virtual SqlStatement GetLiteralExists(SqlStatement sqlStatement)
@@ -1602,6 +1609,7 @@ namespace DbLinq.Vendor.Implementation
         /// <returns></returns>
         public virtual string GetSafeName(string name)
         {
+            if (!name.Contains('.')) return GetSafeNamePart(name);
             string[] nameParts = name.Split('.');
             for (int index = 0; index < nameParts.Length; index++)
             {

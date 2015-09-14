@@ -98,6 +98,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
         SecondGranularity,
 
         Any,
-        All
+        All,
+        Match,
     }
 }

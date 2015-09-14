@@ -54,6 +54,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 case SpecialExpressionType.Like:
                 case SpecialExpressionType.Between:
                 case SpecialExpressionType.NotBetween:
+                case SpecialExpressionType.Match:
                 case SpecialExpressionType.MatchesFullText:
                     return ExpressionPrecedence.Equality;
                 // the following are methods
@@ -265,6 +266,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
                 case SpecialExpressionType.Between:
                 case SpecialExpressionType.NotBetween:
+                case SpecialExpressionType.Match:
                 case SpecialExpressionType.MatchesFullText:
                 case SpecialExpressionType.FullTextRank:
                 case SpecialExpressionType.Like:
