@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 
 using DbLinq.Data.Linq.Sugar.Expressions;
+using System.Linq;
 
 namespace DbLinq.Data.Linq.Sugar.Expressions
 {
@@ -101,7 +102,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                 type = newOperands[0].Type;
             else
                 type = Type;
-            var scopeExpression = new SelectExpression(type, newOperands);
+            var scopeExpression = new SelectExpression(type, newOperands.ToList());
             scopeExpression.Tables = Tables;
             scopeExpression.Columns = Columns;
             scopeExpression.Where = Where;

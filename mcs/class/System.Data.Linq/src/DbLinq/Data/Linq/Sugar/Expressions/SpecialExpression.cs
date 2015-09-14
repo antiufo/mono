@@ -156,7 +156,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
 
         protected override Expression Mutate2(IList<Expression> newOperands)
         {
-            return new SpecialExpression((SpecialExpressionType)NodeType, newOperands);
+            return new SpecialExpression((SpecialExpressionType)NodeType, newOperands.ToList());
         }
 
         public object Execute()
