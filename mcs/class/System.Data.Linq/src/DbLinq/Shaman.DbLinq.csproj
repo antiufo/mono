@@ -68,16 +68,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Shaman.System.Linq.Expressions.Interpreter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=712f6b6deeaf4702, processorArchitecture=MSIL">
+      <HintPath>C:\Repositories\Awdee\packages\Shaman.System.Linq.Expressions.Interpreter.1.0.0-beta-2889\lib\net45\Shaman.System.Linq.Expressions.Interpreter.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Linq.Expressions.Interpreter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=712f6b6deeaf4702, processorArchitecture=MSIL">
-      <HintPath>C:\Repositories\Awdee\packages\Shaman.System.Linq.Expressions.Interpreter.1.0.0-beta-2884\lib\net45\System.Linq.Expressions.Interpreter.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
