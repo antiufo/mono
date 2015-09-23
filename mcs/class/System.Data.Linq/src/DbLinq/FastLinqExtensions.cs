@@ -4,7 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#if DBLINQ
 namespace DbLinq
+#else
+namespace System.Linq
+#endif
 {
 #if DBLINQ
     internal static partial class FastLinqExtensions
@@ -162,25 +166,5 @@ namespace DbLinq
         }
         
 
-        public static bool SameForAll<TItem, TValue>(this IEnumerable<TItem> source, Func<TItem, TValue> selector)
-        {
-            var isfirst = true;
-            TValue first = default(TValue);
-            var comparer = EqualityComparer<TValue>.Default;
-            foreach (var item in source)
-            {
-                var v = selector(item);
-                if (isfirst)
-                {
-                    first = v;
-                    isfirst = false;
-                }
-                else
-                {
-                    if (!comparer.Equals(first, v)) return false;
-                }
-            }
-            return true;
-        }
     }
 }
