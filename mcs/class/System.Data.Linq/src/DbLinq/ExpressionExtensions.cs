@@ -12,8 +12,6 @@ namespace System
     public static class ExpressionExtensions
     {
 
-        private static List<LambdaExpression> lambdas = new List<LambdaExpression>();
-
 
         public static Delegate CompileDebuggable(this LambdaExpression lambda)
         {
