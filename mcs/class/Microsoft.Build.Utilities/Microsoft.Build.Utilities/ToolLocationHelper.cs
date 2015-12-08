@@ -57,44 +57,48 @@ namespace Microsoft.Build.Utilities
 
 			lib_mono_dir = t2.FullName;
 
-#if NET_4_0
 			var windowsPath = Environment.GetFolderPath (Environment.SpecialFolder.Windows);
 			runningOnDotNet = !string.IsNullOrEmpty (windowsPath) && lib_mono_dir.StartsWith (windowsPath);
-#endif
 
 			if (Environment.GetEnvironmentVariable ("TESTING_MONO") != null) {
-				mono_dir = new string [] {
-					Path.Combine (lib_mono_dir, "net_1_0"),
-					Path.Combine (lib_mono_dir, "net_2_0"),
-					Path.Combine (lib_mono_dir, "net_2_0"),
-					Path.Combine (lib_mono_dir, "net_3_5"),
+				mono_dir = new string [] {                   // TargetDotNetFrameworkVersion:
+					Path.Combine (lib_mono_dir, "net_1_0"),  // Version11
+					Path.Combine (lib_mono_dir, "net_2_0"),  // Version20
+					Path.Combine (lib_mono_dir, "net_2_0"),  // Version30
+					Path.Combine (lib_mono_dir, "net_3_5"),  // Version35
 					// mono's 4.0 is not an actual framework directory with all tools etc
 					// it's simply reference assemblies. So like .NET we consider 4.5 to
 					// be a complete replacement for 4.0.
-					Path.Combine (lib_mono_dir, "net_4_5"),
-					Path.Combine (lib_mono_dir, "net_4_5"),
-					Path.Combine (lib_mono_dir, "net_4_5")
+					Path.Combine (lib_mono_dir, "net_4_x"),  // Version40
+					Path.Combine (lib_mono_dir, "net_4_x"),  // Version45
+					Path.Combine (lib_mono_dir, "net_4_x"),  // Version451
+					Path.Combine (lib_mono_dir, "net_4_x"),  // Version46
+					Path.Combine (lib_mono_dir, "net_4_x"),  // Version461
 				};	
 			} else if (runningOnDotNet) {
 				mono_dir = new string [] {
-					Path.Combine (lib_mono_dir, "v1.0.3705"),
-					Path.Combine (lib_mono_dir, "v2.0.50727"),
-					Path.Combine (lib_mono_dir, "v2.0.50727"),
-					Path.Combine (lib_mono_dir, "v3.5"),
-					Path.Combine (lib_mono_dir, "v4.0.30319"),
-					Path.Combine (lib_mono_dir, "v4.0.30319"),
-					Path.Combine (lib_mono_dir, "v4.0.30319")
+					Path.Combine (lib_mono_dir, "v1.0.3705"),   // Version11
+					Path.Combine (lib_mono_dir, "v2.0.50727"),  // Version20
+					Path.Combine (lib_mono_dir, "v2.0.50727"),  // Version30
+					Path.Combine (lib_mono_dir, "v3.5"),        // Version35
+					Path.Combine (lib_mono_dir, "v4.0.30319"),  // Version40
+					Path.Combine (lib_mono_dir, "v4.0.30319"),  // Version45
+					Path.Combine (lib_mono_dir, "v4.0.30319"),  // Version451
+					Path.Combine (lib_mono_dir, "v4.0.30319"),  // Version46
+					Path.Combine (lib_mono_dir, "v4.0.30319"),  // Version461
 				};
 			} else {
 				mono_dir = new string [] {
-					Path.Combine (lib_mono_dir, "1.0"),
-					Path.Combine (lib_mono_dir, "2.0"),
-					Path.Combine (lib_mono_dir, "2.0"),
-					Path.Combine (lib_mono_dir, "3.5"),
+					Path.Combine (lib_mono_dir, "1.0"),  // Version11
+					Path.Combine (lib_mono_dir, "2.0"),  // Version20
+					Path.Combine (lib_mono_dir, "2.0"),  // Version30
+					Path.Combine (lib_mono_dir, "3.5"),  // Version35
 					// see comment above regarding 4.0/4.5
-					Path.Combine (lib_mono_dir, "4.5"),
-					Path.Combine (lib_mono_dir, "4.5"),
-					Path.Combine (lib_mono_dir, "4.5"),
+					Path.Combine (lib_mono_dir, "4.5"),  // Version40
+					Path.Combine (lib_mono_dir, "4.5"),  // Version45
+					Path.Combine (lib_mono_dir, "4.5"),  // Version451
+					Path.Combine (lib_mono_dir, "4.5"),  // Version46
+					Path.Combine (lib_mono_dir, "4.5"),  // Version461
 				};
 			}
 
@@ -133,11 +137,9 @@ namespace Microsoft.Build.Utilities
 
 			//Mono doesn't ship multiple versions of tools that are backwards/forwards compatible
 			if (!runningOnDotNet) {
-#if NET_3_5
 				//most of the 3.5 tools are in the 2.0 directory
 				if (version == TargetDotNetFrameworkVersion.Version35)
 					return GetPathToDotNetFrameworkFile (fileName, TargetDotNetFrameworkVersion.Version20);
-#endif
 				//unversioned tools are in the 4.5 directory
 				if (version == TargetDotNetFrameworkVersion.Version20)
 					return GetPathToDotNetFrameworkFile (fileName, (TargetDotNetFrameworkVersion)5);
@@ -158,7 +160,6 @@ namespace Microsoft.Build.Utilities
 			throw new NotImplementedException ();
 		}
 
-		#if NET_4_0
 		public static string GetPathToStandardLibraries (string targetFrameworkIdentifier,
 								 string targetFrameworkVersion,
 								 string targetFrameworkProfile)
@@ -209,7 +210,6 @@ namespace Microsoft.Build.Utilities
 			// I'm not sure if this is completely valid assumption...
 			return path;
 		}
-		#endif
 
 		[MonoTODO]
 		public static string GetPathToSystemFile (string fileName)
@@ -233,11 +233,20 @@ namespace Microsoft.Build.Utilities
 
 		public static string GetPathToBuildTools (string toolsVersion)
 		{
-			if (toolsVersion != "12.0")
+			string path;
+			switch (toolsVersion) {
+			case "12.0":
+				path = "xbuild_12";
+				break;
+			case "14.0":
+				path = "xbuild_14";
+				break;
+			default:
 				return null;
+			}
 
 			if (Environment.GetEnvironmentVariable ("TESTING_MONO") != null)
-				return Path.Combine (lib_mono_dir, "xbuild_12");
+				return Path.Combine (lib_mono_dir, path);
 
 			if (runningOnDotNet) {
 				//see http://msdn.microsoft.com/en-us/library/vstudio/bb397428(v=vs.120).aspx

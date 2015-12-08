@@ -29,15 +29,24 @@
 //
 
 #if SECURITY_DEP
-
-#if MONOTOUCH || MONODROID
-using System.Security.Cryptography.X509Certificates;
-#else
+#if MONO_SECURITY_ALIAS
+extern alias MonoSecurity;
+#endif
+#if MONO_X509_ALIAS
 extern alias PrebuiltSystem;
-using X509CertificateCollection = PrebuiltSystem::System.Security.Cryptography.X509Certificates.X509CertificateCollection;
-using System.Security.Cryptography.X509Certificates;
 #endif
 
+#if MONO_SECURITY_ALIAS
+using MSI = MonoSecurity::Mono.Security.Interface;
+#else
+using MSI = Mono.Security.Interface;
+#endif
+#if MONO_X509_ALIAS
+using X509CertificateCollection = PrebuiltSystem::System.Security.Cryptography.X509Certificates.X509CertificateCollection;
+#else
+using X509CertificateCollection = System.Security.Cryptography.X509Certificates.X509CertificateCollection;
+#endif
+using System.Security.Cryptography.X509Certificates;
 #endif
 
 using System;
@@ -50,20 +59,17 @@ using System.Net.Mime;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Reflection;
 using System.Net.Configuration;
 using System.Configuration;
 using System.Net.Security;
 using System.Security.Authentication;
-#if NET_4_5
 using System.Threading.Tasks;
-#endif
+using Mono.Net.Security;
 
 namespace System.Net.Mail {
+	[Obsolete ("SmtpClient and its network of types are poorly designed, we strongly recommend you use https://github.com/jstedfast/MailKit and https://github.com/jstedfast/MimeKit instead")]
 	public class SmtpClient
-#if NET_4_0
 	: IDisposable
-#endif
 	{
 		#region Fields
 
@@ -125,9 +131,7 @@ namespace System.Net.Mail {
 			if (cfg != null) {
 				this.host = cfg.Network.Host;
 				this.port = cfg.Network.Port;
-#if NET_4_0
 				this.enableSsl = cfg.Network.EnableSsl;
-#endif
 				TargetName = cfg.Network.TargetName;
 				if (this.TargetName == null)
 					TargetName = "SMTPSVC/" + (host != null ? host : "");
@@ -174,9 +178,7 @@ namespace System.Net.Mail {
 		}
 #endif
 
-#if NET_4_0
 		public
-#endif
 		string TargetName { get; set; }
 
 		public ICredentialsByHost Credentials {
@@ -264,7 +266,6 @@ namespace System.Net.Mail {
 		#endregion // Events 
 
 		#region Methods
-#if NET_4_0
 		public void Dispose ()
 		{
 			Dispose (true);
@@ -275,7 +276,6 @@ namespace System.Net.Mail {
 		{
 			// TODO: We should close all the connections and abort any async operations here
 		}
-#endif
 		private void CheckState ()
 		{
 			if (messageInProcess != null)
@@ -591,10 +591,13 @@ namespace System.Net.Mail {
 			
 			// FIXME: parse the list of extensions so we don't bother wasting
 			// our time trying commands if they aren't supported.
-			status = SendCommand ("EHLO " + Dns.GetHostName ());
+			
+			// Get the FQDN of the local machine
+			string fqdn = Dns.GetHostEntry (Dns.GetHostName ()).HostName;
+			status = SendCommand ("EHLO " + fqdn);
 			
 			if (IsError (status)) {
-				status = SendCommand ("HELO " + Dns.GetHostName ());
+				status = SendCommand ("HELO " + fqdn);
 				
 				if (IsError (status))
 					throw new SmtpException (status.StatusCode, status.Description);
@@ -611,10 +614,10 @@ namespace System.Net.Mail {
 				ResetExtensions();
 				writer = new StreamWriter (stream);
 				reader = new StreamReader (stream);
-				status = SendCommand ("EHLO " + Dns.GetHostName ());
+				status = SendCommand ("EHLO " + fqdn);
 			
 				if (IsError (status)) {
-					status = SendCommand ("HELO " + Dns.GetHostName ());
+					status = SendCommand ("HELO " + fqdn);
 				
 					if (IsError (status))
 						throw new SmtpException (status.StatusCode, status.Description);
@@ -661,16 +664,8 @@ namespace System.Net.Mail {
 					sfre.Add (new SmtpFailedRecipientException (status.StatusCode, message.Bcc [i].Address));
 			}
 
-#if TARGET_JVM // List<T>.ToArray () is not supported
-			if (sfre.Count > 0) {
-				SmtpFailedRecipientException[] xs = new SmtpFailedRecipientException[sfre.Count];
-				sfre.CopyTo (xs);
-				throw new SmtpFailedRecipientsException ("failed recipients", xs);
-			}
-#else
 			if (sfre.Count >0)
 				throw new SmtpFailedRecipientsException ("failed recipients", sfre.ToArray ());
-#endif
 
 			// DATA
 			status = SendCommand ("DATA");
@@ -714,13 +709,8 @@ namespace System.Net.Mail {
 			if (message.ReplyToList.Count > 0)
 				SendHeader ("Reply-To", EncodeAddresses (message.ReplyToList));
 
-#if NET_4_0
 			foreach (string s in message.Headers.AllKeys)
 				SendHeader (s, ContentType.EncodeSubjectRFC2047 (message.Headers [s], message.HeadersEncoding));
-#else
-			foreach (string s in message.Headers.AllKeys)
-				SendHeader (s, message.Headers [s]);
-#endif
 	
 			AddPriorityHeader (message);
 
@@ -748,7 +738,6 @@ namespace System.Net.Mail {
 			Send (new MailMessage (from, to, subject, body));
 		}
 
-#if NET_4_5
 		public Task SendMailAsync (MailMessage message)
 		{
 			var tcs = new TaskCompletionSource<object> ();
@@ -766,7 +755,7 @@ namespace System.Net.Mail {
 
 		static void SendMailAsyncCompletedHandler (TaskCompletionSource<object> source, AsyncCompletedEventArgs e, SendCompletedEventHandler handler, SmtpClient client)
 		{
-			if ((object) handler != e.UserState)
+			if (source != e.UserState)
 				return;
 
 			client.SendCompleted -= handler;
@@ -783,7 +772,6 @@ namespace System.Net.Mail {
 
 			source.SetResult (null);
 		}
-#endif
 
 		private void SendDot()
 		{
@@ -978,11 +966,7 @@ try {
 				case TransferEncoding.Base64:
 					byte [] content = new byte [av.ContentStream.Length];
 					av.ContentStream.Read (content, 0, content.Length);
-#if TARGET_JVM
-					SendData (Convert.ToBase64String (content));
-#else
 					    SendData (Convert.ToBase64String (content, Base64FormattingOptions.InsertLineBreaks));
-#endif
 					break;
 				case TransferEncoding.QuotedPrintable:
 					byte [] bytes = new byte [av.ContentStream.Length];
@@ -1022,11 +1006,7 @@ try {
 				case TransferEncoding.Base64:
 					byte [] content = new byte [lr.ContentStream.Length];
 					lr.ContentStream.Read (content, 0, content.Length);
-#if TARGET_JVM
-					SendData (Convert.ToBase64String (content));
-#else
 					    SendData (Convert.ToBase64String (content, Base64FormattingOptions.InsertLineBreaks));
-#endif
 					break;
 				case TransferEncoding.QuotedPrintable:
 					byte [] bytes = new byte [lr.ContentStream.Length];
@@ -1058,11 +1038,7 @@ try {
 				att.ContentStream.Read (content, 0, content.Length);
 				switch (att.TransferEncoding) {
 				case TransferEncoding.Base64:
-#if TARGET_JVM
-					SendData (Convert.ToBase64String (content));
-#else
 					SendData (Convert.ToBase64String (content, Base64FormattingOptions.InsertLineBreaks));
-#endif
 					break;
 				case TransferEncoding.QuotedPrintable:
 					SendData (ToQuotedPrintable (content));
@@ -1176,21 +1152,6 @@ try {
 			return "unknown";
 		}
 
-#if SECURITY_DEP
-		RemoteCertificateValidationCallback callback = delegate (object sender,
-									 X509Certificate certificate,
-									 X509Chain chain,
-									 SslPolicyErrors sslPolicyErrors) {
-			// honor any exciting callback defined on ServicePointManager
-			if (ServicePointManager.ServerCertificateValidationCallback != null)
-				return ServicePointManager.ServerCertificateValidationCallback (sender, certificate, chain, sslPolicyErrors);
-			// otherwise provide our own
-			if (sslPolicyErrors != SslPolicyErrors.None)
-				throw new InvalidOperationException ("SSL authentication error: " + sslPolicyErrors);
-			return true;
-			};
-#endif
-
 		private void InitiateSecureConnection () {
 			SmtpResponse response = SendCommand ("STARTTLS");
 
@@ -1198,13 +1159,14 @@ try {
 				throw new SmtpException (SmtpStatusCode.GeneralFailure, "Server does not support secure connections.");
 			}
 
-#if TARGET_JVM
-			((NetworkStream) stream).ChangeToSSLSocket ();
-#elif SECURITY_DEP
-			SslStream sslStream = new SslStream (stream, false, callback, null);
+#if SECURITY_DEP
+			var tlsProvider = MonoTlsProviderFactory.GetProviderInternal ();
+			var settings = MSI.MonoTlsSettings.CopyDefaultSettings ();
+			settings.UseServicePointManagerCallback = true;
+			var sslStream = tlsProvider.CreateSslStream (stream, false, settings);
 			CheckCancellation ();
 			sslStream.AuthenticateAsClient (Host, this.ClientCertificates, SslProtocols.Default, false);
-			stream = sslStream;
+			stream = sslStream.AuthenticatedStream;
 
 #else
 			throw new SystemException ("You are using an incomplete System.dll build");

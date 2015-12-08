@@ -722,6 +722,13 @@ class Tester
 		e9.Compile ().Invoke (1);
 	}		
 
+	void CallTest_10 ()
+	{
+		Expression<Func<string>> e = () => $"{int.MaxValue}";
+		AssertNodeType (e, ExpressionType.Call);
+		Assert (int.MaxValue.ToString (), e.Compile ().Invoke ());
+	}
+
 	void CoalesceTest ()
 	{
 		Expression<Func<uint?, uint>> e = (uint? a) => a ?? 99;
@@ -2188,6 +2195,13 @@ class Tester
 		Expression<Func<MyEnum>> e = () => new MyEnum ();
 		AssertNodeType (e, ExpressionType.New);
 		Assert<MyEnum> (0, e.Compile ().Invoke ());
+	}
+
+	void NewTest_8 ()
+	{
+		Expression<Func<DateTime>> e = () => new DateTime ();
+		AssertNodeType (e, ExpressionType.New);
+		Assert (null, ((NewExpression)e.Body).Constructor, "default ctor");
 	}
 
 	void NotTest ()

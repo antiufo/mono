@@ -222,6 +222,8 @@ namespace Mono.CSharp
 
 		public List<TryFinally> TryFinallyUnwind { get; set; }
 
+		public Label RecursivePatternLabel { get; set; }
+
 		#endregion
 
 		public void AddStatementEpilog (IExpressionCleanup cleanupExpression)
@@ -260,9 +262,7 @@ namespace Mono.CSharp
 			if (sf.IsHiddenLocation (loc))
 				return false;
 
-#if NET_4_0
 			methodSymbols.MarkSequencePoint (ig.ILOffset, sf.SourceFileEntry, loc.Row, loc.Column, false);
-#endif
 			return true;
 		}
 
@@ -322,9 +322,7 @@ namespace Mono.CSharp
 			if ((flags & Options.OmitDebugInfo) != 0)
 				return;
 
-#if NET_4_0
 			methodSymbols.StartBlock (CodeBlockEntry.Type.Lexical, ig.ILOffset);
-#endif
 		}
 
 		public void BeginCompilerScope ()
@@ -332,9 +330,7 @@ namespace Mono.CSharp
 			if ((flags & Options.OmitDebugInfo) != 0)
 				return;
 
-#if NET_4_0
 			methodSymbols.StartBlock (CodeBlockEntry.Type.CompilerGenerated, ig.ILOffset);
-#endif
 		}
 
 		public void EndExceptionBlock ()
@@ -347,9 +343,7 @@ namespace Mono.CSharp
 			if ((flags & Options.OmitDebugInfo) != 0)
 				return;
 
-#if NET_4_0
 			methodSymbols.EndBlock (ig.ILOffset);
-#endif
 		}
 
 		public void CloseConditionalAccess (TypeSpec type)
@@ -395,6 +389,22 @@ namespace Mono.CSharp
 		{
 			if (IsAnonymousStoreyMutateRequired)
 				type = CurrentAnonymousMethod.Storey.Mutator.Mutate (type);
+
+			if (pinned) {
+				//
+				// This is for .net compatibility. I am not sure why pinned
+				// pointer temps are converted to & even if they are pointers to
+				// pointers.
+				//
+				var pt = type as PointerContainer;
+				if (pt != null) {
+					type = pt.Element;
+					if (type.Kind == MemberKind.Void)
+						type = Module.Compiler.BuiltinTypes.IntPtr;
+					
+					return ig.DeclareLocal (type.GetMetaInfo ().MakeByRefType (), true);
+				}
+			}
 
 			return ig.DeclareLocal (type.GetMetaInfo (), pinned);
 		}
@@ -547,13 +557,10 @@ namespace Mono.CSharp
 			switch (type.BuiltinType) {
 			case BuiltinTypeSpec.Type.Bool:
 				//
-				// Workaround MSIL limitation. Load bool element as single bit,
-				// bool array can actually store any byte value
+				// bool array can actually store any byte value in underlying byte slot
+				// and C# spec does not specify any normalization rule, except the result
+				// is undefined
 				//
-				ig.Emit (OpCodes.Ldelem_U1);
-				ig.Emit (OpCodes.Ldc_I4_0);
-				ig.Emit (OpCodes.Cgt_Un);
-				break;
 			case BuiltinTypeSpec.Type.Byte:
 				ig.Emit (OpCodes.Ldelem_U1);
 				break;
@@ -769,12 +776,8 @@ namespace Mono.CSharp
 				ig.Emit (OpCodes.Ldind_U1);
 				break;
 			case BuiltinTypeSpec.Type.SByte:
-				ig.Emit (OpCodes.Ldind_I1);
-				break;
 			case BuiltinTypeSpec.Type.Bool:
 				ig.Emit (OpCodes.Ldind_I1);
-				ig.Emit (OpCodes.Ldc_I4_0);
-				ig.Emit (OpCodes.Cgt_Un);
 				break;
 			case BuiltinTypeSpec.Type.ULong:
 			case BuiltinTypeSpec.Type.Long:
@@ -900,6 +903,9 @@ namespace Mono.CSharp
 					type = CurrentAnonymousMethod.Storey.Mutator.Mutate (type);
 
 				ig.Emit (OpCodes.Stobj, type.GetMetaInfo ());
+				break;
+			case MemberKind.PointerType:
+				ig.Emit (OpCodes.Stind_I);
 				break;
 			default:
 				ig.Emit (OpCodes.Stind_Ref);
@@ -1064,7 +1070,7 @@ namespace Mono.CSharp
 					var ie = new InstanceEmitter (instance_copy, IsAddressCall (instance_copy, call_op, method.DeclaringType));
 
 					if (Arguments == null) {
-						ie.EmitLoad (ec);
+						ie.EmitLoad (ec, true);
 					}
 				} else if (!InstanceExpressionOnStack) {
 					var ie = new InstanceEmitter (InstanceExpression, IsAddressCall (InstanceExpression, call_op, method.DeclaringType));
@@ -1226,7 +1232,7 @@ namespace Mono.CSharp
 						instance_address = instance as LocalTemporary;
 
 					if (instance_address == null) {
-						EmitLoad (ec);
+						EmitLoad (ec, false);
 						ec.Emit (OpCodes.Dup);
 						ec.EmitLoadFromPtr (instance.Type);
 
@@ -1234,20 +1240,20 @@ namespace Mono.CSharp
 					} else {
 						instance.Emit (ec);
 					}
-
-					if (instance.Type.Kind == MemberKind.TypeParameter)
-						ec.Emit (OpCodes.Box, instance.Type);
 				} else {
-					EmitLoad (ec);
+					EmitLoad (ec, !conditionalAccess);
 
 					if (conditionalAccess) {
-						conditional_access_dup = !IsInexpensiveLoad ();
+						conditional_access_dup = !ExpressionAnalyzer.IsInexpensiveLoad (instance);
 						if (conditional_access_dup)
 							ec.Emit (OpCodes.Dup);
 					}
 				}
 
 				if (conditionalAccess) {
+					if (instance.Type.Kind == MemberKind.TypeParameter)
+						ec.Emit (OpCodes.Box, instance.Type);
+
 					ec.Emit (OpCodes.Brtrue_S, NullOperatorLabel);
 
 					if (conditional_access_dup)
@@ -1270,17 +1276,19 @@ namespace Mono.CSharp
 					instance_address.AddressOf (ec, AddressOp.Load);
 				} else if (unwrap != null) {
 					unwrap.Emit (ec);
-					var tmp = ec.GetTemporaryLocal (unwrap.Type);
-					ec.Emit (OpCodes.Stloc, tmp);
-					ec.Emit (OpCodes.Ldloca, tmp);
-					ec.FreeTemporaryLocal (tmp, unwrap.Type);
+					if (addressRequired) {
+						var tmp = ec.GetTemporaryLocal (unwrap.Type);
+						ec.Emit (OpCodes.Stloc, tmp);
+						ec.Emit (OpCodes.Ldloca, tmp);
+						ec.FreeTemporaryLocal (tmp, unwrap.Type);
+					}
 				} else if (!conditional_access_dup) {
 					instance.Emit (ec);
 				}
 			}
 		}
 
-		public void EmitLoad (EmitContext ec)
+		public void EmitLoad (EmitContext ec, bool boxInstance)
 		{
 			var instance_type = instance.Type;
 
@@ -1311,8 +1319,9 @@ namespace Mono.CSharp
 			instance.Emit (ec);
 
 			// Only to make verifier happy
-			if (RequiresBoxing ())
+			if (boxInstance && ExpressionAnalyzer.RequiresBoxing (instance)) {
 				ec.Emit (OpCodes.Box, instance_type);
+			}
 		}
 
 		public TypeSpec GetStackType (EmitContext ec)
@@ -1328,7 +1337,12 @@ namespace Mono.CSharp
 			return instance_type;
 		}
 
-		bool RequiresBoxing ()
+
+	}
+
+	static class ExpressionAnalyzer
+	{
+		public static bool RequiresBoxing (Expression instance)
 		{
 			var instance_type = instance.Type;
 			if (instance_type.IsGenericParameter && !(instance is This) && TypeSpec.IsReferenceType (instance_type))
@@ -1340,17 +1354,22 @@ namespace Mono.CSharp
 			return false;
 		}
 
-		bool IsInexpensiveLoad ()
+		//
+		// Returns true for cheap race-free load, where we can avoid using dup
+		//
+		public static bool IsInexpensiveLoad (Expression instance)
 		{
 			if (instance is Constant)
 				return instance.IsSideEffectFree;
 
-			if (RequiresBoxing ())
+			if (RequiresBoxing (instance))
 				return false;
 
 			var vr = instance as VariableReference;
-			if (vr != null)
-				return !vr.IsRef;
+			if (vr != null) {
+				// Load from captured local would be racy without dup
+				return !vr.IsRef && !vr.IsHoisted;
+			}
 
 			if (instance is LocalTemporary)
 				return true;

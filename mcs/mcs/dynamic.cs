@@ -12,10 +12,7 @@
 using System;
 using System.Linq;
 using SLE = System.Linq.Expressions;
-
-#if NET_4_0 || MOBILE_DYNAMIC
 using System.Dynamic;
-#endif
 
 namespace Mono.CSharp
 {
@@ -63,14 +60,6 @@ namespace Mono.CSharp
 	//
 	public class RuntimeValueExpression : Expression, IDynamicAssign, IMemoryLocation
 	{
-#if !NET_4_0 && !MOBILE_DYNAMIC
-		public class DynamicMetaObject
-		{
-			public TypeSpec RuntimeType;
-			public TypeSpec LimitType;
-			public SLE.Expression Expression;
-		}
-#endif
 
 		readonly DynamicMetaObject obj;
 
@@ -146,7 +135,6 @@ namespace Mono.CSharp
 			return base.MakeExpression (ctx);
 #else
 
-#if NET_4_0 || MOBILE_DYNAMIC
 				if (type.IsStruct && !obj.Expression.Type.IsValueType)
 					return SLE.Expression.Unbox (obj.Expression, type.GetMetaInfo ());
 
@@ -154,7 +142,6 @@ namespace Mono.CSharp
 					if (((SLE.ParameterExpression) obj.Expression).IsByRef)
 						return obj.Expression;
 				}
-	#endif
 
 				return SLE.Expression.Convert (obj.Expression, type.GetMetaInfo ());
 #endif
@@ -181,7 +168,6 @@ namespace Mono.CSharp
 			return this;
 		}
 
-#if NET_4_0 || MOBILE_DYNAMIC
 		public override SLE.Expression MakeExpression (BuilderContext ctx)
 		{
 #if STATIC
@@ -190,7 +176,6 @@ namespace Mono.CSharp
 			return SLE.Expression.Block (expr.MakeExpression (ctx), SLE.Expression.Default (type.GetMetaInfo ()));
 #endif
 		}
-#endif
 	}
 
 	#endregion
@@ -289,6 +274,13 @@ namespace Mono.CSharp
 
 		protected bool DoResolveCore (ResolveContext rc)
 		{
+			foreach (var arg in arguments) {
+				if (arg.Type == InternalType.VarOutType) {
+					// Should be special error message about dynamic dispatch
+					rc.Report.Error (8047, arg.Expr.Location, "Declaration expression cannot be used in this context");
+				}
+			}
+
 			if (rc.CurrentTypeParameters != null && rc.CurrentTypeParameters[0].IsMethodTypeParameter)
 				context_mvars = rc.CurrentTypeParameters;
 
@@ -780,7 +772,7 @@ namespace Mono.CSharp
 
 			if (member != null && member.HasTypeArguments) {
 				TypeArguments ta = member.TypeArguments;
-				if (ta.Resolve (ec)) {
+				if (ta.Resolve (ec, false)) {
 					var targs = new ArrayInitializer (ta.Count, loc);
 					foreach (TypeSpec t in ta.Arguments)
 						targs.Add (new TypeOf (t, loc));

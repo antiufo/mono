@@ -37,24 +37,28 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
-#if NET_2_0
 using System.Collections.Generic;
-#endif
 
 namespace A.B.C {
+	// Disable expected warning
+#pragma warning disable 169
 	public struct MethodInfoTestStruct {
 		int p;
 	}
+#pragma warning restore 169
 }
 namespace MonoTests.System.Reflection
 {
 	[TestFixture]
 	public class MethodInfoTest
 	{
-#if !TARGET_JVM
+#if MONOTOUCH
+		// use an existing symbol - so we can build without dlsym. It does not matter that the signature does not match for the test
+		[DllImport ("libc", EntryPoint="readlink", CharSet=CharSet.Unicode, ExactSpelling=false, PreserveSig=true, SetLastError=true, BestFitMapping=true, ThrowOnUnmappableChar=true)]
+#else
 		[DllImport ("libfoo", EntryPoint="foo", CharSet=CharSet.Unicode, ExactSpelling=false, PreserveSig=true, SetLastError=true, BestFitMapping=true, ThrowOnUnmappableChar=true)]
-		public static extern void dllImportMethod ();
 #endif
+		public static extern void dllImportMethod ();
 		[MethodImplAttribute(MethodImplOptions.PreserveSig)]
 		public void preserveSigMethod ()
 		{
@@ -63,6 +67,11 @@ namespace MonoTests.System.Reflection
 		[MethodImplAttribute(MethodImplOptions.Synchronized)]
 		public void synchronizedMethod ()
 		{
+		}
+
+		public interface InterfaceTest
+		{
+			void Clone ();
 		}
 
 		[Test]
@@ -96,7 +105,6 @@ namespace MonoTests.System.Reflection
 			}
 		}
 
-#if NET_2_0
 		[Test]
 		public void PseudoCustomAttributes ()
 		{
@@ -105,8 +113,13 @@ namespace MonoTests.System.Reflection
 			DllImportAttribute attr = (DllImportAttribute)((t.GetMethod ("dllImportMethod").GetCustomAttributes (typeof (DllImportAttribute), true)) [0]);
 
 			Assert.AreEqual (CallingConvention.Winapi, attr.CallingConvention, "#1");
+#if MONOTOUCH
+			Assert.AreEqual ("readlink", attr.EntryPoint, "#2");
+			Assert.AreEqual ("libc", attr.Value, "#3");
+#else
 			Assert.AreEqual ("foo", attr.EntryPoint, "#2");
 			Assert.AreEqual ("libfoo", attr.Value, "#3");
+#endif
 			Assert.AreEqual (CharSet.Unicode, attr.CharSet, "#4");
 			Assert.AreEqual (false, attr.ExactSpelling, "#5");
 			Assert.AreEqual (true, attr.PreserveSig, "#6");
@@ -128,14 +141,12 @@ namespace MonoTests.System.Reflection
 		}
 
 		[Test]
-		[Category ("TargetJvmNotWorking")]
 		public void ReturnTypePseudoCustomAttributes ()
 		{
 			MethodInfo mi = typeof (MethodInfoTest).GetMethod ("ReturnTypeMarshalAs");
 
 			Assert.IsTrue (mi.ReturnTypeCustomAttributes.GetCustomAttributes (typeof (MarshalAsAttribute), true).Length == 1);
 		}
-#endif
 
 		public static int foo (int i, int j)
 		{
@@ -173,9 +184,6 @@ namespace MonoTests.System.Reflection
 		}
 
 		[Test]
-#if ONLY_1_1
-		[Category ("NotDotNet")] // #A2 fails on MS.NET 1.x
-#endif
 		public void ByrefVtypeInvoke ()
 		{
 			MethodInfo mi = typeof (MethodInfoTest).GetMethod ("ByrefVtype");
@@ -207,6 +215,7 @@ namespace MonoTests.System.Reflection
 			return (int*) 0;
 		}
 
+#if MONO_FEATURE_THREAD_ABORT
 		[Test] // bug #81538
 		public void InvokeThreadAbort ()
 		{
@@ -215,24 +224,17 @@ namespace MonoTests.System.Reflection
 				method.Invoke (null, new object [0]);
 				Assert.Fail ("#1");
 			}
-#if NET_2_0
 			catch (ThreadAbortException ex) {
 				Thread.ResetAbort ();
 				Assert.IsNull (ex.InnerException, "#2");
 			}
-#else
-			catch (TargetInvocationException ex) {
-				Thread.ResetAbort ();
-				Assert.IsNotNull (ex.InnerException, "#2");
-				Assert.AreEqual (typeof (ThreadAbortException), ex.InnerException.GetType (), "#3");
-			}
-#endif
 		}
 
 		public static void AbortIt ()
 		{
 			Thread.CurrentThread.Abort ();
 		}
+#endif
 
 		[Test] // bug #76541
 		public void ToStringByRef ()
@@ -256,7 +258,7 @@ namespace MonoTests.System.Reflection
 
 		public struct SimpleStruct
 		{
-			int a;
+			public int a;
 		}
 
 		public static unsafe SimpleStruct* PtrFunc2 (SimpleStruct* a, A.B.C.MethodInfoTestStruct *b)
@@ -316,12 +318,10 @@ namespace MonoTests.System.Reflection
 			Assert.AreSame (inheritedMethod, baseMethod);
 		}
 
-#if NET_2_0
-#if !TARGET_JVM // MethodBody is not supported for TARGET_JVM
 		[Test]
 		public void GetMethodBody_Abstract ()
 		{
-			MethodBody mb = typeof (ICloneable).GetMethod ("Clone").GetMethodBody ();
+			MethodBody mb = typeof (InterfaceTest).GetMethod ("Clone").GetMethodBody ();
 			Assert.IsNull (mb);
 		}
 
@@ -373,16 +373,21 @@ namespace MonoTests.System.Reflection
 
 			IList<LocalVariableInfo> locals = mb.LocalVariables;
 
-			// This might break with different compilers etc.
-			Assert.AreEqual (2, locals.Count, "#3");
+			bool foundPinnedBytePointer = false;
+			unsafe {
+				foreach (LocalVariableInfo lvi in locals) {
+					if (lvi.LocalType == typeof (byte[]))
+						// This is optimized out by CSC in .NET 4.6
+						Assert.IsFalse (lvi.IsPinned, "#3-1");
 
-			Assert.IsTrue ((locals [0].LocalType == typeof (byte[])) || (locals [1].LocalType == typeof (byte[])), "#4");
-			if (locals [0].LocalType == typeof (byte[]))
-				Assert.AreEqual (false, locals [0].IsPinned, "#5");
-			else
-				Assert.AreEqual (false, locals [1].IsPinned, "#6");
+					if (/* mcs */ lvi.LocalType == typeof (byte*) || /* csc */ lvi.LocalType == typeof (byte).MakeByRefType ()) {
+						foundPinnedBytePointer = true;
+						Assert.IsTrue (lvi.IsPinned, "#3-2");
+					}
+				}
+			}
+			Assert.IsTrue (foundPinnedBytePointer, "#4");
 		}
-#endif // TARGET_JVM
 
 		public int return_parameter_test ()
 		{
@@ -413,7 +418,15 @@ namespace MonoTests.System.Reflection
 			//Assert.IsTrue (pi.IsRetval, "#3");
 		}
 
-#if !TARGET_JVM // ReflectionOnly is not supported yet on TARGET_JVM
+		[Test]
+		public void MethodInfoModule ()
+		{
+			Type type = typeof (MethodInfoTest);
+			MethodInfo me = type.GetMethod ("return_parameter_test");
+
+			Assert.AreEqual (type.Module, me.Module);
+		}
+
 		[Test]
 			public void InvokeOnRefOnlyAssembly ()
 		{
@@ -431,7 +444,6 @@ namespace MonoTests.System.Reflection
 				Assert.IsNotNull (ex.Message, "#4");
 			}
 		}
-#endif // TARGET_JVM
 
 		[Test]
 		[ExpectedException (typeof (TargetInvocationException))]
@@ -744,8 +756,6 @@ namespace MonoTests.System.Reflection
 			{
 			}
 		}
-#endif
-#if NET_4_0
 		interface IMethodInvoke<out T>
 		{
 		    T Test ();
@@ -769,7 +779,6 @@ namespace MonoTests.System.Reflection
 			Assert.AreEqual ("MethodInvoke", m0.Invoke (obj, new Object [0]));
 			Assert.AreEqual ("MethodInvoke", m1.Invoke (obj, new Object [0]));
 		}
-#endif
 
 
 		public int? Bug12856 ()
@@ -811,26 +820,48 @@ namespace MonoTests.System.Reflection
 			var type = typeof (GenericClass<>).GetMethod("Method").GetMethodBody().LocalVariables[0].LocalType;
 			Assert.AreEqual (typeofT, type);
 			Assert.AreEqual (typeof (GenericClass<>), type.DeclaringType);
+		
+			bool foundTypeOfK = false;
+			bool foundExpectedType = false;
+	    
+			MethodBody mb = typeof (GenericClass<>).GetMethod("Method2").GetMethodBody();
+			foreach (LocalVariableInfo lvi in mb.LocalVariables) {
+				if (lvi.LocalType == typeofK) {
+					foundTypeOfK = true;
+					Assert.AreEqual (typeof (GenericClass<>), lvi.LocalType.DeclaringType, "#1-1");
+				} else if (lvi.LocalType == typeofT) {
+					foundExpectedType = true;
+					Assert.AreEqual (typeof (GenericClass<>), lvi.LocalType.DeclaringType, "#1-2");
+				}
+			}
 
-			type = typeof (GenericClass<>).GetMethod("Method2").GetMethodBody().LocalVariables[0].LocalType;
-			Assert.AreEqual (typeofT, type);
-			Assert.AreEqual (typeof (GenericClass<>), type.DeclaringType);
-
-			type = typeof (GenericClass<>).GetMethod("Method2").GetMethodBody().LocalVariables[1].LocalType;
-			Assert.AreEqual (typeofK, type);
-			Assert.AreEqual (typeof (GenericClass<>), type.DeclaringType);
-
-			type = typeof (GenericClass<int>).GetMethod("Method2").GetMethodBody().LocalVariables[0].LocalType;
-			Assert.AreEqual (typeof (int), type);
-
-			type = typeof (GenericClass<int>).GetMethod("Method2").GetMethodBody().LocalVariables[1].LocalType;
-			Assert.AreEqual (typeofK, type);
-			Assert.AreEqual (typeof (GenericClass<>), type.DeclaringType);
+			Assert.IsTrue (foundTypeOfK, "#1-3");
+			if (mb.LocalVariables.Count < 2)
+				Assert.Ignore ("Code built in release mode - 'T var0' optmized out");
+			else
+				Assert.IsTrue (foundExpectedType, "#1-4");
+	    
+			foundTypeOfK = false;
+			foundExpectedType = false;
+			mb = typeof (GenericClass<int>).GetMethod("Method2").GetMethodBody();
+			foreach (LocalVariableInfo lvi in mb.LocalVariables) {
+				if (lvi.LocalType == typeofK) {
+					foundTypeOfK = true;
+					Assert.AreEqual (typeof (GenericClass<>), lvi.LocalType.DeclaringType, "#2-1");
+				} else if (lvi.LocalType == typeof (int)) {
+					foundExpectedType = true;
+				}
+			}
+	    
+			Assert.IsTrue (foundTypeOfK, "#2-3");
+			if (mb.LocalVariables.Count < 2)
+				Assert.Ignore ("Code built in release mode - 'int var0' optmized out");
+			else
+				Assert.IsTrue (foundExpectedType, "#2-4");
 		}
 #endif
 	}
 	
-#if NET_2_0
 	// Helper class
 	class RefOnlyMethodClass 
 	{
@@ -854,5 +885,4 @@ namespace MonoTests.System.Reflection
 			set { _myList = value; }
 		}
 	}
-#endif
 }

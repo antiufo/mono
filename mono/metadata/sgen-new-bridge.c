@@ -44,14 +44,13 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "sgen-gc.h"
-#include "sgen-bridge.h"
-#include "sgen-hash-table.h"
-#include "sgen-qsort.h"
+#include "sgen/sgen-gc.h"
+#include "sgen-bridge-internals.h"
+#include "sgen/sgen-hash-table.h"
+#include "sgen/sgen-qsort.h"
+#include "sgen/sgen-client.h"
 #include "tabledefs.h"
-#include "utils/mono-logger-internal.h"
-#include "utils/mono-time.h"
-#include "utils/mono-compiler.h"
+#include "utils/mono-logger-internals.h"
 
 //#define NEW_XREFS
 #ifdef NEW_XREFS
@@ -67,6 +66,10 @@
 #else
 #define XREFS old_xrefs
 #endif
+
+#define OPTIMIZATION_COPY
+#define OPTIMIZATION_FORWARD
+#define OPTIMIZATION_SINGLETON_DYN_ARRAY
 
 typedef struct {
 	int size;
@@ -320,9 +323,11 @@ dyn_array_ptr_init (DynPtrArray *da)
 static void
 dyn_array_ptr_uninit (DynPtrArray *da)
 {
+#ifdef OPTIMIZATION_SINGLETON_DYN_ARRAY
 	if (da->array.capacity == 1)
 		dyn_array_ptr_init (da);
 	else
+#endif
 		dyn_array_uninit (&da->array, sizeof (void*));
 }
 
@@ -335,16 +340,23 @@ dyn_array_ptr_size (DynPtrArray *da)
 static void
 dyn_array_ptr_empty (DynPtrArray *da)
 {
-	dyn_array_empty (&da->array);
+#ifdef OPTIMIZATION_SINGLETON_DYN_ARRAY
+	if (da->array.capacity == 1)
+		dyn_array_ptr_init (da);
+	else
+#endif
+		dyn_array_empty (&da->array);
 }
 
 static void*
 dyn_array_ptr_get (DynPtrArray *da, int x)
 {
+#ifdef OPTIMIZATION_SINGLETON_DYN_ARRAY
 	if (da->array.capacity == 1) {
 		g_assert (x == 0);
 		return da->array.data;
 	}
+#endif
 	return ((void**)da->array.data)[x];
 }
 
@@ -353,6 +365,7 @@ dyn_array_ptr_add (DynPtrArray *da, void *ptr)
 {
 	void **p;
 
+#ifdef OPTIMIZATION_SINGLETON_DYN_ARRAY
 	if (da->array.capacity == 0) {
 		da->array.capacity = 1;
 		da->array.size = 1;
@@ -364,7 +377,9 @@ dyn_array_ptr_add (DynPtrArray *da, void *ptr)
 		p0 = dyn_array_add (&da->array, sizeof (void*));
 		*p0 = ptr0;
 		p = dyn_array_add (&da->array, sizeof (void*));
-	} else {
+	} else
+#endif
+	{
 		p = dyn_array_add (&da->array, sizeof (void*));
 	}
 	*p = ptr;
@@ -378,10 +393,13 @@ dyn_array_ptr_pop (DynPtrArray *da)
 	int size = da->array.size;
 	void *p;
 	g_assert (size > 0);
+#ifdef OPTIMIZATION_SINGLETON_DYN_ARRAY
 	if (da->array.capacity == 1) {
 		p = dyn_array_ptr_get (da, 0);
 		dyn_array_init (&da->array);
-	} else {
+	} else
+#endif
+	{
 		g_assert (da->array.capacity > 1);
 		dyn_array_ensure_independent (&da->array, sizeof (void*));
 		p = dyn_array_ptr_get (da, size - 1);
@@ -447,28 +465,28 @@ enable_accounting (void)
 }
 
 static MonoGCBridgeObjectKind
-class_kind (MonoClass *class)
+class_kind (MonoClass *klass)
 {
-	MonoGCBridgeObjectKind res = bridge_callbacks.bridge_class_kind (class);
+	MonoGCBridgeObjectKind res = bridge_callbacks.bridge_class_kind (klass);
 
 	/* If it's a bridge, nothing we can do about it. */
 	if (res == GC_BRIDGE_TRANSPARENT_BRIDGE_CLASS || res == GC_BRIDGE_OPAQUE_BRIDGE_CLASS)
 		return res;
 
 	/* Non bridge classes with no pointers will never point to a bridge, so we can savely ignore them. */
-	if (!class->has_references) {
-		SGEN_LOG (6, "class %s is opaque\n", class->name);
+	if (!klass->has_references) {
+		SGEN_LOG (6, "class %s is opaque\n", klass->name);
 		return GC_BRIDGE_OPAQUE_CLASS;
 	}
 
 	/* Some arrays can be ignored */
-	if (class->rank == 1) {
-		MonoClass *elem_class = class->element_class;
+	if (klass->rank == 1) {
+		MonoClass *elem_class = klass->element_class;
 
 		/* FIXME the bridge check can be quite expensive, cache it at the class level. */
 		/* An array of a sealed type that is not a bridge will never get to a bridge */
 		if ((elem_class->flags & TYPE_ATTRIBUTE_SEALED) && !elem_class->has_references && !bridge_callbacks.bridge_class_kind (elem_class)) {
-			SGEN_LOG (6, "class %s is opaque\n", class->name);
+			SGEN_LOG (6, "class %s is opaque\n", klass->name);
 			return GC_BRIDGE_OPAQUE_CLASS;
 		}
 	}
@@ -509,7 +527,7 @@ add_source (HashEntry *entry, HashEntry *src)
 static void
 free_data (void)
 {
-	MonoObject *obj;
+	MonoObject *obj G_GNUC_UNUSED;
 	HashEntry *entry;
 	int total_srcs = 0;
 	int max_srcs = 0;
@@ -579,12 +597,16 @@ object_needs_expansion (MonoObject **objp)
 static HashEntry*
 follow_forward (HashEntry *entry)
 {
+#ifdef OPTIMIZATION_FORWARD
 	while (entry->v.dfs1.forwarded_to) {
 		HashEntry *next = entry->v.dfs1.forwarded_to;
 		if (next->v.dfs1.forwarded_to)
 			entry->v.dfs1.forwarded_to = next->v.dfs1.forwarded_to;
 		entry = next;
 	}
+#else
+	g_assert (!entry->v.dfs1.forwarded_to);
+#endif
 	return entry;
 }
 
@@ -603,7 +625,7 @@ static int dfs1_passes, dfs2_passes;
 
 #undef HANDLE_PTR
 #define HANDLE_PTR(ptr,obj)	do {					\
-		MonoObject *dst = (MonoObject*)*(ptr);			\
+		GCObject *dst = (GCObject*)*(ptr);			\
 		if (dst && object_needs_expansion (&dst)) {			\
 			++num_links;					\
 			dyn_array_ptr_push (&dfs_stack, obj_entry);	\
@@ -629,6 +651,7 @@ dfs1 (HashEntry *obj_entry)
 		if (obj_entry) {
 			/* obj_entry needs to be expanded */
 			src = dyn_array_ptr_pop (&dfs_stack);
+
 			if (src)
 				g_assert (!src->v.dfs1.forwarded_to);
 
@@ -641,6 +664,7 @@ dfs1 (HashEntry *obj_entry)
 
 			if (!obj_entry->v.dfs1.is_visited) {
 				int num_links = 0;
+				mword desc = sgen_obj_get_descriptor_safe (obj);
 
 				obj_entry->v.dfs1.is_visited = 1;
 
@@ -648,7 +672,7 @@ dfs1 (HashEntry *obj_entry)
 				dyn_array_ptr_push (&dfs_stack, obj_entry);
 				dyn_array_ptr_push (&dfs_stack, NULL);
 
-#include "sgen-scan-object.h"
+#include "sgen/sgen-scan-object.h"
 
 				/*
 				 * We can remove non-bridge objects with a single outgoing
@@ -660,6 +684,7 @@ dfs1 (HashEntry *obj_entry)
 				 * continuing processing this object, we start over with the
 				 * object it points to.
 				 */
+#ifdef OPTIMIZATION_FORWARD
 				if (!obj_entry->is_bridge && num_links == 1) {
 					HashEntry *dst_entry = dyn_array_ptr_pop (&dfs_stack);
 					HashEntry *obj_entry_again = dyn_array_ptr_pop (&dfs_stack);
@@ -671,6 +696,7 @@ dfs1 (HashEntry *obj_entry)
 					}
 					goto again;
 				}
+#endif
 			}
 
 			if (src) {
@@ -774,8 +800,10 @@ scc_add_xref (SCC *src, SCC *dst)
 			return;
 		src->flag = TRUE;
 		dyn_array_int_add (&dst->old_xrefs, src->index);
+#ifdef OPTIMIZATION_COPY
 	} else if (dyn_array_int_size (&dst->old_xrefs) == 0) {
 		dyn_array_int_copy (&dst->old_xrefs, &src->old_xrefs);
+#endif
 	} else {
 		int i;
 		for (i = 0; i < dyn_array_int_size (&src->old_xrefs); ++i) {
@@ -904,7 +932,7 @@ dump_graph (void)
 
 	fprintf (file, "<nodes>\n");
 	SGEN_HASH_TABLE_FOREACH (&hash_table, obj, entry) {
-		MonoVTable *vt = (MonoVTable*) SGEN_LOAD_VTABLE (obj);
+		MonoVTable *vt = SGEN_LOAD_VTABLE (obj);
 		fprintf (file, "<node id=\"%p\"><attvalues><attvalue for=\"0\" value=\"%s.%s\"/><attvalue for=\"1\" value=\"%s\"/></attvalues></node>\n",
 				obj, vt->klass->name_space, vt->klass->name, entry->is_bridge ? "true" : "false");
 	} SGEN_HASH_TABLE_FOREACH_END;
@@ -945,7 +973,7 @@ static int fist_pass_links, second_pass_links, sccs_links;
 static int max_sccs_links = 0;
 
 static void
-register_finalized_object (MonoObject *obj)
+register_finalized_object (GCObject *obj)
 {
 	g_assert (sgen_need_bridge_processing ());
 	dyn_array_ptr_push (&registered_bridges, obj);
@@ -962,7 +990,7 @@ processing_stw_step (void)
 {
 	int i;
 	int bridge_count;
-	MonoObject *obj;
+	MonoObject *obj G_GNUC_UNUSED;
 	HashEntry *entry;
 	SGEN_TV_DECLARE (atv);
 	SGEN_TV_DECLARE (btv);
@@ -1018,8 +1046,7 @@ processing_build_callback_data (int generation)
 	int i, j;
 	int num_sccs, num_xrefs;
 	int max_entries, max_xrefs;
-	int sccs_size;
-	MonoObject *obj;
+	MonoObject *obj G_GNUC_UNUSED;
 	HashEntry *entry;
 	HashEntry **all_entries;
 	MonoGCBridgeSCC **api_sccs;
@@ -1174,13 +1201,11 @@ processing_build_callback_data (int generation)
 			HashEntryWithAccounting *entry = (HashEntryWithAccounting*)all_entries [i];
 			if (entry->entry.is_bridge) {
 				MonoObject *obj = sgen_hash_table_key_for_value_pointer (entry);
-				MonoClass *klass = ((MonoVTable*)SGEN_LOAD_VTABLE (obj))->klass;
+				MonoClass *klass = SGEN_LOAD_VTABLE (obj)->klass;
 				mono_trace (G_LOG_LEVEL_INFO, MONO_TRACE_GC, "OBJECT %s::%s (%p) weight %f", klass->name_space, klass->name, obj, entry->weight);
 			}
 		}
 	}
-
-	sccs_size = dyn_array_scc_size (&sccs);
 
 	for (i = 0; i < hash_table.num_entries; ++i) {
 		HashEntry *entry = all_entries [i];
@@ -1299,12 +1324,14 @@ processing_after_callback (int generation)
 
 	if (bridge_accounting_enabled) {
 		for (i = 0; i < num_sccs; ++i) {
-			for (j = 0; j < api_sccs [i]->num_objs; ++j)
+			for (j = 0; j < api_sccs [i]->num_objs; ++j) {
+				GCVTable vtable = SGEN_LOAD_VTABLE (api_sccs [i]->objs [j]);
 				mono_trace (G_LOG_LEVEL_INFO, MONO_TRACE_GC,
 					"OBJECT %s (%p) SCC [%d] %s",
-						sgen_safe_name (api_sccs [i]->objs [j]), api_sccs [i]->objs [j],
+						sgen_client_vtable_get_namespace (vtable), sgen_client_vtable_get_name (vtable), api_sccs [i]->objs [j],
 						i,
 						api_sccs [i]->is_alive  ? "ALIVE" : "DEAD");
+			}
 		}
 	}
 
@@ -1325,7 +1352,7 @@ processing_after_callback (int generation)
 }
 
 static void
-describe_pointer (MonoObject *obj)
+describe_pointer (GCObject *obj)
 {
 	HashEntry *entry;
 	int i;

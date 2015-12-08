@@ -36,6 +36,7 @@ xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
 		}
 
 		[Test]
+		[Category ("MobileNotWorking")]
 		public void MSXslNodeSetAcceptsNodeSet ()
 		{
 			string xsl = @"<xsl:stylesheet version='1.0'
@@ -57,6 +58,7 @@ xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xmlns:msxsl='urn:schemas-micros
 		}
 
 		[Test]
+		[Category ("MobileNotWorking")]
 		public void MSXslNodeSetAcceptsEmptyString ()
 		{
 			string xsl = @"<xsl:stylesheet version='1.0'
@@ -107,6 +109,64 @@ xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xmlns:msxsl='urn:schemas-micros
 			t.Load (new XmlTextReader(new StringReader(xsl)));
 			t.Transform (new XPathDocument (new XmlTextReader (new StringReader ("<root attr='D'><foo attr='A'/><foo attr='B'/><foo attr='C'/></root>"))), null, sw);
 			Assert.AreEqual ("<?xml version=\"1.0\" encoding=\"utf-16\"?><root><bar>D</bar><baz>foo: A,foo: B,foo: C</baz></root>", sw.ToString ());
+		}
+
+		[Test]
+		public void ElementToAttribute ()
+		{
+			var xsl = @"<?xml version='1.0' encoding='utf-8'?>
+<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:output method='xml'/>
+  <xsl:template match='/'>
+	<Node>
+	  <xsl:attribute name='name'>
+		<xsl:call-template name='makeName'>
+		  <xsl:with-param name='Name' select='Node/Name' />
+		</xsl:call-template>
+	  </xsl:attribute>
+	</Node>
+  </xsl:template>
+
+  <xsl:template name='makeName'>
+	<xsl:param name='Name' />
+	<xsl:value-of select='$Name' />
+  </xsl:template>
+</xsl:stylesheet>";
+
+			var t = new XslCompiledTransform ();
+			t.Load (new XmlTextReader (new StringReader (xsl)));
+
+			var source = "<?xml version='1.0' encoding='utf-8' ?><Node><Name>123</Name></Node>";
+#if MOBILE
+			var expected = "<?xml version=\"1.0\" encoding=\"utf-16\"?><Node name=\"123\"></Node>";
+#else
+			var expected = "<?xml version=\"1.0\" encoding=\"utf-16\"?><Node name=\"123\" />";
+#endif
+			StringWriter sw = new StringWriter ();
+			var xp = new XPathDocument (new XmlTextReader (new StringReader (source)));
+			t.Transform (xp, null, sw);
+			Assert.AreEqual (expected, sw.ToString ());
+		}
+		
+		[Test] // bug 2917
+		[Category ("MobileNotWorking")]
+		public void XslOutputSettings ()
+		{
+			XslCompiledTransform xslCompiledTransform = new XslCompiledTransform();
+
+			string xsl =
+				@"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+				<xsl:stylesheet version=""1.0"" xmlns:xsl=""http://www.w3.org/1999/XSL/Transform"" xmlns:extensions=""urn:extensions"" exclude-result-prefixes=""extensions"">
+					<xsl:output method=""xml"" indent=""yes""/>
+					<xsl:template match="" / ""></xsl:template>
+				</xsl:stylesheet>";
+			
+
+			var xmlReader = XmlReader.Create(new StringReader(xsl));
+			xslCompiledTransform.Load(xmlReader);
+
+			// Returns true on .NET and False on mono 2.10.2
+			Assert.IsTrue (xslCompiledTransform.OutputSettings.Indent, "#1");
 		}
 	}
 }

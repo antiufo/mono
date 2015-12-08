@@ -15,9 +15,6 @@
 #include <mono/io-layer/wapi.h>
 #include <mono/io-layer/handles-private.h>
 #include <mono/io-layer/wapi-private.h>
-#include <mono/io-layer/misc-private.h>
-
-#include <mono/utils/mono-mutex.h>
 
 #if 0
 #define DEBUG(...) g_message(__VA_ARGS__)
@@ -92,7 +89,6 @@ guint32 WaitForSingleObjectEx(gpointer handle, guint32 timeout,
 			      gboolean alertable)
 {
 	guint32 ret, waited;
-	struct timespec abstime;
 	int thr_ret;
 	gboolean apc_pending = FALSE;
 	gpointer current_thread = wapi_get_current_thread_handle ();
@@ -130,12 +126,10 @@ guint32 WaitForSingleObjectEx(gpointer handle, guint32 timeout,
 
 		ret = _wapi_handle_ops_special_wait (handle, timeout, alertable);
 	
-		if (alertable && _wapi_thread_apc_pending (current_thread)) {
-			apc_pending = TRUE;
+		if (alertable && _wapi_thread_cur_apc_pending ())
 			ret = WAIT_IO_COMPLETION;
-		}
 
-		goto check_pending;
+		return ret;
 	}
 	
 	
@@ -153,13 +147,7 @@ guint32 WaitForSingleObjectEx(gpointer handle, guint32 timeout,
 			goto done;
 		}
 	}
-	
-	if (alertable && _wapi_thread_apc_pending (current_thread)) {
-		apc_pending = TRUE;
-		ret = WAIT_IO_COMPLETION;
-		goto done;
-	}
-	
+
 	if (own_if_signalled (handle) == TRUE) {
 		DEBUG ("%s: handle %p already signalled", __func__,
 			   handle);
@@ -171,10 +159,6 @@ guint32 WaitForSingleObjectEx(gpointer handle, guint32 timeout,
 	if (timeout == 0) {
 		ret = WAIT_TIMEOUT;
 		goto done;
-	}
-	/* Have to wait for it */
-	if (timeout != INFINITE) {
-		_wapi_calc_timeout (&abstime, timeout);
 	}
 	
 	do {
@@ -189,15 +173,8 @@ guint32 WaitForSingleObjectEx(gpointer handle, guint32 timeout,
 			ret = WAIT_OBJECT_0;
 			goto done;
 		}
-			
-		if (timeout == INFINITE) {
-			waited = _wapi_handle_wait_signal_handle (handle, alertable);
-		} else {
-			waited = _wapi_handle_timedwait_signal_handle (handle, &abstime, alertable, FALSE);
-		}
-	
-		if (alertable)
-			apc_pending = _wapi_thread_apc_pending (current_thread);
+
+		waited = _wapi_handle_timedwait_signal_handle (handle, timeout, alertable, FALSE, &apc_pending);
 
 		if(waited==0 && !apc_pending) {
 			/* Condition was signalled, so hopefully
@@ -220,19 +197,15 @@ guint32 WaitForSingleObjectEx(gpointer handle, guint32 timeout,
 	DEBUG ("%s: wait on handle %p error: %s", __func__, handle,
 		   strerror (waited));
 
-	ret = WAIT_TIMEOUT;
-	
+	ret = apc_pending ? WAIT_IO_COMPLETION : WAIT_TIMEOUT;
+
 done:
 
 	DEBUG ("%s: unlocking handle %p", __func__, handle);
 	
 	thr_ret = _wapi_handle_unlock_handle (handle);
 	g_assert (thr_ret == 0);
-	
-check_pending:
-	if (apc_pending)
-		ret = WAIT_IO_COMPLETION;
-		
+
 	return(ret);
 }
 
@@ -281,7 +254,6 @@ guint32 SignalObjectAndWait(gpointer signal_handle, gpointer wait,
 			    guint32 timeout, gboolean alertable)
 {
 	guint32 ret, waited;
-	struct timespec abstime;
 	int thr_ret;
 	gboolean apc_pending = FALSE;
 	gpointer current_thread = wapi_get_current_thread_handle ();
@@ -351,13 +323,7 @@ guint32 SignalObjectAndWait(gpointer signal_handle, gpointer wait,
 			goto done;
 		}
 	}
-	
-	if (alertable && _wapi_thread_apc_pending (current_thread)) {
-		apc_pending = TRUE;
-		ret = WAIT_IO_COMPLETION;
-		goto done;
-	}
-	
+
 	if (own_if_signalled (wait)) {
 		DEBUG ("%s: handle %p already signalled", __func__, wait);
 
@@ -365,11 +331,6 @@ guint32 SignalObjectAndWait(gpointer signal_handle, gpointer wait,
 		goto done;
 	}
 
-	/* Have to wait for it */
-	if (timeout != INFINITE) {
-		_wapi_calc_timeout (&abstime, timeout);
-	}
-	
 	do {
 		/* Check before waiting on the condition, just in case
 		 */
@@ -381,16 +342,8 @@ guint32 SignalObjectAndWait(gpointer signal_handle, gpointer wait,
 			ret = WAIT_OBJECT_0;
 			goto done;
 		}
-		
-		if (timeout == INFINITE) {
-			waited = _wapi_handle_wait_signal_handle (wait, alertable);
-		} else {
-			waited = _wapi_handle_timedwait_signal_handle (wait, &abstime, alertable, FALSE);
-		}
 
-		if (alertable) {
-			apc_pending = _wapi_thread_apc_pending (current_thread);
-		}
+		waited = _wapi_handle_timedwait_signal_handle (wait, timeout, alertable, FALSE, &apc_pending);
 
 		if (waited==0 && !apc_pending) {
 			/* Condition was signalled, so hopefully
@@ -413,8 +366,8 @@ guint32 SignalObjectAndWait(gpointer signal_handle, gpointer wait,
 	DEBUG ("%s: wait on handle %p error: %s", __func__, wait,
 		   strerror (ret));
 
-	ret = WAIT_TIMEOUT;
-	
+	ret = apc_pending ? WAIT_IO_COMPLETION : WAIT_TIMEOUT;
+
 done:
 
 	DEBUG ("%s: unlocking handle %p", __func__, wait);
@@ -422,9 +375,6 @@ done:
 	thr_ret = _wapi_handle_unlock_handle (wait);
 	g_assert (thr_ret == 0);
 
-	if (apc_pending)
-		ret = WAIT_IO_COMPLETION;
-	
 	return(ret);
 }
 
@@ -492,7 +442,6 @@ guint32 WaitForMultipleObjectsEx(guint32 numobjects, gpointer *handles,
 {
 	gboolean duplicate = FALSE, bogustype = FALSE, done;
 	guint32 count, lowest;
-	struct timespec abstime;
 	guint i;
 	guint32 ret;
 	int thr_ret;
@@ -500,6 +449,7 @@ guint32 WaitForMultipleObjectsEx(guint32 numobjects, gpointer *handles,
 	guint32 retval;
 	gboolean poll;
 	gpointer sorted_handles [MAXIMUM_WAIT_OBJECTS];
+	gboolean apc_pending = FALSE;
 	
 	if (current_thread == NULL) {
 		SetLastError (ERROR_INVALID_HANDLE);
@@ -586,13 +536,6 @@ guint32 WaitForMultipleObjectsEx(guint32 numobjects, gpointer *handles,
 	/* Have to wait for some or all handles to become signalled
 	 */
 
-	if(timeout!=INFINITE) {
-		_wapi_calc_timeout (&abstime, timeout);
-	}
-
-	if (alertable && _wapi_thread_apc_pending (current_thread))
-		return WAIT_IO_COMPLETION;
-	
 	for (i = 0; i < numobjects; i++) {
 		/* Add a reference, as we need to ensure the handle wont
 		 * disappear from under us while we're waiting in the loop
@@ -633,11 +576,7 @@ guint32 WaitForMultipleObjectsEx(guint32 numobjects, gpointer *handles,
 		
 		if (!done) {
 			/* Enter the wait */
-			if (timeout == INFINITE) {
-				ret = _wapi_handle_wait_signal (poll);
-			} else {
-				ret = _wapi_handle_timedwait_signal (&abstime, poll);
-			}
+			ret = _wapi_handle_timedwait_signal (timeout, poll, &apc_pending);
 		} else {
 			/* No need to wait */
 			ret = 0;
@@ -648,7 +587,7 @@ guint32 WaitForMultipleObjectsEx(guint32 numobjects, gpointer *handles,
 		thr_ret = _wapi_handle_unlock_signal_mutex (NULL);
 		g_assert (thr_ret == 0);
 		
-		if (alertable && _wapi_thread_apc_pending (current_thread)) {
+		if (alertable && apc_pending) {
 			retval = WAIT_IO_COMPLETION;
 			break;
 		}

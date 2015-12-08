@@ -27,8 +27,9 @@ if ($test =~ /.*\|.*/) {
 	$output = $test;
 
 	#This is a silly workaround, but all tests that use extra parameters need a larger timeout.
-	$timeout_in_minutes = 5;
+	$timeout_in_minutes = 15;
 }
+$ENV{'TEST_DRIVER_TIMEOUT_SEC'} = $timeout_in_minutes * 60;
 
 $| = 0;
 print "Testing $test... ";
@@ -46,6 +47,9 @@ my $cpid = fork ();
 if (!defined ($cpid)) {
 	$res = system("$interpreter @ARGV $test_binary 2>$stderr 1>$stdout");
 } elsif ($cpid == 0) {
+	    print "that's it >>>>>>>>\n";
+	    print "$interpreter @ARGV $test_binary 2>$stderr 1>$stdout\n";
+	    print "\n<<<<<<<<<\n";
 	exec ("$interpreter @ARGV $test_binary 2>$stderr 1>$stdout") || die "Cannot exec: $!";
 } else {
 	# in the parent, setup the alarm

@@ -176,7 +176,6 @@ typedef struct _GMemChunk GMemChunk;
 /*
  * Misc.
  */
-#define g_atexit(func)	((void) atexit (func))
 
 const gchar *    g_getenv(const gchar *variable);
 gboolean         g_setenv(const gchar *variable, const gchar *value, gboolean overwrite);
@@ -487,6 +486,7 @@ struct _GByteArray {
 GByteArray *g_byte_array_new    (void);
 GByteArray* g_byte_array_append (GByteArray *array, const guint8 *data, guint len);
 guint8*  g_byte_array_free      (GByteArray *array, gboolean free_segment);
+void     g_byte_array_set_size  (GByteArray *array, gint length);
 
 /*
  * Array
@@ -603,10 +603,14 @@ void           g_assertion_message    (const gchar *format, ...) G_GNUC_NORETURN
 #define g_message(...)  g_log (G_LOG_DOMAIN, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 #define g_debug(...)    g_log (G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, __VA_ARGS__)
 #endif  /* ndef HAVE_C99_SUPPORT */
-#define g_log_set_handler(a,b,c,d)
 
-#define G_GNUC_INTERNAL
+typedef void (*GLogFunc) (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
+typedef void (*GPrintFunc) (const gchar *string);
 
+void       g_log_default_handler     (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer unused_data);
+GLogFunc   g_log_set_default_handler (GLogFunc log_func, gpointer user_data);
+GPrintFunc g_set_print_handler       (GPrintFunc func);
+GPrintFunc g_set_printerr_handler    (GPrintFunc func);
 /*
  * Conversions
  */
@@ -811,6 +815,7 @@ gboolean g_spawn_command_line_sync (const gchar *command_line, gchar **standard_
 gboolean g_spawn_async_with_pipes  (const gchar *working_directory, gchar **argv, gchar **envp, GSpawnFlags flags, GSpawnChildSetupFunc child_setup,
 				gpointer user_data, GPid *child_pid, gint *standard_input, gint *standard_output, gint *standard_error, GError **error);
 
+int eg_getdtablesize (void);
 
 /*
  * Timer

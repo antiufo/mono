@@ -48,9 +48,7 @@ using System.Text;
 
 namespace System.Security.Cryptography.X509Certificates {
 
-#if NET_4_0
 	[Serializable]
-#endif
 	public class X509Certificate2 : X509Certificate {
 #if !SECURITY_DEP
 		// Used in Mono.Security HttpsClientStream
@@ -534,6 +532,42 @@ namespace System.Security.Cryptography.X509Certificates {
 		{
 			byte[] rawData = File.ReadAllBytes (fileName);
 			Import (rawData, (string)null, keyStorageFlags);
+		}
+
+		[MonoTODO ("X509ContentType.SerializedCert is not supported")]
+		public override byte[] Export (X509ContentType contentType, string password)
+		{
+			if (_cert == null)
+				throw new CryptographicException (empty_error);
+
+			switch (contentType) {
+			case X509ContentType.Cert:
+				return _cert.RawData;
+			case X509ContentType.Pfx: // this includes Pkcs12
+				return ExportPkcs12 (password);
+			case X509ContentType.SerializedCert:
+				// TODO
+				throw new NotSupportedException ();
+			default:
+				string msg = Locale.GetText ("This certificate format '{0}' cannot be exported.", contentType);
+				throw new CryptographicException (msg);
+			}
+		}
+
+		byte[] ExportPkcs12 (string password)
+		{
+			var pfx = new MX.PKCS12 ();
+			try {
+				if (password != null)
+					pfx.Password = password;
+				pfx.AddCertificate (_cert);
+				var privateKey = PrivateKey;
+				if (privateKey != null)
+					pfx.AddPkcs8ShroudedKeyBag (privateKey);
+				return pfx.GetBytes ();
+			} finally {
+				pfx.Password = null;
+			}
 		}
 
 		public override void Reset () 

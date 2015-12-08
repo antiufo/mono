@@ -96,6 +96,12 @@ namespace System {
 			set { s_IriParsing = value; }
 		}
 
+		// Do not rename this.
+		// User code might set this to true with reflection.
+		// When set to true an Uri constructed with UriKind.RelativeOrAbsolute 
+		// and paths such as "/foo" is assumed relative.
+		private static bool useDotNetRelativeOrAbsolute;
+
 #if BOOTSTRAP_BASIC
 		private static readonly string hexUpperChars = "0123456789ABCDEF";
 		private static readonly string [] Empty = new string [0];
@@ -140,15 +146,15 @@ namespace System {
 
 		static Uri ()
 		{
-#if NET_4_5
 			IriParsing = true;
-#endif
 
 			var iriparsingVar = Environment.GetEnvironmentVariable ("MONO_URI_IRIPARSING");
 			if (iriparsingVar == "true")
 				IriParsing = true;
 			else if (iriparsingVar == "false")
 				IriParsing = false;
+
+			useDotNetRelativeOrAbsolute = Environment.GetEnvironmentVariable ("MONO_URI_DOTNETRELATIVEORABSOLUTE") == "true";
 		}
 
 		public Uri (string uriString) : this (uriString, false) 
@@ -172,9 +178,25 @@ namespace System {
 			}
 		}
 
+		// When used instead of UriKind.RelativeOrAbsolute paths such as "/foo" are assumed relative.
+		const UriKind DotNetRelativeOrAbsolute = (UriKind) 300;
+
+		private void ProcessUriKind (string uriString, ref UriKind uriKind)
+		{
+			if (uriString == null)
+			   return;
+		
+			if (uriKind == DotNetRelativeOrAbsolute ||
+				(uriKind == UriKind.RelativeOrAbsolute && useDotNetRelativeOrAbsolute))
+				uriKind = (uriString.StartsWith ("/", StringComparison.Ordinal))? UriKind.Relative : UriKind.RelativeOrAbsolute;
+		}
+
 		public Uri (string uriString, UriKind uriKind)
 		{
 			source = uriString;
+
+			ProcessUriKind (uriString, ref uriKind);
+
 			ParseUri (uriKind);
 
 			switch (uriKind) {
@@ -207,6 +229,8 @@ namespace System {
 				return;
 			}
 
+			ProcessUriKind (uriString, ref uriKind);
+
 			if (uriKind != UriKind.RelativeOrAbsolute &&
 				uriKind != UriKind.Absolute &&
 				uriKind != UriKind.Relative) {
@@ -234,6 +258,11 @@ namespace System {
 				default:
 					success = false;
 					break;
+				}
+
+				if (success && host.Length > 1 && host [0] != '[' && host [host.Length - 1] != ']') {
+					// host name present (but not an IPv6 address)
+					host = host.ToLower (CultureInfo.InvariantCulture);
 				}
 			}
 		}
@@ -337,18 +366,12 @@ namespace System {
 				}
 			} else {
 				path = baseEl.path;
-#if !NET_4_0
-				if (relativeEl.query != null) {
-					var pathEnd = path.LastIndexOf ('/');
-					path = (pathEnd > 0)? path.Substring (0, pathEnd+1) : "";
-				}
-#endif
 			}
 
 			if ((path.Length == 0 || path [0] != '/') && baseEl.delimiter == SchemeDelimiter)
 				path = "/" + path;
 
-			source += UriHelper.Reduce (path, true);
+			source += UriHelper.Reduce (path, !IriParsing);
 
 			if (relativeEl.query != null) {
 				canUseBase = false;
@@ -950,10 +973,8 @@ namespace System {
 		//
 		public Uri MakeRelativeUri (Uri uri)
 		{
-#if NET_4_0
 			if (uri == null)
 				throw new ArgumentNullException ("uri");
-#endif
 			if (Host != uri.Host || Scheme != uri.Scheme)
 				return uri;
 
@@ -1141,9 +1162,6 @@ namespace System {
 		private void ParseUri (UriKind kind)
 		{
 			Parse (kind, source);
-
-			if (userEscaped)
-				return;
 
 			if (host.Length > 1 && host [0] != '[' && host [host.Length - 1] != ']') {
 				// host name present (but not an IPv6 address)
@@ -1725,7 +1743,7 @@ namespace System {
 		private UriParser Parser {
 			get {
 				if (parser == null) {
-					parser = UriParser.GetParser (Scheme);
+					parser = UriParser.GetParser (scheme);
 					// no specific parser ? then use a default one
 					if (parser == null)
 						parser = new DefaultUriParser ("*");
@@ -1737,15 +1755,16 @@ namespace System {
 
 		public string GetComponents (UriComponents components, UriFormat format)
 		{
+			if ((components & UriComponents.SerializationInfoString) == 0)
+				EnsureAbsoluteUri ();
+
 			return Parser.GetComponents (this, components, format);
 		}
 
 		public bool IsBaseOf (Uri uri)
 		{
-#if NET_4_0
 			if (uri == null)
 				throw new ArgumentNullException ("uri");
-#endif
 			return Parser.IsBaseOf (this, uri);
 		}
 
@@ -1758,7 +1777,7 @@ namespace System {
 
 		// static methods
 
-		private const int MaxUriLength = 32766;
+		private const int MaxUriLength = 0xfff0;
 
 		public static int Compare (Uri uri1, Uri uri2, UriComponents partsToCompare, UriFormat compareFormat, StringComparison comparisonType)
 		{
@@ -1769,6 +1788,10 @@ namespace System {
 
 			if ((uri1 == null) && (uri2 == null))
 				return 0;
+			if (uri1 == null)
+				return -1;
+			if (uri2 == null)
+				return 1;
 
 			string s1 = uri1.GetComponents (partsToCompare, compareFormat);
 			string s2 = uri2.GetComponents (partsToCompare, compareFormat);
@@ -1793,18 +1816,6 @@ namespace System {
 				return false;
 			}
 
-#if !NET_4_5
-			switch (b) {
-			case '!':
-			case '\'':
-			case '(':
-			case ')':
-			case '*':
-			case '-':
-			case '.':
-				return false;
-			}
-#endif
 
 			return true;
 		}
@@ -1814,7 +1825,7 @@ namespace System {
 			if (stringToEscape == null)
 				throw new ArgumentNullException ("stringToEscape");
 
-			if (stringToEscape.Length > MaxUriLength) {
+			if (stringToEscape.Length >= MaxUriLength) {
 				throw new UriFormatException (string.Format ("Uri is longer than the maximum {0} characters.", MaxUriLength));
 			}
 
@@ -1858,11 +1869,9 @@ namespace System {
 			case '_':
 			case '~':
 				return false;
-#if NET_4_5
 			case '[':
 			case ']':
 				return false;
-#endif
 			}
 
 			return true;
@@ -1873,7 +1882,7 @@ namespace System {
 			if (stringToEscape == null)
 				throw new ArgumentNullException ("stringToEscape");
 
-			if (stringToEscape.Length > MaxUriLength) {
+			if (stringToEscape.Length >= MaxUriLength) {
 				throw new UriFormatException (string.Format ("Uri is longer than the maximum {0} characters.", MaxUriLength));
 			}
 
@@ -1950,10 +1959,8 @@ namespace System {
 			result = null;
 			if ((baseUri == null) || !baseUri.IsAbsoluteUri)
 				return false;
-#if NET_4_0
 			if (relativeUri == null)
 				return false;
-#endif
 			try {
 				// FIXME: this should call UriParser.Resolve
 				result = new Uri (baseUri, relativeUri.OriginalString);

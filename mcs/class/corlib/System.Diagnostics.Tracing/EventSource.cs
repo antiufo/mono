@@ -26,7 +26,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-#if NET_4_5
 
 namespace System.Diagnostics.Tracing
 {
@@ -78,7 +77,22 @@ namespace System.Diagnostics.Tracing
 		protected void WriteEvent (int eventId, string arg1, int arg2, int arg3)
 		{
 		}
+
+		protected void WriteEvent (int eventId, long arg1)
+		{
+		}
+
+		protected void WriteEvent (int eventId, long arg1, long arg2)
+		{
+		}
+
+		protected void WriteEvent (int eventId, long arg1, long arg2, long arg3)
+		{
+		}
+
+		protected void WriteEvent (int eventId, params object[] args)
+		{
+		}
 	}
 }
 
-#endif

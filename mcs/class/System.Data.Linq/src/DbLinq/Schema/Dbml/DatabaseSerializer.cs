@@ -2145,7 +2145,6 @@ namespace DbLinq.Schema.Dbml
 		}
 	}
 
-	#if !TARGET_JVM
 	#if !MONO_STRICT
     public
     #endif
@@ -2219,6 +2218,5 @@ namespace DbLinq.Schema.Dbml
 		}
 	}
 
-	#endif
 }
 

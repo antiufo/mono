@@ -36,6 +36,7 @@ typedef void*    (*MonoCompileFunc)	     (MonoMethod *method);
 typedef void	    (*MonoMainThreadFunc)    (void* user_data);
 
 #define MONO_OBJECT_SETREF(obj,fieldname,value) do {	\
+		g_assert (sizeof((obj)->fieldname) == sizeof (gpointer*));	\
 		mono_gc_wbarrier_set_field ((MonoObject*)(obj), &((obj)->fieldname), (MonoObject*)value);	\
 		/*(obj)->fieldname = (value);*/	\
 	} while (0)
@@ -145,6 +146,9 @@ mono_string_to_utf32	    (MonoString *string_obj);
 MONO_API MonoString *
 mono_string_from_utf16	    (mono_unichar2 *data);
 
+MONO_API MonoString *
+mono_string_from_utf32	    (mono_unichar4 *data);
+
 MONO_API mono_bool
 mono_string_equal           (MonoString *s1, MonoString *s2);
 
@@ -192,6 +196,9 @@ mono_monitor_try_enter       (MonoObject *obj, uint32_t ms);
 
 MONO_API mono_bool
 mono_monitor_enter           (MonoObject *obj);
+
+MONO_API void
+mono_monitor_enter_v4        (MonoObject *obj, char *lock_taken);
 
 MONO_API unsigned int
 mono_object_get_size         (MonoObject *o);

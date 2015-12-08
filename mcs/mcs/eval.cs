@@ -192,8 +192,13 @@ namespace Mono.CSharp
 			if (!inited || !invoking)
 				return;
 			
-			if (invoke_thread != null)
+			if (invoke_thread != null) {
+#if MONO_FEATURE_THREAD_ABORT
 				invoke_thread.Abort ();
+#else
+				invoke_thread.Interrupt ();
+#endif
+			}
 		}
 
 		/// <summary>
@@ -367,9 +372,14 @@ namespace Mono.CSharp
 				invoke_thread = System.Threading.Thread.CurrentThread;
 				invoking = true;
 				compiled (ref retval);
+#if MONO_FEATURE_THREAD_ABORT
 			} catch (ThreadAbortException e){
 				Thread.ResetAbort ();
 				Console.WriteLine ("Interrupted!\n{0}", e);
+#else
+			} catch (ThreadInterruptedException e) {
+				Console.WriteLine ("Interrupted!\n{0}", e);
+#endif
 			} finally {
 				invoking = false;
 
@@ -415,11 +425,7 @@ namespace Mono.CSharp
 				};
 				host.SetBaseTypes (baseclass_list);
 
-#if NET_4_0
 				var access = AssemblyBuilderAccess.RunAndCollect;
-#else
-				var access = AssemblyBuilderAccess.Run;
-#endif
 				var a = new AssemblyDefinitionDynamic (module, "completions");
 				a.Create (AppDomain.CurrentDomain, access);
 				module.SetDeclaringAssembly (a);
@@ -521,6 +527,7 @@ namespace Mono.CSharp
 			// These are toplevels
 			case Token.EXTERN:
 			case Token.OPEN_BRACKET:
+			case Token.OPEN_BRACKET_EXPR:
 			case Token.ABSTRACT:
 			case Token.CLASS:
 			case Token.ENUM:
@@ -560,7 +567,7 @@ namespace Mono.CSharp
 				if (t == Token.EOF)
 					return InputKind.EOF;
 
-				if (t == Token.IDENTIFIER)
+				if (t == Token.IDENTIFIER || t == Token.STATIC)
 					return InputKind.CompilationUnit;
 				return InputKind.StatementOrExpression;
 
@@ -693,11 +700,7 @@ namespace Mono.CSharp
 				assembly = new AssemblyDefinitionDynamic (module, current_debug_name, current_debug_name);
 				assembly.Importer = importer;
 			} else {
-#if NET_4_0
 				access = AssemblyBuilderAccess.RunAndCollect;
-#else
-				access = AssemblyBuilderAccess.Run;
-#endif
 				assembly = new AssemblyDefinitionDynamic (module, current_debug_name);
 			}
 
@@ -863,13 +866,19 @@ namespace Mono.CSharp
 
 		public string GetUsing ()
 		{
+			if (source_file == null || source_file.Usings == null)
+				return string.Empty;
+
 			StringBuilder sb = new StringBuilder ();
 			// TODO:
 			//foreach (object x in ns.using_alias_list)
 			//    sb.AppendFormat ("using {0};\n", x);
 
 			foreach (var ue in source_file.Usings) {
-				sb.AppendFormat ("using {0};", ue.ToString ());
+				if (ue.Alias != null || ue.ResolvedExpression == null)
+					continue;
+
+				sb.AppendFormat("using {0};", ue.ToString ());
 				sb.Append (Environment.NewLine);
 			}
 
@@ -880,7 +889,11 @@ namespace Mono.CSharp
 		{
 			var res = new List<string> ();
 
-			foreach (var ue in source_file.Usings) {
+			if (source_file == null || source_file.Usings == null)
+				return res;
+
+			foreach (var ue in source_file.Usings)
+			{
 				if (ue.Alias != null || ue.ResolvedExpression == null)
 					continue;
 
@@ -1277,7 +1290,7 @@ namespace Mono.CSharp
 
 			if (current_container.Containers != null)
 			{
-				var existing = current_container.Containers.FirstOrDefault (l => l.Basename == tc.Basename);
+				var existing = current_container.Containers.FirstOrDefault (l => l.MemberName.Basename == tc.MemberName.Basename);
 				if (existing != null) {
 					current_container.RemoveContainer (existing);
 					undo_actions.Add (() => current_container.AddTypeContainer (existing));

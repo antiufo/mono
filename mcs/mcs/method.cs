@@ -165,6 +165,12 @@ namespace Mono.CSharp {
 			return s + parameters.GetSignatureForDocumentation ();
 		}
 
+		public override void PrepareEmit ()
+		{
+			base.PrepareEmit ();
+			parameters.ResolveDefaultValues (this);
+		}
+
 		public MethodSpec Spec {
 			get { return spec; }
 		}
@@ -816,8 +822,10 @@ namespace Mono.CSharp {
 
 		#endregion
 
-		public virtual void PrepareEmit ()
+		public override void PrepareEmit ()
 		{
+			base.PrepareEmit ();
+
 			var mb = MethodData.DefineMethodBuilder (Parent);
 
 			if (CurrentTypeParameters != null) {
@@ -1083,19 +1091,12 @@ namespace Mono.CSharp {
 					}
 
 					if (base_override.IsGeneric) {
-						ObsoleteAttribute oa;
 						foreach (var base_tp in base_tparams) {
-							oa = base_tp.BaseType.GetAttributeObsolete ();
-							if (oa != null) {
-								AttributeTester.Report_ObsoleteMessage (oa, base_tp.BaseType.GetSignatureForError (), Location, Report);
-							}
+							base_tp.BaseType.CheckObsoleteness (this, Location);
 
 							if (base_tp.InterfacesDefined != null) {
 								foreach (var iface in base_tp.InterfacesDefined) {
-									oa = iface.GetAttributeObsolete ();
-									if (oa != null) {
-										AttributeTester.Report_ObsoleteMessage (oa, iface.GetSignatureForError (), Location, Report);
-									}
+									iface.CheckObsoleteness (this, Location);
 								}
 							}
 						}
@@ -1285,7 +1286,7 @@ namespace Mono.CSharp {
 			// This is used to track the Entry Point,
 			//
 			var settings = Compiler.Settings;
-			if (settings.NeedsEntryPoint && MemberName.Name == "Main" && (settings.MainClass == null || settings.MainClass == Parent.TypeBuilder.FullName)) {
+			if (settings.NeedsEntryPoint && MemberName.Name == "Main" && !IsPartialDefinition && (settings.MainClass == null || settings.MainClass == Parent.TypeBuilder.FullName)) {
 				if (IsEntryPoint ()) {
 					if (Parent.DeclaringAssembly.EntryPoint == null) {
 						if (Parent.IsGenericOrParentIsGeneric || MemberName.IsGeneric) {
@@ -1404,11 +1405,7 @@ namespace Mono.CSharp {
 				p.Name = md_p.Name;
 				p.DefaultValue = md_p.DefaultValue;
 				if (md_p.OptAttributes != null) {
-					if (p.OptAttributes == null) {
-						p.OptAttributes = md_p.OptAttributes;
-					} else {
-						p.OptAttributes.Attrs.AddRange (md_p.OptAttributes.Attrs);
-					}
+					Attributes.AttachFromPartial (p, md_p);
 				}
 			}
 
@@ -1498,15 +1495,6 @@ namespace Mono.CSharp {
 							"`{0}': Struct constructors cannot call base constructors", caller_builder.GetSignatureForError ());
 						return this;
 					}
-				} else {
-					//
-					// It is legal to have "this" initializers that take no arguments
-					// in structs
-					//
-					// struct D { public D (int a) : this () {}
-					//
-					if (ec.CurrentType.IsStruct && argument_list == null)
-						return this;
 				}
 
 				base_ctor = ConstructorLookup (ec, type, ref argument_list, loc);
@@ -1663,12 +1651,6 @@ namespace Mono.CSharp {
 		protected override bool CheckBase ()
 		{
 			if ((ModFlags & Modifiers.STATIC) != 0) {
-				if (!parameters.IsEmpty) {
-					Report.Error (132, Location, "`{0}': The static constructor must be parameterless",
-						GetSignatureForError ());
-					return false;
-				}
-
 				if ((caching_flags & Flags.MethodOverloadsExist) != 0)
 					Parent.MemberCache.CheckExistingMembersOverloads (this, parameters);
 
@@ -1682,12 +1664,6 @@ namespace Mono.CSharp {
 
 			if ((caching_flags & Flags.MethodOverloadsExist) != 0)
 				Parent.MemberCache.CheckExistingMembersOverloads (this, parameters);
-
-			if (Parent.PartialContainer.Kind == MemberKind.Struct && parameters.IsEmpty) {
-				Report.Error (568, Location, 
-					"Structs cannot contain explicit parameterless constructors");
-				return false;
-			}
 
 			CheckProtectedModifier ();
 			
@@ -1717,6 +1693,11 @@ namespace Mono.CSharp {
 					Report.Error (8037, Location, "`{0}': Instance constructor of type with primary constructor must specify `this' constructor initializer",
 						GetSignatureForError ());
 				}
+			}
+
+			if ((ModFlags & Modifiers.EXTERN) != 0 && Initializer != null) {
+				Report.Error (8091, Location, "`{0}': Contructors cannot be extern and have a constructor initializer",
+					GetSignatureForError ());
 			}
 
 			var ca = ModifiersExtensions.MethodAttr (ModFlags) | MethodAttributes.RTSpecialName | MethodAttributes.SpecialName;
@@ -2571,6 +2552,9 @@ namespace Mono.CSharp {
 			Implicit,
 			Explicit,
 
+			// Pattern matching
+			Is,
+
 			// Just because of enum
 			TOP
 		};
@@ -2608,6 +2592,7 @@ namespace Mono.CSharp {
 			names [(int) OpType.LessThanOrEqual] = new string [] { "<=", "op_LessThanOrEqual" };
 			names [(int) OpType.Implicit] = new string [] { "implicit", "op_Implicit" };
 			names [(int) OpType.Explicit] = new string [] { "explicit", "op_Explicit" };
+			names [(int) OpType.Is] = new string[] { "is", "op_Is" };
 		}
 
 		public Operator (TypeDefinition parent, OpType type, FullNamedExpression ret_type, Modifiers mod_flags, ParametersCompiled parameters,
@@ -2663,7 +2648,7 @@ namespace Mono.CSharp {
 			else if (OperatorType == OpType.Implicit)
 				Parent.MemberCache.CheckExistingMembersOverloads (this, GetMetadataName (OpType.Explicit), parameters);
 
-			TypeSpec declaring_type = Parent.CurrentType;
+			TypeSpec declaring_type = Parent.PartialContainer.CurrentType;
 			TypeSpec return_type = MemberType;
 			TypeSpec first_arg_type = ParameterTypes [0];
 			

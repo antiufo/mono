@@ -435,6 +435,12 @@ namespace Mono.CSharp.Nullable
 		{
 		}
 
+		public override bool IsNull {
+			get {
+				return expr.IsNull;
+			}
+		}
+
 		public override bool ContainsEmitWithAwait ()
 		{
 			return unwrap.ContainsEmitWithAwait ();
@@ -789,7 +795,7 @@ namespace Mono.CSharp.Nullable
 			//
 			// Both operands are bool? types
 			//
-			if (UnwrapLeft != null && UnwrapRight != null) {
+			if ((UnwrapLeft != null && !Left.IsNull) && (UnwrapRight != null && !Right.IsNull)) {
 				if (ec.HasSet (BuilderContext.Options.AsyncBody) && Binary.Right.ContainsEmitWithAwait ()) {
 					Left = Left.EmitToField (ec);
 					Right = Right.EmitToField (ec);
@@ -855,6 +861,8 @@ namespace Mono.CSharp.Nullable
 					LiftedNull.Create (type, loc).Emit (ec);
 				} else {
 					Left.Emit (ec);
+					UnwrapRight.Store (ec);
+
 					ec.Emit (or ? OpCodes.Brfalse_S : OpCodes.Brtrue_S, load_right);
 
 					ec.EmitInt (or ? 1 : 0);
@@ -863,7 +871,7 @@ namespace Mono.CSharp.Nullable
 					ec.Emit (OpCodes.Br_S, end_label);
 
 					ec.MarkLabel (load_right);
-					UnwrapRight.Original.Emit (ec);
+					UnwrapRight.Load (ec);
 				}
 			} else {
 				//
@@ -891,14 +899,14 @@ namespace Mono.CSharp.Nullable
 					LiftedNull.Create (type, loc).Emit (ec);
 				} else {
 					Right.Emit (ec);
-					ec.Emit (or ? OpCodes.Brfalse_S : OpCodes.Brtrue_S, load_right);
+					ec.Emit (or ? OpCodes.Brfalse_S : OpCodes.Brtrue_S, load_left);
 
 					ec.EmitInt (or ? 1 : 0);
 					ec.Emit (OpCodes.Newobj, NullableInfo.GetConstructor (type));
 
 					ec.Emit (OpCodes.Br_S, end_label);
 
-					ec.MarkLabel (load_right);
+					ec.MarkLabel (load_left);
 
 					UnwrapLeft.Load (ec);
 				}
@@ -1067,6 +1075,7 @@ namespace Mono.CSharp.Nullable
 	{
 		Expression left, right;
 		Unwrap unwrap;
+		bool user_conversion_left;
 
 		public NullCoalescingOperator (Expression left, Expression right)
 		{
@@ -1214,12 +1223,7 @@ namespace Mono.CSharp.Nullable
 				return ReducedExpression.Create (right, this, false).Resolve (ec);
 
 			left = Convert.ImplicitConversion (ec, unwrap ?? left, rtype, loc);
-
-			if (TypeSpec.IsValueType (left.Type) && !left.Type.IsNullableType) {
-				Warning_UnreachableExpression (ec, right.Location);
-				return ReducedExpression.Create (left, this, false).Resolve (ec);
-			}
-
+			user_conversion_left = left is UserCast;
 			type = rtype;
 			return this;
 		}
@@ -1279,16 +1283,56 @@ namespace Mono.CSharp.Nullable
 				return;
 			}
 
-			left.Emit (ec);
-			ec.Emit (OpCodes.Dup);
+			//
+			// Null check is done on original expression not after expression is converted to
+			// result type. This is in most cases same but when user conversion is involved
+			// we can end up in situation when user operator does the null handling which is
+			// not what the operator is supposed to do.
+			// There is tricky case where cast of left expression is meant to be cast of
+			// whole source expression (null check is done on it) and cast from right-to-left
+			// conversion needs to do null check on unconverted source expression.
+			//
+			if (user_conversion_left) {
+				var op_expr = (UserCast) left;
 
-			// Only to make verifier happy
-			if (left.Type.IsGenericParameter)
-				ec.Emit (OpCodes.Box, left.Type);
+				op_expr.Source.Emit (ec);
+				LocalTemporary temp;
 
-			ec.Emit (OpCodes.Brtrue, end_label);
+				// TODO: More load kinds can be special cased
+				if (!(op_expr.Source is VariableReference)) {
+					temp = new LocalTemporary (op_expr.Source.Type);
+					temp.Store (ec);
+					temp.Emit (ec);
+					op_expr.Source = temp;
+				} else {
+					temp = null;
+				}
 
-			ec.Emit (OpCodes.Pop);
+				var right_label = ec.DefineLabel ();
+				ec.Emit (OpCodes.Brfalse_S, right_label);
+				left.Emit (ec);
+				ec.Emit (OpCodes.Br, end_label);
+				ec.MarkLabel (right_label);
+
+				if (temp != null)
+					temp.Release (ec);
+			} else {
+				//
+				// Common case where expression is not modified before null check and
+				// we generate better/smaller code
+				//
+				left.Emit (ec);
+				ec.Emit (OpCodes.Dup);
+
+				// Only to make verifier happy
+				if (left.Type.IsGenericParameter)
+					ec.Emit (OpCodes.Box, left.Type);
+
+				ec.Emit (OpCodes.Brtrue, end_label);
+
+				ec.Emit (OpCodes.Pop);
+			}
+
 			right.Emit (ec);
 
 			ec.MarkLabel (end_label);
