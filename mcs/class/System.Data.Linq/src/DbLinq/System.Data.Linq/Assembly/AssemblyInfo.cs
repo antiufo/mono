@@ -63,6 +63,8 @@ using DbLinq.Factory;
 [assembly: ComVisible (false)]
 [assembly: DbLinqAttribute]
 
+[assembly: AssemblyVersion("1.0.0.0")]
+
 // DbMetal needs access to the DbLinq internals
 [assembly: InternalsVisibleTo("sqlmetal, PublicKey=" +
 "0024000004800000940000000602000000240000525341310004000001000100c5753d8c47f400" +
