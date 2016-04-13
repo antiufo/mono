@@ -149,6 +149,11 @@ namespace DbLinq.Util
             return type.GetInterfaces().First(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)); 
         }
 
+        public static Type GetEnumerableElementType(this Type type)
+        {
+            return GetEnumerableType(type).GetGenericArguments()[0];
+        }
+
         /// <summary>
         /// Returns a PropertyInfo, given a lambda
         /// </summary>

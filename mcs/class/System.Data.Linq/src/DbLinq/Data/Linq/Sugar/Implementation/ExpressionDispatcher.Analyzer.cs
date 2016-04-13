@@ -1356,8 +1356,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
                 var sourceParam = Expression.Parameter(lambda.Parameters[0].Type, "source");
                 var retType = lambda.ReturnType;
-                var enumerable = retType.GetTypeInfo().IsGenericType && retType.GetGenericTypeDefinition() == typeof(IEnumerable<>) ? retType : retType.GetInterfaces().FirstOrDefault(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-                var itemParam = Expression.Parameter(enumerable.GetGenericArguments()[0], "item");
+                
+                var itemParam = Expression.Parameter(retType.GetEnumerableElementType(), "item");
                 resultSelector = Expression.Quote(Expression.Lambda(itemParam, sourceParam, itemParam));
 
             }
@@ -1686,9 +1686,19 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         protected virtual Expression AnalyzeContains(IList<Expression> parameters, BuilderContext builderContext)
         {
-            if (parameters[0].Type.IsArray)
+            Expression arr = parameters[0];
+            if (arr.NodeType == ExpressionType.Call)
             {
-                Expression array = Analyze(parameters[0], builderContext);
+                var call = (MethodCallExpression)arr;
+                if (call.Method.Name == "AsQueryable")
+                {
+                    arr = call.Arguments[0];
+                }
+            }
+            if (arr.NodeType == ExpressionType.Convert) arr = ((UnaryExpression)arr).Operand;
+            if (arr.Type.IsArray)
+            {
+                Expression array = Analyze(arr, builderContext);
                 var expression = Analyze(parameters[1], builderContext);
                 return new SpecialExpression(SpecialExpressionType.In, expression, array);
             }
@@ -1698,7 +1708,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 if (typeof(IQueryable).IsAssignableFrom(parameters[0].Type))
                 {
 
-                    var elType = parameters[0].Type.GetInterfaces().First(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IQueryable<>)).GetGenericArguments()[0];
+                    var elType = parameters[0].Type.GetEnumerableElementType();
                     var param = Expression.Parameter(elType, "x");
                     var lambda = Expression.Lambda(Expression.Equal(param, parameters[1]), param);
                     var any = Expression.Call(IQueryable_Any.MakeGenericMethod(elType), parameters[0], Expression.Quote(lambda));

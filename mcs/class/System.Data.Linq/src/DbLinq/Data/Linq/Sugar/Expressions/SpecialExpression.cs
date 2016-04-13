@@ -138,7 +138,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                     return typeof(string[]);
                 case SpecialExpressionType.Any:
                 case SpecialExpressionType.All:
-                    return operands[0].Type.GetEnumerableType().GetGenericArguments()[0];
+                    return operands[0].Type.GetEnumerableElementType();
                 default:
                     throw Error.BadArgument("S0058: Unknown SpecialExpressionType value {0}", specialExpressionType);
             }
