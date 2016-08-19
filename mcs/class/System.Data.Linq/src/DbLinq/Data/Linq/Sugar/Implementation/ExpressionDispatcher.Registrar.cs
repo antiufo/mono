@@ -61,10 +61,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         protected virtual ColumnExpression GetRegisteredColumn(TableExpression table, string name,
                                                                BuilderContext builderContext)
         {
-            return
-                (from queryColumn in builderContext.EnumerateScopeColumns()
-                 where queryColumn.Table.IsEqualTo(table) && queryColumn.Name == name
-                 select queryColumn).SingleOrDefault();
+            return builderContext.EnumerateScopeColumns().SingleOrDefault(x => x.Table.IsEqualTo(table) && x.Name == name);
         }
 
         /// <summary>
@@ -76,9 +73,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         public virtual TableExpression RegisterTable(TableExpression tableExpression, BuilderContext builderContext)
         {
             // 1. Find the table in current scope
-            var foundTableExpression = (from t in builderContext.EnumerateScopeTables()
-                                        where t.IsEqualTo(tableExpression)
-                                        select t).SingleOrDefault();
+            var foundTableExpression = builderContext.EnumerateScopeTables().SingleOrDefault(x => x.IsEqualTo(tableExpression));
             if (foundTableExpression != null)
                 return foundTableExpression;
             // 2. Find it in all scopes, and promote it to current scope.
