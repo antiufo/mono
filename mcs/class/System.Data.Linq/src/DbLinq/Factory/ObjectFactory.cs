@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 // 
 #endregion
+using DbLinq.Factory.Implementation;
+
 namespace DbLinq.Factory
 {
     /// <summary>
@@ -39,6 +41,11 @@ namespace DbLinq.Factory
         /// </summary>
         public static IObjectFactory Current = new Implementation.ReflectionObjectFactory();
 
+
+        public static void Clear()
+        {
+            ((ReflectionObjectFactory)Current).Clear();
+        }
         /// <summary>
         /// Gets an instance for the given type.
         /// May be a singleton.

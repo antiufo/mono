@@ -46,6 +46,11 @@ namespace DbLinq.Factory.Implementation
 
         private readonly object lockObject = new object(); // For filling implementation (since it could be done concurrently at startup)
 
+        internal void Clear()
+        {
+            implementations = null;
+        }
+
         /// <summary>
         /// Gets the implementations for given Type.
         /// </summary>
