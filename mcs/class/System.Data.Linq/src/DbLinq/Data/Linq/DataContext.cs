@@ -84,7 +84,7 @@ namespace DbLinq.Data.Linq
             return new QueryProvider<VirtualSearchTable>(typeof(VirtualSearchTable), this, new ExpressionChain(), tex);
 
         }
-
+        public bool ShowFaultyRowOnObjectCreationError { get; set; } = true;
 
         protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<DbDataReader, MappingContext, T> rowObjectCreator, Func<bool, Task<ITransactionalCommand>> getDbCommand)
         {
@@ -101,7 +101,21 @@ namespace DbLinq.Data.Linq
                         if (reader.FieldCount == 0)
                             continue;
 
-                        var row = rowObjectCreator(reader, _MappingContext);
+                        T row;
+                        try
+                        {
+                            row = rowObjectCreator(reader, _MappingContext);
+                        }
+                        catch (Exception ex) when (ShowFaultyRowOnObjectCreationError)
+                        {
+                            throw new InvalidDataException("Unable to create object from DB row for query '" + dbCommand.Command.CommandText + "' and row values (" + string.Join(", ", Enumerable.Range(0, reader.FieldCount).Select(i =>
+                            {
+                                var v = reader.GetAsObject(i);
+                                if (v == null) return "null";
+                                if (v is string) return "'" + v + "'";
+                                return v.ToString();
+                            })) + "). " + ex.Message, ex);
+                        }
                         // the conditions to register and watch an entity are:
                         // - not null (can this happen?)
                         // - registered in the model
