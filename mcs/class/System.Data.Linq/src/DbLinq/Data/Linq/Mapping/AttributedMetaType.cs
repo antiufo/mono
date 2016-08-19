@@ -138,7 +138,7 @@ namespace DbLinq.Data.Linq.Mapping
         {
             // TODO: optimize?
             // A tip to know the MemberInfo for the same member is not the same when declared from a class and its inheritor
-            return (from m in PersistentDataMembers where m.Member.Name == member.Name select m).SingleOrDefault();
+            return PersistentDataMembers.SingleOrDefault(x => x.Member.Name == member.Name);
         }
 
         public override MetaType GetInheritanceType(Type baseType)
