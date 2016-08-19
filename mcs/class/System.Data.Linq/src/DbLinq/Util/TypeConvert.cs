@@ -40,8 +40,17 @@ namespace DbLinq.Util
     {
         public static object ToNumber(object o, Type numberType)
         {
-            if (o.GetType() == numberType)
+            var dbtype = o.GetType();
+            if (dbtype == numberType)
                 return o;
+            if (dbtype == typeof(long))
+            {
+                var n = (long)o;
+                if (numberType == typeof(int)) return Convert.ToInt32(n);
+                if (numberType == typeof(short)) return Convert.ToInt16(n);
+                if (numberType == typeof(double)) return Convert.ToDouble(n);
+                if (numberType == typeof(float)) return Convert.ToSingle(n);
+            }
             string methodName = string.Format("To{0}", numberType.Name);
             MethodInfo convertMethod = typeof(Convert).GetMethod(methodName, new[] { o.GetType() });
             if (convertMethod != null)
