@@ -47,7 +47,7 @@ namespace DbLinq.Data.Linq.Mapping
 
 			//First add the member to the AssociationsLookup table, because creation of the Association will cause both meta classes to look each other up, or possibly a self lookup
 			//We'll also cache the association data in _AssociationFixupList to be used by GetAssociations
-			foreach (var memberInfo in type.GetMembers().OrderBy(x => x.MetadataToken))
+			foreach (var memberInfo in type.GetMembers().OrderBy(x => GetMetadataToken(x)))
 			{
 				var association = memberInfo.GetAttribute<AssociationAttribute>();
 				if (association == null)
@@ -109,7 +109,7 @@ namespace DbLinq.Data.Linq.Mapping
                 if (dataMembers == null)
                 {
                     dataMembers = 
-                        (from m in type.GetMembers().OrderBy(x => x.MetadataToken)
+                        (from m in type.GetMembers().OrderBy(x => GetMetadataToken(x))
                          let c = m.GetAttribute<ColumnAttribute>()
                          where c != null
                          select (MetaDataMember) new AttributedColumnMetaDataMember(m, c, this))
@@ -117,6 +117,18 @@ namespace DbLinq.Data.Linq.Mapping
                 }
                 return dataMembers;
             }
+        }
+
+        private static PropertyInfo MetadataTokenProperty;
+        private static long GetMetadataToken(MemberInfo mi)
+        {
+#if CORECLR
+            if(MetadataTokenProperty == null) MetadataTokenProperty = typeof(MemberInfo).GetRuntimeProperty("MetadataToken");
+            return (long)MetadataTokenProperty.GetValue(mi);
+#else
+            return mi.MetadataToken;
+#endif
+
         }
 
         public override MetaDataMember DBGeneratedIdentityMember

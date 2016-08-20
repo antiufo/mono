@@ -75,23 +75,6 @@ namespace DbLinq.Factory.Implementation
         /// Singletons table per Type
         /// </summary>
         protected readonly IThreadSafeDictionary<Type, object> Singletons = new ThreadSafeDictionary<Type, object>();
-
-        /// <summary>
-        /// Gets the assemblies to avoid.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual IList<Assembly> GetAssembliesToAvoid()
-        {
-            return new[]
-                       {
-                           typeof(object).GetTypeInfo().Assembly,         // mscorlib
-                           typeof(Uri).GetTypeInfo().Assembly,            // System
-                           typeof(Action).GetTypeInfo().Assembly,         // System.Core
-                           typeof(System.Data.Common.DbConnection).GetTypeInfo().Assembly,  // System.Data
-                           typeof(XmlDocument).GetTypeInfo().Assembly     // System.Xml
-                       };
-        }
-
         /// <summary>
         /// Parses the app domain.
         /// </summary>
