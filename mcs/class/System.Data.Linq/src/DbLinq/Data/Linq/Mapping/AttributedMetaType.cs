@@ -47,7 +47,7 @@ namespace DbLinq.Data.Linq.Mapping
 
 			//First add the member to the AssociationsLookup table, because creation of the Association will cause both meta classes to look each other up, or possibly a self lookup
 			//We'll also cache the association data in _AssociationFixupList to be used by GetAssociations
-			foreach (var memberInfo in type.GetMembers())
+			foreach (var memberInfo in type.GetMembers().OrderBy(x => x.MetadataToken))
 			{
 				var association = memberInfo.GetAttribute<AssociationAttribute>();
 				if (association == null)
@@ -108,8 +108,8 @@ namespace DbLinq.Data.Linq.Mapping
             get {
                 if (dataMembers == null)
                 {
-                    dataMembers =
-                        (from m in type.GetMembers()
+                    dataMembers = 
+                        (from m in type.GetMembers().OrderBy(x => x.MetadataToken)
                          let c = m.GetAttribute<ColumnAttribute>()
                          where c != null
                          select (MetaDataMember) new AttributedColumnMetaDataMember(m, c, this))
