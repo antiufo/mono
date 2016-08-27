@@ -58,6 +58,7 @@ using System.Diagnostics;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Data.Linq.Sugar.Implementation;
 using System.Threading.Tasks;
+using Shaman.Runtime;
 
 #if MONO_STRICT
 namespace System.Data.Linq
@@ -455,7 +456,7 @@ namespace DbLinq.Data.Linq
             CheckTableMapping(type);
 
             var tableNew = Activator.CreateInstance(
-                              typeof(Table<>).MakeGenericType(type)
+                              typeof(Table<>).MakeGenericTypeFast(type)
                               , BindingFlags.NonPublic | BindingFlags.Instance
                               , null
                               , new object[] { this }
@@ -958,7 +959,7 @@ namespace DbLinq.Data.Linq
             Expression lambdaPredicate = Expression.Lambda(predicate, parameter);
             //lambdaPredicate: other=>other.EmployeeID== "WARTH"
 
-            Expression call = Expression.Call(_WhereMethod.MakeGenericMethod(otherTableType), otherTable.Expression, lambdaPredicate);
+            Expression call = Expression.Call(_WhereMethod.MakeGenericMethodFast(otherTableType), otherTable.Expression, lambdaPredicate);
             //Table[EmployeesTerritories].Where(other=>other.employeeID="WARTH")
 
             return otherTable.Provider.CreateQuery(call);
@@ -1359,7 +1360,7 @@ namespace DbLinq.Data.Linq
             // Manually create the expression tree for: IQueryable<TableType>.Select(e => e)
             var identityParameter = Expression.Parameter(query.ElementType, "e");
             var identityBody = Expression.Lambda(
-                typeof(Func<,>).MakeGenericType(query.ElementType, query.ElementType),
+                typeof(Func<,>).MakeGenericTypeFast(query.ElementType, query.ElementType),
                 identityParameter,
                 new[] { identityParameter }
             );

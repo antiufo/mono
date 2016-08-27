@@ -43,6 +43,7 @@ using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Data.Linq.Sugar.Implementation;
 using DbLinq.Factory;
 using DbLinq.Util;
+using Shaman.Runtime;
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
 {
@@ -1711,7 +1712,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                     var elType = parameters[0].Type.GetEnumerableElementType();
                     var param = Expression.Parameter(elType, "x");
                     var lambda = Expression.Lambda(Expression.Equal(param, parameters[1]), param);
-                    var any = Expression.Call(IQueryable_Any.MakeGenericMethod(elType), parameters[0], Expression.Quote(lambda));
+                    var any = Expression.Call(IQueryable_Any.MakeGenericMethodFast(elType), parameters[0], Expression.Quote(lambda));
                     parameters[1] = lambda;
                     return AnalyzeCall(any, parameters, builderContext);
 

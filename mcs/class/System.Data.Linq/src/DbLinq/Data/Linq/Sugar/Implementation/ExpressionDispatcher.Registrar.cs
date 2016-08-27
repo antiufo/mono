@@ -36,6 +36,7 @@ using DbLinq.Data.Linq.Mapping;
 using DbLinq.Data.Linq.Sugar;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using System.Data.Common;
+using Shaman.Runtime;
 
 #if MONO_STRICT
 using DataContext = System.Data.Linq.DataContext;
@@ -484,7 +485,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         {
             var entityType = expression.EntitySetType.GetGenericArguments()[0];
             List<ElementInit> members = new List<ElementInit>();
-            var entitySetType = typeof(EntitySet<>).MakeGenericType(entityType);
+            var entitySetType = typeof(EntitySet<>).MakeGenericTypeFast(entityType);
             var add = entitySetType.GetMethod("AddInternal", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             foreach (var info in expression.Columns)

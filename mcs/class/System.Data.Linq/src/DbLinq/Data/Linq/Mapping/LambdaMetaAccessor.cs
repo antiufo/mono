@@ -6,6 +6,7 @@ using System.Text;
 using System.Reflection;
 using System.Data.Linq.Mapping;
 using System.Reflection.Emit;
+using Shaman.Runtime;
 
 namespace DbLinq.Data.Linq.Mapping
 {
@@ -14,7 +15,7 @@ namespace DbLinq.Data.Linq.Mapping
         //This will go away with C# 4.0 ActionExpression
         static Delegate MakeSetter(MemberInfo member, Type memberType, Type declaringType)
         {
-            Type delegateType = typeof(Action<,>).MakeGenericType(declaringType, memberType);
+            Type delegateType = typeof(Action<,>).MakeGenericTypeFast(declaringType, memberType);
 
             var x = Expression.Parameter(declaringType, "x");
             var v = Expression.Parameter(memberType, "v");
@@ -48,7 +49,7 @@ namespace DbLinq.Data.Linq.Mapping
                 (member as FieldInfo)?.FieldType ??
                 (member as MethodInfo)?.ReturnParameter.ParameterType;
 
-            Type accessorType = typeof(LambdaMetaAccessor<,>).MakeGenericType(declaringType, memberType);
+            Type accessorType = typeof(LambdaMetaAccessor<,>).MakeGenericTypeFast(declaringType, memberType);
 
             ParameterExpression p = Expression.Parameter(declaringType, "e");
             return (MetaAccessor)Activator.CreateInstance(accessorType, new object[]{

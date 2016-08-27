@@ -40,6 +40,7 @@ using DbLinq.Factory;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Data.Common;
+using Shaman.Runtime;
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
 {
@@ -174,12 +175,12 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             var mappingContextParameter = Expression.Parameter(typeof(MappingContext), "mappingContext");
             var kType = selectKey.Body.Type;
             var lType = select.Body.Type;
-            var groupingType = typeof(LineGrouping<,>).MakeGenericType(kType, lType);
+            var groupingType = typeof(LineGrouping<,>).MakeGenericTypeFast(kType, lType);
             var groupingCtor = groupingType.GetConstructor(new[] { kType, lType });
             var invokeSelectKey = Expression.Invoke(selectKey, dataRecordParameter, mappingContextParameter);
             var invokeSelect = Expression.Invoke(select, dataRecordParameter, mappingContextParameter);
             var newLineGrouping = Expression.New(groupingCtor, invokeSelectKey, invokeSelect);
-            var iGroupingType = typeof(IGrouping<,>).MakeGenericType(kType, lType);
+            var iGroupingType = typeof(IGrouping<,>).MakeGenericTypeFast(kType, lType);
             var newIGrouping = Expression.Convert(newLineGrouping, iGroupingType);
             var lambda = Expression.Lambda(newIGrouping, dataRecordParameter, mappingContextParameter);
             return lambda;

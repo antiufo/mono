@@ -33,6 +33,7 @@ using DbLinq.Data.Linq.Sugar;
 using DbLinq.Util;
 using System.Data.Common;
 using System.Reflection;
+using Shaman.Runtime;
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
 {
@@ -168,8 +169,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 mappingContextArg,
                 Expression.Constant(simpleReturnType, typeof(Type))
             );
-
-            return Expression.Lambda(Expression.Convert(body, simpleReturnType.GetTypeInfo().IsValueType && !simpleReturnType.IsNullable() ? typeof(Nullable<>).MakeGenericType(simpleReturnType) : simpleReturnType), 
+            return Expression.Lambda(Expression.Convert(body, simpleReturnType.GetTypeInfo().IsValueType && !simpleReturnType.IsNullable() ? typeof(Nullable<>).MakeGenericTypeFast(simpleReturnType) : simpleReturnType), 
                 dataRecordArg,
                 mappingContextArg,
                 valueIndexArg

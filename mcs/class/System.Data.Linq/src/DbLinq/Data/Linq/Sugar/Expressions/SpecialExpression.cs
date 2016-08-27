@@ -38,6 +38,7 @@ using DbLinq.Data.Linq.Sugar.ExpressionMutator;
 using DbLinq.Data.Linq.Sugar.Expressions;
 using DbLinq.Util;
 using System.Reflection;
+using Shaman.Runtime;
 
 namespace DbLinq.Data.Linq.Sugar.Expressions
 {
@@ -75,7 +76,7 @@ namespace DbLinq.Data.Linq.Sugar.Expressions
                 case SpecialExpressionType.Min:
                 case SpecialExpressionType.Max:
                 case SpecialExpressionType.Sum:
-                    return defaultType.IsNullable() ? defaultType : typeof(Nullable<>).MakeGenericType(defaultType); // for such methods, the type is related to the operands type
+                    return defaultType.IsNullable() ? defaultType : typeof(Nullable<>).MakeGenericTypeFast(defaultType); // for such methods, the type is related to the operands type
                 case SpecialExpressionType.Average:
                     return typeof(double?);
                 case SpecialExpressionType.StringLength:

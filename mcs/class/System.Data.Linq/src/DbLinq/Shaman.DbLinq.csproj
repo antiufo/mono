@@ -68,6 +68,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Shaman.Reflection, Version=1.0.0.0, Culture=neutral, PublicKeyToken=18bc04d2eb1e1518, processorArchitecture=MSIL">
+      <HintPath>C:\Repositories\Awdee\packages\Shaman.Reflection.1.0.0.12\lib\net45\Shaman.Reflection.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Shaman.System.Linq.Expressions.Interpreter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=712f6b6deeaf4702, processorArchitecture=MSIL">
       <HintPath>C:\Repositories\Awdee\packages\Shaman.System.Linq.Expressions.Interpreter.1.0.1.2\lib\net46\Shaman.System.Linq.Expressions.Interpreter.dll</HintPath>
       <Private>True</Private>

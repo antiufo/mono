@@ -32,6 +32,7 @@ using System.Linq.Expressions;
 using DbLinq.Data.Linq.Sugar;
 using DbLinq.Util;
 using System.Reflection;
+using Shaman.Runtime;
 
 #if MONO_STRICT
 using System.Data.Linq;
@@ -120,7 +121,7 @@ namespace DbLinq.Data.Linq.Implementation
         protected S CreateQuery<S>(Type t, Type tableType, DataContext dataContext, ExpressionChain expressionChain, Expression expression)
         {
             // no way to work differently
-            var typedQueryProviderType = typeof(QueryProvider<>).MakeGenericType(t);
+            var typedQueryProviderType = typeof(QueryProvider<>).MakeGenericTypeFast(t);
             var queryProvider = (S)Activator.CreateInstance(typedQueryProviderType, tableType, dataContext,
                                                              expressionChain, expression);
             return queryProvider;
@@ -180,9 +181,8 @@ namespace DbLinq.Data.Linq.Implementation
         {
             return this.GetType()
                 .GetMethods()
-                .Where(m => m.Name == "Execute" && m.IsGenericMethod)
-                .Single()
-                .MakeGenericMethod(new Type[] { expression.Type })
+                .Single(m => m.Name == "Execute" && m.IsGenericMethod)
+                .MakeGenericMethodFast(expression.Type)
                 .Invoke(this, new object[] { expression });
         }
 
