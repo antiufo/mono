@@ -89,6 +89,8 @@ namespace DbLinq.Data.Linq
         protected internal virtual IEnumerable<T> GetQueryEnumerable<T>(Func<DbDataReader, MappingContext, T> rowObjectCreator, Func<bool, Task<ITransactionalCommand>> getDbCommand)
         {
             BlockingIoHandler.Check();
+            Exception faulty = null;
+
             using (var dbCommand = getDbCommand(true).AssumeCompleted())
             {
                 WriteLog(dbCommand.Command);
@@ -100,22 +102,19 @@ namespace DbLinq.Data.Linq
                         // someone told me one day this could happen (in SQLite)
                         if (reader.FieldCount == 0)
                             continue;
-
                         T row;
                         try
                         {
                             row = rowObjectCreator(reader, _MappingContext);
                         }
-                        catch (Exception ex) when (ShowFaultyRowOnObjectCreationError)
+                        catch (Exception ex)
                         {
-                            throw new InvalidDataException("Unable to create object from DB row for query '" + dbCommand.Command.CommandText + "' and row values (" + string.Join(", ", Enumerable.Range(0, reader.FieldCount).Select(i =>
-                            {
-                                var v = reader.GetAsObject(i);
-                                if (v == null) return "null";
-                                if (v is string) return "'" + v + "'";
-                                return v.ToString();
-                            })) + "). " + ex.Message, ex);
+                            faulty = ShowFaultyRowOnObjectCreationError ? CreateFaultyRowException(dbCommand, reader, ex) : ex;
+                            row = default(T);
                         }
+
+                        if (faulty != null) throw faulty;
+
                         // the conditions to register and watch an entity are:
                         // - not null (can this happen?)
                         // - registered in the model
@@ -128,6 +127,17 @@ namespace DbLinq.Data.Linq
                     }
                 }
             }
+        }
+
+        private Exception CreateFaultyRowException(ITransactionalCommand dbCommand, DbDataReader reader, Exception ex)
+        {
+            return new InvalidDataException("Unable to create object from DB row for query '" + dbCommand.Command.CommandText + "' and row values (" + string.Join(", ", Enumerable.Range(0, reader.FieldCount).Select(i =>
+            {
+                var v = reader.GetAsObject(i);
+                if (v == null) return "null";
+                if (v is string) return "'" + v + "'";
+                return v.ToString();
+            })) + "). " + ex.Message);
         }
 
 
