@@ -47,15 +47,9 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// </summary>
         /// <param name="returnType">The expected return type (to be mapped to the property)</param>
         /// <returns>An expression returning the field value</returns>
-        public virtual LambdaExpression GetPropertyReader(Type returnType)
+        public virtual LambdaExpression GetPropertyReaderNormalized(Type returnType)
         {
-            // if we have a nullable, then use its inner type
-            if (returnType.IsNullable())
-            {
-                var nonNullableReturnType = returnType.GetNullableType();
-                return GetNullablePropertyReader(nonNullableReturnType);
-            }
-            // otherwise, it's simple
+            // returnType MUST NOT be nullable.
             return GetNullablePropertyReader(returnType);
         }
 

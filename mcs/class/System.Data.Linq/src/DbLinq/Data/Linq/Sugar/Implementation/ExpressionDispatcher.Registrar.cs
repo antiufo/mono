@@ -561,7 +561,23 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                                                           ParameterExpression mappingContextParameter, DataContext context, bool avoidUnnullabilityConversion = false)
         {
             var customTypeBaseType = context.ShouldUseCustomReader(columnType);
-            var propertyReaderLambda = DataRecordReader.GetPropertyReader(customTypeBaseType ?? columnType);
+            var returnType = customTypeBaseType ?? columnType;
+            
+            // if we have a nullable, then use its inner type
+            if (returnType.IsNullable())
+            {
+                returnType = returnType.GetNullableType();
+            }
+
+            LambdaExpression propertyReaderLambda;
+            context.valueReaderCache.TryGetValue(returnType, out propertyReaderLambda);
+            if (propertyReaderLambda == null)
+            {
+                propertyReaderLambda = DataRecordReader.GetPropertyReaderNormalized(returnType);
+                context.valueReaderCache[returnType] = propertyReaderLambda;
+            }
+            
+
             if (customTypeBaseType != null) propertyReaderLambda = context.GetPropertyReader(columnType, propertyReaderLambda);
             Expression invoke = new ParameterBinder().BindParams(propertyReaderLambda,
                 dataRecordParameter, mappingContextParameter, Expression.Constant(valueIndex));

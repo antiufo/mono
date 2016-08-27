@@ -25,6 +25,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace DbLinq.Data.Linq.Sugar
@@ -36,6 +37,6 @@ namespace DbLinq.Data.Linq.Sugar
         /// </summary>
         /// <param name="returnType">The expected return type (to be mapped to the property)</param>
         /// <returns>A lambda(DbDataReader,MappingColumn,fieldIndex) returning the field value</returns>
-        LambdaExpression GetPropertyReader(Type returnType);
+        LambdaExpression GetPropertyReaderNormalized(Type returnType);
     }
 }
