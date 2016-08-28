@@ -50,7 +50,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\build\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MOBILE; DBLINQ</DefineConstants>
+    <DefineConstants>MOBILE; DBLINQ</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -69,11 +69,15 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Shaman.Reflection, Version=1.0.0.0, Culture=neutral, PublicKeyToken=18bc04d2eb1e1518, processorArchitecture=MSIL">
-      <HintPath>C:\Repositories\Awdee\packages\Shaman.Reflection.1.0.0.12\lib\net45\Shaman.Reflection.dll</HintPath>
+      <HintPath>C:\Repositories\Awdee\packages\Shaman.Reflection.1.0.0.13\lib\net45\Shaman.Reflection.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Shaman.System.Linq.Expressions.Interpreter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=712f6b6deeaf4702, processorArchitecture=MSIL">
       <HintPath>C:\Repositories\Awdee\packages\Shaman.System.Linq.Expressions.Interpreter.1.0.1.2\lib\net46\Shaman.System.Linq.Expressions.Interpreter.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Shaman.ValueString, Version=1.0.0.0, Culture=neutral, PublicKeyToken=18bc04d2eb1e1518, processorArchitecture=MSIL">
+      <HintPath>C:\Repositories\Awdee\packages\Shaman.ValueString.1.0.2.19\lib\net46\Shaman.ValueString.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
