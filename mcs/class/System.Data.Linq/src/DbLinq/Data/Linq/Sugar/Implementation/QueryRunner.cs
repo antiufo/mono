@@ -56,7 +56,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
 
             // handle the special case where the query is empty, meaning we don't need the DB
-            if (string.IsNullOrEmpty(selectQuery.Sql.ToString()))
+            if (selectQuery.Sql.IsEmpty)
             {
                  return new[] { rowObjectCreator(null, null) };
             }

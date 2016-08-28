@@ -71,6 +71,11 @@ namespace DbLinq.Data.Linq
         //private readonly Dictionary<string, ITable> _tableMap = new Dictionary<string, ITable>();
         private readonly Dictionary<Type, ITable> _tableMap = new Dictionary<Type, ITable>();
         internal readonly Dictionary<Type, LambdaExpression> valueReaderCache = new Dictionary<Type, LambdaExpression>();
+
+        internal List<Expression[]>[] expressionArrayPool = new List<Expression[]>[ExpressionArrayPoolSize];
+
+        internal const int ExpressionArrayPoolSize = 10;
+
         public MetaModel Mapping { get; private set; }
         // PC question: at ctor, we get a DbConnection and the Connection property exposes a DbConnection
         //              WTF?

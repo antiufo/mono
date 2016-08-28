@@ -108,7 +108,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             // - a GROUP BY: grouping by selected columns
             // - a ORDER BY: sort
             var select = BuildSelect(selectExpression, queryContext);
-            if (select.ToString() == string.Empty)
+            if (select.IsEmpty)
             {
                 SubSelectExpression subselect = null;
                 if (selectExpression.Tables.Count == 1)
@@ -118,7 +118,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             }
 
             // TODO: the following might be wrong (at least this might be the wrong place to do this
-            if (select.ToString() == string.Empty)
+            if (select.IsEmpty)
                 select = new SqlStatement("SELECT " + sqlProvider.GetLiteral(null) + " AS " + sqlProvider.GetSafeName("Empty"));
 
             var tables = GetSortedTables(selectExpression);
@@ -144,8 +144,19 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
 
         public SqlStatement Join(QueryContext queryContext, params SqlStatement[] clauses)
         {
-            return SqlStatement.Join(queryContext.DataContext.Vendor.SqlProvider.NewLine,
-                               (from clause in clauses where clause.ToString() != string.Empty select clause).ToList());
+            var builder = new SqlStatementBuilder();
+            var first = true;
+            var nl = queryContext.DataContext.Vendor.SqlProvider.NewLine;
+            for (int index = 0; index < clauses.Length; index++)
+            {
+                var c = clauses[index];
+                if (c.IsEmpty) continue;
+                if (!first)
+                    builder.Append(nl);
+                builder.Append(c);
+                first = false;
+            }
+            return builder.ToSqlStatement();
         }
 
         /// <summary>
@@ -471,7 +482,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             foreach (var clause in orderByExpressions)
             {
                 var z = BuildExpression(clause.ColumnExpression, queryContext);
-                if (z.ToString().StartsWith("SELECT ")) z = "(" + z + ")";
+                if (z.StartsWithSelect) z = "(" + z + ")";
                 orderByClauses.Add(sqlProvider.GetOrderByColumn(z, clause.Descending));
             }
             return sqlProvider.GetOrderByClause(orderByClauses.ToArray());

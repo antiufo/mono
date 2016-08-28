@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 // 
 #endregion
+using Shaman.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -55,11 +56,16 @@ namespace DbLinq.Util
         /// <returns></returns>
         public static string Enquote(string name, char startQuote, char endQuote)
         {
+            var sb = ReseekableStringBuilder.AcquirePooledStringBuilder();
+
             if (name.Length > 0 && name[0] != startQuote)
-                name = startQuote + name;
+                sb.Append(startQuote);
+            sb.Append(name);
             if (name.Length > 0 && name[name.Length - 1] != endQuote)
-                name = name + endQuote;
-            return name;
+                sb.Append(endQuote);
+            var m = sb.ToStringCached();
+            ReseekableStringBuilder.Release(sb);
+            return m;
         }
 
         public static string Enquote(string name, char quote)

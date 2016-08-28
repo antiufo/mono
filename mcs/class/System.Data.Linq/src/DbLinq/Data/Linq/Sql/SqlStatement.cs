@@ -24,10 +24,12 @@
 // 
 #endregion
 
+using Shaman.Runtime;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace DbLinq.Data.Linq.Sql
 {
@@ -39,7 +41,7 @@ namespace DbLinq.Data.Linq.Sql
 #if !MONO_STRICT
     public
 #endif
-    class SqlStatement : IEnumerable<SqlPart>
+    sealed class SqlStatement : IEnumerable<SqlPart>
     {
         private readonly List<SqlPart> parts = new List<SqlPart>();
 
@@ -47,17 +49,27 @@ namespace DbLinq.Data.Linq.Sql
         /// Empty SqlStatement, used to build new statements
         /// </summary>
         public static readonly SqlStatement Empty = new SqlStatement();
-
+        public bool IsEmpty => parts.All(x => x.Sql.Length == 0);
         /// <summary>
         /// Returns the number of parts present
         /// </summary>
         public int Count { get { return parts.Count; } }
 
+        public bool StartsWithSelect
+        {
+            get
+            {
+                if (parts.Count == 0) return false;
+                if (!(parts[0] is SqlLiteralPart)) return false;
+                return parts[0].Sql.StartsWith("SELECT ");
+            }
+        }
+
         /// <summary>
         /// Enumerates all parts
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<SqlPart> GetEnumerator()
+        public List<SqlPart>.Enumerator GetEnumerator()
         {
             return parts.GetEnumerator();
         }
@@ -67,6 +79,10 @@ namespace DbLinq.Data.Linq.Sql
         /// </summary>
         /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+        IEnumerator<SqlPart> IEnumerable<SqlPart>.GetEnumerator()
         {
             return GetEnumerator();
         }
@@ -87,7 +103,16 @@ namespace DbLinq.Data.Linq.Sql
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Join(string.Empty, (from part in parts select part.Sql).ToArray());
+            var sb = ReseekableStringBuilder.AcquirePooledStringBuilder();
+            ToString(sb);
+            return ReseekableStringBuilder.GetValueAndRelease(sb);
+        }
+        public void ToString(StringBuilder sb)
+        {
+            foreach (var part in parts)
+            {
+                sb.Append(part.Sql);
+            }
         }
 
         /// <summary>
@@ -196,7 +221,12 @@ namespace DbLinq.Data.Linq.Sql
         /// Initializes a new instance of the <see cref="SqlStatement"/> class.
         /// </summary>
         /// <param name="sqlParts">The SQL parts.</param>
-        public SqlStatement(IEnumerable<SqlPart> sqlParts)
+        public SqlStatement(List<SqlPart> sqlParts)
+        {
+            foreach (var sqlPart in sqlParts)
+                SqlStatementBuilder.AddPart(parts, sqlPart);
+        }
+        public SqlStatement(IList<SqlPart> sqlParts)
         {
             foreach (var sqlPart in sqlParts)
                 SqlStatementBuilder.AddPart(parts, sqlPart);

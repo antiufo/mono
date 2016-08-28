@@ -11,15 +11,16 @@ namespace DbLinq
     {
         private LambdaExpression lambdaSelectExpression;
         private Delegate compiled;
-
-        public RowCreator(LambdaExpression lambdaSelectExpression)
+        private bool singleUse;
+        public RowCreator(LambdaExpression lambdaSelectExpression, bool singleUse)
         {
             this.lambdaSelectExpression = lambdaSelectExpression;
+            this.singleUse = singleUse;
         }
 
         internal Delegate Compile()
         {
-            return compiled ?? (compiled = lambdaSelectExpression.CompileDebuggable(false));
+            return compiled ?? (compiled = lambdaSelectExpression.CompileDebuggable(singleUse));
         }
     }
 }

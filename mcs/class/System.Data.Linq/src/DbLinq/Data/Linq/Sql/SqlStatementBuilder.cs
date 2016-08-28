@@ -28,6 +28,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DbLinq.Util;
+using Shaman.Runtime;
 
 namespace DbLinq.Data.Linq.Sql
 {
@@ -62,25 +63,7 @@ namespace DbLinq.Data.Linq.Sql
             foreach (var part in newParts)
                 AddPart(Parts, part);
         }
-
-        /// <summary>
-        /// Appends a single part, including (useless) optimizations
-        /// </summary>
-        /// <param name="parts"></param>
-        /// <param name="index"></param>
-        /// <param name="part"></param>
-        public static void InsertPart(IList<SqlPart> parts, int index, SqlPart part)
-        {
-            // optimization if top part is a literal, and the one we're adding is a literal too
-            // in this case, we combine both
-            // (this is useless, just pretty)
-            if (part is SqlLiteralPart && index > 0 && parts[index - 1] is SqlLiteralPart)
-            {
-                parts[index - 1] = new SqlLiteralPart(parts[index - 1].Sql + part.Sql);
-            }
-            else
-                parts.Insert(index, part);
-        }
+        
 
         /// <summary>
         /// Adds the part to the given parts list.
@@ -89,7 +72,7 @@ namespace DbLinq.Data.Linq.Sql
         /// <param name="part">The part.</param>
         public static void AddPart(IList<SqlPart> parts, SqlPart part)
         {
-            InsertPart(parts, parts.Count, part);
+            parts.Add(part);
         }
 
         /// <summary>
@@ -116,42 +99,29 @@ namespace DbLinq.Data.Linq.Sql
         /// <returns></returns>
         public void AppendFormat(string format, IList<SqlStatement> sqlStatements)
         {
-            var statements = new ArrayList { format };
-            // the strategy divides each part containing the {0}, {1}, etc
-            // and inserts the required argument
-            for (int index = 0; index < sqlStatements.Count; index++)
+            var beginOfCurrentString = 0;
+            int i = 0;
+            for (; i < format.Length; i++)
             {
-                var newStatements = new ArrayList();
-                var literalIndex = "{" + index + "}";
-                // then in each statement we look for the current literalIndex
-                foreach (var statement in statements)
+                var ch = format[i];
+                if (ch == '{')
                 {
-                    // if we have a string, we split it around the literalIndex
-                    // and insert the SqlStatement between new parts
-                    var stringStatement = statement as string;
-                    if (stringStatement != null)
+                    var end = format.IndexOf('}', i);
+                    if (end == -1) throw new FormatException();
+                    
+                    var num = ValueString.ParseInt32(format.AsValueString().Substring(i + 1, end - i - 1));
+                    if (i - beginOfCurrentString != 0)
                     {
-                        var parts = stringStatement.Split(new[] { literalIndex }, StringSplitOptions.None);
-                        for (int partIndex = 0; partIndex < parts.Length; partIndex++)
-                        {
-                            if (partIndex > 0)
-                                newStatements.Add(sqlStatements[index]);
-                            newStatements.Add(parts[partIndex]);
-                        }
+                        Append(format.Substring(beginOfCurrentString, i - beginOfCurrentString));
                     }
-                    else // no match found? add the raw statement
-                        newStatements.Add(statement);
+                    Append(sqlStatements[num]);
+                    beginOfCurrentString = end + 1;
+                    i = end;
                 }
-                statements = newStatements;
             }
-            // finally, convert all remaining strings to SqlStatements
-            foreach (var statement in statements)
+            if (i - beginOfCurrentString != 0)
             {
-                var stringStatement = statement as string;
-                if (stringStatement != null)
-                    Append(new SqlStatement(stringStatement));
-                else
-                    Append((SqlStatement)statement);
+                Append(format.Substring(beginOfCurrentString, i - beginOfCurrentString));
             }
         }
 
@@ -222,6 +192,14 @@ namespace DbLinq.Data.Linq.Sql
         public void Append(params SqlStatement[] newStatements)
         {
             Append((IList<SqlStatement>)newStatements);
+        }
+
+        public void Append(SqlStatement newStatement)
+        {
+            foreach (var sqlPart in newStatement)
+            {
+                AddPart(Parts, sqlPart);
+            }
         }
 
         /// <summary>

@@ -37,7 +37,9 @@
     "../DbLinq/Vendor/INameAliases.cs"
   ],
   "dependencies": {
-    "Shaman.System.Linq.Expressions.Interpreter": "1.0.1.2"
+    "Shaman.System.Linq.Expressions.Interpreter": "1.0.1.2",
+    "Shaman.Reflection": "1.0.0.13",
+    "Shaman.ValueString": "1.0.2.19"
   },
   "frameworks": {
     "net46": {

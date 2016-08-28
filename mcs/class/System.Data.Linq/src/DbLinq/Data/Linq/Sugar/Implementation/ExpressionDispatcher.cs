@@ -150,7 +150,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 }
             }
 
-            var z = new RowCreator(lambdaSelectExpression);
+            var z = new RowCreator(lambdaSelectExpression, key == null);
             if (key != null)
             {
                 RowCreatorCache[key] = z;

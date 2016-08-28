@@ -743,7 +743,7 @@ namespace DbLinq.Vendor.Implementation
         /// <returns></returns>
         public virtual string GetColumn(string table, string column)
         {
-            return string.Format("{0}.{1}", table, GetColumn(column));
+            return table + "." + GetColumn(column);
         }
 
         /// <summary>
@@ -766,7 +766,7 @@ namespace DbLinq.Vendor.Implementation
         /// <returns></returns>
         public virtual string GetTableAsAlias(string table, string alias)
         {
-            return string.Format("{0} {1}", GetTable(table), GetTableAlias(alias));
+            return GetTable(table) + " " + GetTableAlias(alias);
         }
 
         /// <summary>
@@ -1410,7 +1410,7 @@ namespace DbLinq.Vendor.Implementation
         /// <returns></returns>
         protected virtual SqlStatement GetLiteralCount(SqlStatement a)
         {
-            return SqlStatement.Format("COUNT({0})", a);
+            return "COUNT(" + a + ")";
         }
 
         /// <summary>

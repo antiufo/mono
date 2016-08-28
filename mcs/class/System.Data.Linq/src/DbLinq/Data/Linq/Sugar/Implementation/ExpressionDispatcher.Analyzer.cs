@@ -44,6 +44,7 @@ using DbLinq.Data.Linq.Sugar.Implementation;
 using DbLinq.Factory;
 using DbLinq.Util;
 using Shaman.Runtime;
+using System.Diagnostics;
 
 namespace DbLinq.Data.Linq.Sugar.Implementation
 {
@@ -176,18 +177,58 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
         /// <returns></returns>
         protected virtual Expression AnalyzeCall(MethodCallExpression expression, IList<Expression> parameters, BuilderContext builderContext)
         {
-            var operands = expression.GetOperandsBorrowed();
-            var operarandsToSkip = expression.Method.IsStatic ? 1 : 0;
-            var originalParameters = operands.Skip(parameters.Count + operarandsToSkip);
-            var newParameters = parameters.Union(originalParameters).ToList();
 
-            var custom = AnalyzeCustomMethod(expression, newParameters, builderContext);
-            if (custom != null) return custom;
+            //var operands = ExpressionMutatorFactory.GetMutator(expression).Operands;
+            //var operands = expression.GetOperandsBorrowed();
+            //var operandsToSkip = (expression.Method.IsStatic ? 1 : 0);
+            //var originalParameters = operands.Skip(parameters.Count + operandsToSkip);
+            //var newParametersObsolete = parameters.Union(originalParameters).ToList();
+            var arguments = expression.Arguments;
+            var length = arguments.Count;
+            Expression[] newParameters = null;
+            if (length < DataContext.ExpressionArrayPoolSize)
+            {
+                var k = builderContext.QueryContext.DataContext.expressionArrayPool[length];
+                if (k != null && k.Count != 0)
+                {
+                    newParameters = k.Last();
+                    k.RemoveAt(k.Count - 1);
+                }
+            }
 
-            return AnalyzeQueryableCall(expression.Method, newParameters, builderContext) ??
+            if (newParameters == null) newParameters = new Expression[length];
+
+            var pc = parameters.Count;
+            int i = 0;
+            for (; i < pc;)
+            {
+                newParameters[i] = parameters[i];
+                i++;
+            }
+            for (int j = parameters.Count; j < arguments.Count; j++)
+            {
+                newParameters[i++] = arguments[j];
+            }
+
+            var a =
+                AnalyzeCustomMethod(expression, newParameters, builderContext) ??
+                AnalyzeQueryableCall(expression.Method, newParameters, builderContext) ??
                 AnalyzeStringCall(expression.Method, newParameters, builderContext) ??
                 AnalyzeMathCall(expression.Method, newParameters, builderContext) ??
                 AnalyzeUnknownCall(expression, newParameters, builderContext);
+            if (newParameters.Length < DataContext.ExpressionArrayPoolSize)
+            {
+                var m = builderContext.QueryContext.DataContext.expressionArrayPool;
+                var z = m[length];
+                if (z == null) m[length] = z = new List<Expression[]>();
+                if (z.Count < 10)
+                {
+                    Array.Clear(newParameters, 0, length);
+                    z.Add(newParameters);
+                }
+            }
+
+            return a;
         }
 
         private Expression AnalyzeQueryableCall(MethodInfo method, IList<Expression> parameters, BuilderContext builderContext)

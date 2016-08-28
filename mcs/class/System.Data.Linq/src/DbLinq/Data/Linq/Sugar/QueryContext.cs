@@ -29,6 +29,7 @@ using System.Data.Linq;
 #else
 using DbLinq.Data.Linq;
 using System.Data.Common;
+using System.Linq.Expressions;
 #endif
 
 namespace DbLinq.Data.Linq.Sugar
@@ -41,6 +42,7 @@ namespace DbLinq.Data.Linq.Sugar
         internal int FullTextSearchId;
 
         public DataContext DataContext { get; private set; }
+        
 
         /// <summary>
         /// if true, tells the tier splitter that we want the maximum on database side

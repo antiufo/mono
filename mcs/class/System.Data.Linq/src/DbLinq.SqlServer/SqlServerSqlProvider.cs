@@ -58,7 +58,7 @@ namespace DbLinq.SqlServer
         /// <returns></returns>
         public override string GetTableAsAlias(string table, string alias)
         {
-            return string.Format("{0} AS {1}", GetTable(table), GetTableAlias(alias));
+            return GetTable(table) + " AS " + GetTableAlias(alias);
         }
 
         /// <summary>
