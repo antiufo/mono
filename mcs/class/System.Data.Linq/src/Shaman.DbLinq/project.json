@@ -1,41 +1,43 @@
 {
-  "version": "1.0.1.1",
-  "compilationOptions": {
+  "version": "1.0.1.2",
+  "buildOptions": {
     "define": [
       "MOBILE",
       "DBLINQ"
     ],
-    "keyFile": "../DbLinq.snk"
+    "keyFile": "../DbLinq.snk",
+    "compile": {
+      "include": [
+        "../DbLinq/**/*.cs",
+        "../DbLinq.*/**/*.cs"
+      ],
+      "exclude": [
+        "../DbLinq/Test",
+        "../DbLinq.*/**/Test",
+        "../DbLinq.*/**/AssemblyInfo.cs",
+        "../DbLinq/Util/CacheChecker.cs",
+        "../DbLinq/System.Data.Linq/EntitySet.cs",
+        "../DbLinq/obj",
+        "../DbLinq/Properties/AssemblyInfo.cs",
+        "../DbLinq/Data/Linq/Database/Implementation/DatabaseTransaction.cs",
+        "../DbLinq/Data/Linq/Database/IDatabaseTransaction.cs",
+        "../DbLinq/Data/Linq/SqlClient/Sql2000Provider.cs",
+        "../DbLinq/Data/Linq/SqlClient/Sql2005Provider.cs",
+        "../DbLinq/Data/Linq/SqlClient/Sql2008Provider.cs",
+        "../DbLinq/Data/Linq/Sugar/Expressions/GroupByExpression.cs",
+        "../DbLinq/Data/Linq/Sugar/Expressions/ScopeExpression.cs",
+        "../DbLinq/Schema/Dbml",
+        "../DbLinq/Vendor/DbSchemaLoader.cs",
+        "../DbLinq/Vendor/Implementation/SchemaLoader.*.cs",
+        "../**/*SchemaLoader*",
+        "../DbLinq/Util/TypeLoader.cs",
+        "../DbLinq/Data/Linq/Mapping/XmlMappingSource.cs",
+        "../DbLinq/Util/DbmlExtensions.cs",
+        "../DbLinq/Vendors/DbLinq.SqlServer",
+        "../DbLinq/Vendor/INameAliases.cs"
+      ]
+    }
   },
-  "compile": [
-    "../DbLinq/**/*.cs",
-    "../DbLinq.*/**/*.cs"
-  ],
-  "exclude": [
-    "../DbLinq/Test",
-    "../DbLinq.*/**/Test",
-    "../DbLinq.*/**/AssemblyInfo.cs",
-    "../DbLinq/Util/CacheChecker.cs",
-    "../DbLinq/System.Data.Linq/EntitySet.cs",
-    "../DbLinq/obj",
-    "../DbLinq/Properties/AssemblyInfo.cs",
-    "../DbLinq/Data/Linq/Database/Implementation/DatabaseTransaction.cs",
-    "../DbLinq/Data/Linq/Database/IDatabaseTransaction.cs",
-    "../DbLinq/Data/Linq/SqlClient/Sql2000Provider.cs",
-    "../DbLinq/Data/Linq/SqlClient/Sql2005Provider.cs",
-    "../DbLinq/Data/Linq/SqlClient/Sql2008Provider.cs",
-    "../DbLinq/Data/Linq/Sugar/Expressions/GroupByExpression.cs",
-    "../DbLinq/Data/Linq/Sugar/Expressions/ScopeExpression.cs",
-    "../DbLinq/Schema/Dbml",
-    "../DbLinq/Vendor/DbSchemaLoader.cs",
-    "../DbLinq/Vendor/Implementation/SchemaLoader.*.cs",
-    "../**/*SchemaLoader*",
-    "../DbLinq/Util/TypeLoader.cs",
-    "../DbLinq/Data/Linq/Mapping/XmlMappingSource.cs",
-    "../DbLinq/Util/DbmlExtensions.cs",
-    "../DbLinq/Vendors/DbLinq.SqlServer",
-    "../DbLinq/Vendor/INameAliases.cs"
-  ],
   "dependencies": {
     "Shaman.System.Linq.Expressions.Interpreter": "1.0.1.2",
     "Shaman.Reflection": "1.0.0.13",
