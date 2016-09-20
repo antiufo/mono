@@ -185,6 +185,8 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
             //var newParametersObsolete = parameters.Union(originalParameters).ToList();
             var arguments = expression.Arguments;
             var length = arguments.Count;
+            var hasThis = !expression.Method.IsStatic;
+            if (hasThis) length++;
             Expression[] newParameters = null;
             if (length < DataContext.ExpressionArrayPoolSize)
             {
@@ -205,6 +207,7 @@ namespace DbLinq.Data.Linq.Sugar.Implementation
                 newParameters[i] = parameters[i];
                 i++;
             }
+            if (hasThis) newParameters[i++] = expression.Object;
             for (int j = parameters.Count; j < arguments.Count; j++)
             {
                 newParameters[i++] = arguments[j];
