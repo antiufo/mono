@@ -13,7 +13,7 @@ namespace DbLinq.Util
     static class Profiler
     {
         [ThreadStatic]
-        private static Stopwatch timer = new Stopwatch();
+        private static Stopwatch timer;
 
         private static Stopwatch Timer
         {
