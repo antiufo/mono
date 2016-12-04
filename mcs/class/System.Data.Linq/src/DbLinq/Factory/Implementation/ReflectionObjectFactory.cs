@@ -42,7 +42,7 @@ namespace DbLinq.Factory.Implementation
     /// </summary>
     internal class ReflectionObjectFactory : IObjectFactory
     {
-        private IDictionary<Type, IList<Type>> implementations;
+        private volatile IDictionary<Type, IList<Type>> implementations;
 
         private readonly object lockObject = new object(); // For filling implementation (since it could be done concurrently at startup)
 
