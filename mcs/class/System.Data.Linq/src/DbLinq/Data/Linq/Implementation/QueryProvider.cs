@@ -141,7 +141,7 @@ namespace DbLinq.Data.Linq.Implementation
             if (genericType == typeof(IQueryable<>) || genericType == typeof(IOrderedQueryable<>))
                 type = type.GetGenericArguments()[0];
             else
-                Error.BadArgument("S0068: Don't know how to handle type '{0}'", type);
+                throw Error.BadArgument("S0068: Don't know how to handle type '{0}'", type);
             return CreateQuery<IQueryable>(type, TableType, _dataContext, ExpressionChain, expression);
         }
 
