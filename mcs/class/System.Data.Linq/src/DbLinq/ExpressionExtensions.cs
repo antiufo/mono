@@ -24,10 +24,6 @@ namespace System
             {
                return (new System.Linq.Expressions.Interpreter.LightCompiler()).CompileTop(lambda).CreateDelegate();
             }
-            if (!singleUse)
-            {
-
-            }
             return lambda.Compile();
 #if false
             var modifiedLambda = (LambdaExpression)new ReplaceInMemoryObjectsVisitor(lambda).Visit(lambda);
