@@ -70,20 +70,17 @@ namespace DbLinq.Data.Linq.Mapping
 
         public void OnGenerateSql(object sender, ref string sql)
         {
-            if (GenerateSql != null)
-                GenerateSql(sender, ref sql);
+            GenerateSql?.Invoke(sender, ref sql);
         }
 
         public void OnGetAsString(object sender, ref string value, Type tableType, int columnIndex)
         {
-            if (GetAsString != null)
-                GetAsString(sender, ref value, tableType, columnIndex, typeof(string));
+            GetAsString?.Invoke(sender, ref value, tableType, columnIndex, typeof(string));
         }
 
         public void OnGetAsObject(object sender, ref object value, Type tableType, int columnIndex, Type type)
         {
-            if (GetAsObject != null)
-                GetAsObject(sender, ref value, tableType, columnIndex, type);
+            GetAsObject?.Invoke(sender, ref value, tableType, columnIndex, type);
         }
 
         #endregion
