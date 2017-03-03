@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1.2",
+  "version": "1.0.1.6",
   "buildOptions": {
     "define": [
       "MOBILE",
@@ -40,8 +40,8 @@
   },
   "dependencies": {
     "Shaman.System.Linq.Expressions.Interpreter": "1.0.1.2",
-    "Shaman.Reflection": "1.0.0.13",
-    "Shaman.ValueString": "1.0.2.19"
+    "Shaman.Reflection": "1.0.0.21",
+    "Shaman.ValueString": "1.0.2.29"
   },
   "frameworks": {
     "net46": {
