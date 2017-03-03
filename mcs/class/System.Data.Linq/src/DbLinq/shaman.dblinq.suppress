@@ -1,0 +1,138 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
+      <xs:complexType>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="SuppressVersion">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="CurrentVersion" type="xs:int" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="shaman.dblinq">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="FileName" type="xs:string" default="" />
+                <xs:element name="ErrorCode" type="xs:string" default="" />
+                <xs:element name="Message" type="xs:string" default="" />
+                <xs:element name="CodePrev" type="xs:unsignedInt" default="0" />
+                <xs:element name="CodeCurrent" type="xs:unsignedInt" default="0" />
+                <xs:element name="CodeNext" type="xs:unsignedInt" default="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+      <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+        <xs:selector xpath=".//shaman.dblinq" />
+        <xs:field xpath="FileName" />
+        <xs:field xpath="ErrorCode" />
+        <xs:field xpath="Message" />
+        <xs:field xpath="CodePrev" />
+        <xs:field xpath="CodeCurrent" />
+        <xs:field xpath="CodeNext" />
+      </xs:unique>
+    </xs:element>
+  </xs:schema>
+  <SuppressVersion>
+    <CurrentVersion>2</CurrentVersion>
+  </SuppressVersion>
+  <shaman.dblinq>
+    <FileName>ExpressionDispatcher.Analyzer.cs</FileName>
+    <ErrorCode>V3010</ErrorCode>
+    <Message>The return value of function 'FirstOrDefault' is required to be utilized.</Message>
+    <CodePrev>176909</CodePrev>
+    <CodeCurrent>57957705</CodeCurrent>
+    <CodeNext>176703</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>125</CodePrev>
+    <CodeCurrent>804083435</CodeCurrent>
+    <CodeNext>821547691</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>125</CodePrev>
+    <CodeCurrent>2875337388</CodeCurrent>
+    <CodeNext>4131663423</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>123</CodePrev>
+    <CodeCurrent>3747234840</CodeCurrent>
+    <CodeNext>1329980678</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>125</CodePrev>
+    <CodeCurrent>1558279570</CodeCurrent>
+    <CodeNext>734580242</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>123</CodePrev>
+    <CodeCurrent>2668539130</CodeCurrent>
+    <CodeNext>34711051</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>123</CodePrev>
+    <CodeCurrent>2532748526</CodeCurrent>
+    <CodeNext>1108452891</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>125</CodePrev>
+    <CodeCurrent>4141981089</CodeCurrent>
+    <CodeNext>1108452891</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>125</CodePrev>
+    <CodeCurrent>2880486038</CodeCurrent>
+    <CodeNext>143498341</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3063</ErrorCode>
+    <Message>A part of conditional expression is always true if it is evaluated: !b_.</Message>
+    <CodePrev>125</CodePrev>
+    <CodeCurrent>401972661</CodeCurrent>
+    <CodeNext>34711051</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DatabaseSerializer.cs</FileName>
+    <ErrorCode>V3090</ErrorCode>
+    <Message>Unsafe locking on 'this' instance in class 'XmlSerializerContract'.</Message>
+    <CodePrev>100</CodePrev>
+    <CodeCurrent>2425865855</CodeCurrent>
+    <CodeNext>123</CodeNext>
+  </shaman.dblinq>
+  <shaman.dblinq>
+    <FileName>DataContext.cs</FileName>
+    <ErrorCode>V3111</ErrorCode>
+    <Message>Checking value of 'row' for null will always return false when generic type is instantiated with a value type.</Message>
+    <CodePrev>243149886</CodePrev>
+    <CodeCurrent>219249534</CodeCurrent>
+    <CodeNext>3489656593</CodeNext>
+  </shaman.dblinq>
+</NewDataSet>
