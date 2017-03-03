@@ -79,7 +79,7 @@ namespace DbLinq.Data.Linq
         public MetaModel Mapping { get; private set; }
         // PC question: at ctor, we get a DbConnection and the Connection property exposes a DbConnection
         //              WTF?
-        public DbConnection Connection { get { return DatabaseContext.Connection } }
+        public DbConnection Connection { get { return DatabaseContext.Connection; } }
 
 
         public IQueryable<VirtualSearchTable> GetFullTextSearchTable(string language, string searchTerms, int searchQueryId)
